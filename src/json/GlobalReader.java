@@ -14,16 +14,16 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class GlobalReader {
-	
+
 	private JSONObject thatObject = null;
-	
+
 	public GlobalReader(int groupNumber) {
-		
+
 		// You no longer need to specify a filepath, only a filename
 		String myFilePath = groupNumber + ".json";
-		
+
 		JSONParser parser = new JSONParser();
-		
+
 		try {
 			Object obj = parser.parse(new FileReader(myFilePath));
 			JSONObject jsonObject = (JSONObject) obj;
@@ -39,9 +39,8 @@ public class GlobalReader {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public JSONObject getJSONObject() {
 		return this.thatObject;
 	}
-	
 }
