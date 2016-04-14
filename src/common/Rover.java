@@ -80,6 +80,7 @@ public class Rover {
 	}
 	
 	public long getRoverLastMoveTime(){
+		//TODO find out why 'this' here is needed
 		return this.lastMoveTime;
 	}
 	public void updateMoveTime(){
