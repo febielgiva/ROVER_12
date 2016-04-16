@@ -1,5 +1,10 @@
 package swarmBots;
 
+/* Richard's Repo: 
+ * 		https://github.com/CS-537-Spring-2016/ROVER_12.git
+ Forked Team Repo:
+ 		https://github.com/ks1k1/ROVER_12.git
+*/
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -49,6 +54,7 @@ public class ROVER_12_Kae {
 		rovername = "ROVER_12";
 		SERVER_ADDRESS = serverAddress;
 		sleepTime = 200; // in milliseconds - smaller is faster, but the server will cut connection if it is too small
+		
 	}
 
 	/**
@@ -221,7 +227,7 @@ public class ROVER_12_Kae {
 	
 	private void clearReadLineBuffer() throws IOException{
 		while(in.ready()){
-			//System.out.println("ROVER_12 clearing readLine()");
+			System.out.println("ROVER_12 clearing readLine()");
 			String garbage = in.readLine();	
 		}
 	}
@@ -229,7 +235,7 @@ public class ROVER_12_Kae {
 
 	// method to retrieve a list of the rover's equipment from the server
 	private ArrayList<String> getEquipment() throws IOException {
-		//System.out.println("ROVER_12 method getEquipment()");
+		System.out.println("ROVER_12 method getEquipment()");
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		out.println("EQUIPMENT");
 		
@@ -238,7 +244,7 @@ public class ROVER_12_Kae {
 			jsonEqListIn = "";
 		}
 		StringBuilder jsonEqList = new StringBuilder();
-		//System.out.println("ROVER_12 incomming EQUIPMENT result - first readline: " + jsonEqListIn);
+		System.out.println("ROVER_12 incomming EQUIPMENT result - first readline: " + jsonEqListIn);
 		
 		if(jsonEqListIn.startsWith("EQUIPMENT")){
 			while (!(jsonEqListIn = in.readLine()).equals("EQUIPMENT_END")) {

@@ -1,5 +1,4 @@
-# GROUP12
-## CS537
+## CS537-Group12
 
 ###Members:
 * Nivethitha Subas

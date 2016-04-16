@@ -88,6 +88,7 @@ public enum RoverName {
     		output = RoverName.ROVER_11;
     		break;
     	case "ROVER_12":
+     		// System.out.println("ROVERNAME: case ROVER_12");
     		output = RoverName.ROVER_12;
     		break;    		
     	case "ROVER_13":

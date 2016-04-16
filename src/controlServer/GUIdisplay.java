@@ -72,7 +72,7 @@ class MyGUIWorker extends SwingWorker<Void, String> {
 		lst[0] = "-----------------";
 		lst[1] = "adding to list";
 		lst[2] = msg;
-		lst[3] = "finshed adding this item";
+		lst[3] = "finished adding this item";
 		lst[4] = "-----------------";
 		publish(lst);
 		return null;
