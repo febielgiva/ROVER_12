@@ -1,4 +1,4 @@
-## CS537 Swarm Rover Project -Group12
+## CS537-Group12
 
 ###Members:
 * Nivethitha Subas
