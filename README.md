@@ -1,4 +1,7 @@
 ## CS537-Group12
+### Links
+- Class/ Meeting Recap notes (Google Doc): http://bit.ly/1qPuqH0
+- Git Command (Google Doc): http://bit.ly/23FXbY5
 
 ###Git Commands:
 * Set Remote Repo
