@@ -6,7 +6,8 @@
 ###Git Commands:
 * Set Remote Repo
 ```
-git remote set-url origin <git://new.url.here>  
+git remote set-url origin <git://new.url.here>
+git remote add origin <git://new.url.here>
 ```
 
 
