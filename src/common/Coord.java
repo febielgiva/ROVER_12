@@ -17,7 +17,23 @@ public class Coord {
 		this.ypos = y;
 	}
 	
-    @Override
+    public int getXpos() {
+		return xpos;
+	}
+
+	public void setXpos(int xpos) {
+		this.xpos = xpos;
+	}
+
+	public int getYpos() {
+		return ypos;
+	}
+
+	public void setYpos(int ypos) {
+		this.ypos = ypos;
+	}
+
+	@Override
     public int hashCode() {
         return new HashCodeBuilder(17, 31). // two randomly chosen prime numbers
             // if deriving: appendSuper(super.hashCode()).

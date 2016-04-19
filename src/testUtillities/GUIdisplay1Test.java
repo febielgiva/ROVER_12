@@ -8,7 +8,6 @@ public class GUIdisplay1Test {
 	static MyGUIWorker myWorker;
 
 	public static void main(String[] args) throws InterruptedException {
-		// TODO Auto-generated method stub
 
 		mainPanel = new GUIdisplay1();
 		myWorker = new MyGUIWorker(mainPanel);

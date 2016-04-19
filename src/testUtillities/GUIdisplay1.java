@@ -57,7 +57,7 @@ class MyGUIWorker extends SwingWorker<Void, String> {
 		try {
 			doInBackground();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 	}

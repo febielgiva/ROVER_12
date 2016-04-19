@@ -14,7 +14,7 @@ import json.MyWriter;
 public class MakeAndSaveMap1 {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		
 		PlanetMap map1 = new PlanetMap(10, 10);
 		MapTile tile = new MapTile(Terrain.ROCK, Science.RADIOACTIVE, 2, false);
 		map1.setTile(tile, 4, 7);
