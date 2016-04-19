@@ -97,16 +97,24 @@ public class ROVER_12_Kae {
 		cardinals[2] = "S";
 		cardinals[3] = "W";
 
-		String currentDir = cardinals[0];
+		// String currentDir = cardinals[0];
+		// String currentDir = cardinals[1];
+//		 String currentDir = cardinals[2];
+		 String currentDir = cardinals[3];
+		 int cardinalTracker = 0;
+		
 		Coord currentLoc = null;
 		Coord previousLoc = null;
 
 		// start Rover controller process
 		while (true) {
-
+			
+			cardinalTracker = (cardinalTracker < 3)? cardinalTracker++: 0;
 			// currently the requirements allow sensor calls to be made with no
 			// simulated resource cost
 			
+			// This call to the server to control rover's motion
+			out.println("MOVE " + currentDir);
 			
 			// **** location call ****
 			out.println("LOC");
@@ -144,9 +152,9 @@ public class ROVER_12_Kae {
 
 			
 			// ***** MOVING *****
-			// try moving east 5 block if blocked
+			// try moving east 15 block if blocked
 			if (blocked) {
-				for (int i = 0; i < 5; i++) {
+				for (int i = 0; i < 15; i++) {
 					out.println("MOVE E");
 					//System.out.println("ROVER_12 request move E");
 					Thread.sleep(300);

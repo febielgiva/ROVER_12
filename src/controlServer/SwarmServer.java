@@ -59,7 +59,7 @@ public class SwarmServer {
 	static MyGUIWorker2 myWorker;
     
 	// These are the velocity or speed values for the different drive systems
-	// Changes these as necessary for good simulation balance
+	// TODO -- Change velocity/speed values as necessary for good simulation balance
     static final int WHEELS_TIME_PER_SQUARE = 500;
     static final int TREADS_TIME_PER_SQUARE = 1000;
     static final int WALKER_TIME_PER_SQUARE = 1200;
@@ -154,7 +154,7 @@ public class SwarmServer {
                     	break;
                     }
                 }
-                
+               
                 // make and instantiate a Rover object connected to this thread
                 RoverName rname = RoverName.getEnum(roverNameString); 
                 System.out.println("SWARM: make a rover name " + rname);
