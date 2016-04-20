@@ -5,7 +5,7 @@ import enums.RoverName;
 public class EnumTest {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		
 
 		System.out.println("ENUM_TEST: starting");
 		
@@ -15,7 +15,7 @@ public class EnumTest {
 		try {
 			Thread.sleep(200);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 		
