@@ -79,6 +79,7 @@ public class ROVER_12_Kae {
 		// name
 		while (true) {
 			String line = in.readLine();
+			System.out.println("DBG line 82 = " + line);
 			if (line.startsWith("SUBMITNAME")) {
 				out.println(rovername); // This sets the name of this instance
 										// of a swarmBot for identifying the
@@ -109,6 +110,12 @@ public class ROVER_12_Kae {
 		Coord currentLoc = null;
 		Coord previousLoc = null;
 
+		// ksksksksks
+		//MapTile[][] scanMap_copy = scanMap.getScanMap();
+		
+		
+		
+		
 		// start Rover controller process
 		while (true) {
 
@@ -122,6 +129,7 @@ public class ROVER_12_Kae {
 			// **** location call ****
 			out.println("LOC");
 			line = in.readLine();
+			System.out.println("DBG line 132 = " + line);
 			if (line == null) {
 				System.out.println("ROVER_12 check connection to server");
 				line = "";
@@ -129,7 +137,6 @@ public class ROVER_12_Kae {
 			if (line.startsWith("LOC")) {
 				// loc = line.substring(4);
 				currentLoc = extractLOC(line);
-				System.out.println("**** " + currentLoc + " ****");
 			}
 			System.out.println("ROVER_12 currentLoc at start: " + currentLoc);
 
@@ -144,10 +151,10 @@ public class ROVER_12_Kae {
 			// equipment.get(0));
 			System.out.println("ROVER_12 equipment list results " + equipment
 					+ "\n");
-			System.out.println("currenet x pos: "+currentLoc.xpos);
 			// ***** do a SCAN *****
 			// System.out.println("ROVER_12 sending SCAN request");
 			this.doScan();
+			MapTile[][] copy_scanmap = scanMap.getScanMap();
 			scanMap.debugPrintMap();
 
 			// ***** MOVING *****
@@ -237,6 +244,7 @@ public class ROVER_12_Kae {
 			// another call for current location
 			out.println("LOC");
 			line = in.readLine();
+			System.out.println("DBG line 248 = " + line);
 			if (line == null) {
 				System.out.println("ROVER_12 check connection to server");
 				line = "";
@@ -326,6 +334,14 @@ public class ROVER_12_Kae {
 
 		String jsonScanMapIn = in.readLine(); // grabs the string that was
 												// returned first
+		System.out.println("DBG jsonScanMapIn 336 = " + jsonScanMapIn);
+	
+		try {
+			Thread.sleep(4000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
 		if (jsonScanMapIn == null) {
 			System.out.println("ROVER_12 check connection to server");
 			jsonScanMapIn = "";
