@@ -111,11 +111,8 @@ public class ROVER_12_Kae {
 		Coord previousLoc = null;
 
 		// ksksksksks
-		//MapTile[][] scanMap_copy = scanMap.getScanMap();
-		
-		
-		
-		
+		// MapTile[][] scanMap_copy = scanMap.getScanMap();
+
 		// start Rover controller process
 		while (true) {
 
@@ -197,34 +194,34 @@ public class ROVER_12_Kae {
 					// check scanMap to see if path is blocked to the north
 					// (scanMap may be old data by now) ksksks
 
-//					System.out.println();
-//					System.out.println("ROVER_12 N: "
-//							+ scanMapTiles[currentLoc.getYpos() - 1][currentLoc
-//									.getXpos()].getTerrain()
-//							+ ", "
-//							+ scanMapTiles[currentLoc.getYpos() - 1][currentLoc
-//									.getXpos()].getScience());
+					// System.out.println();
+					// System.out.println("ROVER_12 N: "
+					// + scanMapTiles[currentLoc.getYpos() - 1][currentLoc
+					// .getXpos()].getTerrain()
+					// + ", "
+					// + scanMapTiles[currentLoc.getYpos() - 1][currentLoc
+					// .getXpos()].getScience());
 
-//					System.out.println("ROVER_12 S: "
-//							+ scanMapTiles[currentLoc.getYpos() + 1][currentLoc
-//									.getXpos()].getTerrain()
-//							+ ", "
-//							+ scanMapTiles[currentLoc.getYpos() - 1][currentLoc
-//									.getXpos()].getScience());
-//
-//					System.out.println("ROVER_12 E: "
-//							+ scanMapTiles[currentLoc.getYpos()][currentLoc
-//									.getXpos() + 1].getTerrain()
-//							+ ", "
-//							+ scanMapTiles[currentLoc.getYpos() - 1][currentLoc
-//									.getXpos()].getScience());
-//
-//					System.out.println("ROVER_12 S: "
-//							+ scanMapTiles[currentLoc.getYpos() + 1][currentLoc
-//									.getXpos()].getTerrain()
-//							+ ", "
-//							+ scanMapTiles[currentLoc.getYpos() - 1][currentLoc
-//									.getXpos() - 1].getScience());
+					// System.out.println("ROVER_12 S: "
+					// + scanMapTiles[currentLoc.getYpos() + 1][currentLoc
+					// .getXpos()].getTerrain()
+					// + ", "
+					// + scanMapTiles[currentLoc.getYpos() - 1][currentLoc
+					// .getXpos()].getScience());
+					//
+					// System.out.println("ROVER_12 E: "
+					// + scanMapTiles[currentLoc.getYpos()][currentLoc
+					// .getXpos() + 1].getTerrain()
+					// + ", "
+					// + scanMapTiles[currentLoc.getYpos() - 1][currentLoc
+					// .getXpos()].getScience());
+					//
+					// System.out.println("ROVER_12 S: "
+					// + scanMapTiles[currentLoc.getYpos() + 1][currentLoc
+					// .getXpos()].getTerrain()
+					// + ", "
+					// + scanMapTiles[currentLoc.getYpos() - 1][currentLoc
+					// .getXpos() - 1].getScience());
 
 					if (scanMapTiles[centerIndex][centerIndex - 1]
 							.getHasRover()
@@ -335,13 +332,13 @@ public class ROVER_12_Kae {
 		String jsonScanMapIn = in.readLine(); // grabs the string that was
 												// returned first
 		System.out.println("DBG jsonScanMapIn 336 = " + jsonScanMapIn);
-	
+
 		try {
 			Thread.sleep(4000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
+
 		if (jsonScanMapIn == null) {
 			System.out.println("ROVER_12 check connection to server");
 			jsonScanMapIn = "";
