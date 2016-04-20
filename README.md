@@ -1,9 +1,14 @@
 ## CS537-Group12
 ### Links
-- Class/ Meeting Recap notes (Google Doc): http://bit.ly/1qPuqH0
+- Rover Specs (http://bit.ly/1QnSPYJ)
 - Git Command (Google Doc): http://bit.ly/23FXbY5
+- Class/ Meeting Recap notes (Google Doc): http://bit.ly/1qPuqH0
 
 ###Git Commands:
+* Sync with SwermServerAndSampleRover repo
+```
+git pull swarmserver master
+```
 * Set Remote Repo
 ```
 git remote set-url origin <git://new.url.here>
