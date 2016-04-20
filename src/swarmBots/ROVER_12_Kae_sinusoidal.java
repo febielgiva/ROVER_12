@@ -91,40 +91,77 @@ public class ROVER_12_Kae_sinusoidal {
 
 		// ******** Rover logic *********
 		// int cnt=0;
-		String line = "";
+		String line = "", currectDir = "";
 
-		boolean goingSouth = false;
-		boolean stuck = false; // just means it did not change locations between
-								// requests,
-								// could be velocity limit or obstruction etc.
+		boolean stuck = false;
 		boolean blocked = false;
-		int waveLemgth=3, waveHeight=6;
 
 		String[] cardinals = new String[4];
-		cardinals[0] = "N";
-		cardinals[1] = "E";
-		cardinals[2] = "S";
-		cardinals[3] = "W";
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "E";
+		cardinals[3] = "N";
 
 		Coord currentLoc = null;
 		Coord previousLoc = null;
+
+		moveRover12ToAClearArea();
 
 		// start Rover controller process
 		while (true) {
 
 			// ***** ROVER MOTION *****
-			
-			moveToAClearArea();
-				
+			// sinusoidal(cardinals);
+			sinusoidal(cardinals, 2, 4);
 
-			
-			
-			
-			//randomMotion(cardinals);
+			// randomMotion(cardinals);
 			Thread.sleep(sleepTime);
 
 			System.out
 					.println("ROVER_12 ------------ bottom process control --------------");
+		}
+	}
+
+	private void sinusoidal(String[] cardinals) throws InterruptedException {
+
+		int waveLength = 3, waveHeight = 6, steps = waveLength;
+		String currentDir;
+
+		for (int i = 0; i < cardinals.length; i++) {
+
+			currentDir = cardinals[i];
+			if (currentDir.equals("E") || currentDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+				out.println("MOVE " + currentDir);	
+				Thread.sleep(700);
+			}
+		}
+	}
+	
+	private void sinusoidal(String[] cardinals, int waveLength, int waveHeight) throws InterruptedException {
+		int steps;
+		
+		steps = waveLength;
+		String currentDir;
+
+		for (int i = 0; i < cardinals.length; i++) {
+
+			currentDir = cardinals[i];
+			if (currentDir.equals("E") || currentDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+				out.println("MOVE " + currentDir);	
+				Thread.sleep(700);
+			}
 		}
 	}
 
@@ -134,7 +171,7 @@ public class ROVER_12_Kae_sinusoidal {
 		for (int i = 0; i < 5; i++) {
 			rdNum = randomNum(0, 3);
 			currentDir = cardinals[rdNum];
-			
+
 			for (int j = 0; j < 3; j++) {
 				out.println("MOVE " + currentDir);
 				System.out.println("## move " + currentDir + " [" + rdNum
@@ -144,15 +181,15 @@ public class ROVER_12_Kae_sinusoidal {
 		}
 	}
 
-	private void moveToAClearArea() throws InterruptedException {
-		for(int i = 0; i < 5; i++){
-			out.println("MOVE E"); 
-			Thread.sleep(700);			
-		}	
-		for(int i = 0; i < 5; i++){		
+	private void moveRover12ToAClearArea() throws InterruptedException {
+		for (int i = 0; i < 5; i++) {
+			out.println("MOVE E");
+			Thread.sleep(700);
+		}
+		for (int i = 0; i < 5; i++) {
 			// get out of the crowd of rovers
-			out.println("MOVE S"); 
-			Thread.sleep(700);			
+			out.println("MOVE S");
+			Thread.sleep(700);
 		}
 	}
 
