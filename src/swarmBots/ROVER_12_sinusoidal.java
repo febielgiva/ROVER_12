@@ -30,7 +30,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class ROVER_12_Kae {
+public class ROVER_12_sinusoidal {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -41,7 +41,7 @@ public class ROVER_12_Kae {
 	static final int PORT_ADDRESS = 9537;
 	Random rd = new Random();
 
-	public ROVER_12_Kae() {
+	public ROVER_12_sinusoidal() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -51,7 +51,7 @@ public class ROVER_12_Kae {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12_Kae(String serverAddress) {
+	public ROVER_12_sinusoidal(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -65,8 +65,7 @@ public class ROVER_12_Kae {
 	 * Connects to the server then enters the processing loop.
 	 */
 	private void run() throws IOException, InterruptedException {
-		int rdNum;
-		String currentDir;
+
 		// Make connection and initialize streams
 		// TODO - need to close this socket
 		Socket socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS); // set port
@@ -93,29 +92,32 @@ public class ROVER_12_Kae {
 		// int cnt=0;
 		String line = "";
 
+		int waveLength = 4, waveHeight = 3, tracker = 0;
 		boolean goingSouth = false;
-		boolean stuck = false; // just means it did not change locations between
-								// requests,
-								// could be velocity limit or obstruction etc.
+		boolean isStuck = false; // just means it did not change locations
+									// between
+									// requests,
+									// could be velocity limit or obstruction
+									// etc.
 		boolean blocked = false;
 
 		String[] cardinals = new String[4];
-		cardinals[0] = "N";
+		int[] lengthHeight = new int[2];
+
+		// S -> E -> N - > E (2,1,0,1)
+		cardinals[0] = "S";
 		cardinals[1] = "E";
-		cardinals[2] = "S";
-		cardinals[3] = "W";
+		cardinals[2] = "N";
+		cardinals[3] = "E";
+
+		lengthHeight[0] = waveLength;
+		lengthHeight[1] = waveHeight;
 
 		Coord currentLoc = null;
 		Coord previousLoc = null;
 
-		// ksksksksks
-		// MapTile[][] scanMap_copy = scanMap.getScanMap();
-
 		// start Rover controller process
 		while (true) {
-
-			// currently the requirements allow sensor calls to be made with no
-			// simulated resource cost
 
 			// **** location call ****
 			out.println("LOC");
@@ -145,40 +147,46 @@ public class ROVER_12_Kae {
 			// ***** do a SCAN *****
 			// System.out.println("ROVER_12 sending SCAN request");
 			this.doScan();
+			scanMap.debugPrintMap();
 
 			// ***** MOVING *****
-			for(int i = 0; i < 5; i++)
-				out.println("MOVE E"); // get out of the growd of rovers
-			
-			for (int i = 0; i < 5; i++) {
-				
-				rdNum = randomNum(0, 3);
-				currentDir = cardinals[rdNum];
-				
-				for (int j = 0; j < 4; j++) {
-					out.println("MOVE " + currentDir);
-					System.out.println("## move " + currentDir + " [" + rdNum
-							+ "] ##");
-					Thread.sleep(200);
+			// try moving east 5 block if blocked
+			if (blocked) {
+				for (int i = 0; i < 5; i++) {
+					out.println("MOVE E");
+					// System.out.println("ROVER_12 request move E");
+					Thread.sleep(300);
 				}
-				
-				rdNum = randomNum(0, 3);
-				currentDir = cardinals[rdNum];
-				
-				for (int j = 0; j < 4; j++) {
-					out.println("MOVE " + currentDir);
-					System.out.println("## move " + currentDir + " [" + rdNum
-							+ "] ##");
-					Thread.sleep(200);
+				blocked = false;
+				// reverses direction after being blocked
+				goingSouth = !goingSouth;
+			} else {
+
+				// pull the MapTile array out of the ScanMap object
+				MapTile[][] scanMapTiles = scanMap.getScanMap();
+				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
+
+				// check scanMap to see if path is blocked to the south
+				// (scanMap may be old data by now)
+				if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
+						|| scanMapTiles[centerIndex][centerIndex + 1]
+								.getTerrain() == Terrain.ROCK
+						|| scanMapTiles[centerIndex][centerIndex + 1]
+								.getTerrain() == Terrain.NONE) {
+					blocked = true;
+				} else {
+					// request to server to move
+					out.println("MOVE " + cardinals[tracker]);
+					tracker = (tracker > 3) ? 0 : (tracker++);
+					System.out.println("ROVER_12 request move " + cardinals[tracker-1]);
 				}
-				Thread.sleep(200);
+
 			}
-			scanMap.debugPrintMap();
 
 			// another call for current location
 			out.println("LOC");
 			line = in.readLine();
-			System.out.println("DBG line 248 = " + line);
 			if (line == null) {
 				System.out.println("ROVER_12 check connection to server");
 				line = "";
@@ -187,9 +195,11 @@ public class ROVER_12_Kae {
 				currentLoc = extractLOC(line);
 			}
 
-			stuck = currentLoc.equals(previousLoc);
+			// test for stuckness
+			isStuck = currentLoc.equals(previousLoc);
+			System.out.println("Is ROVER_12 stuck? " + isStuck);
 
-			System.out.println("is rover stuck? " + stuck);
+			// TODO - logic to calculate where to move next
 
 			Thread.sleep(sleepTime);
 
@@ -316,8 +326,8 @@ public class ROVER_12_Kae {
 		return null;
 	}
 
-	public int randomNum(int min, int max) {
-		return rd.nextInt(max + 1) + min;
+	public String randomNumberGenerator(int min, int max) {
+		return Integer.toString(rd.nextInt(max + 1) + min);
 	}
 
 	// one of the motion dictating method (will be moved and adjusted to the
@@ -346,7 +356,7 @@ public class ROVER_12_Kae {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_Kae client = new ROVER_12_Kae();
+		ROVER_12_sinusoidal client = new ROVER_12_sinusoidal();
 		client.run();
 	}
 }
