@@ -112,14 +112,15 @@ public class ROVER_12_Kae_sinusoidal {
 		// start Rover controller process
 		while (true) {
 
-			// ***** MOVING *****
+			// ***** ROVER MOTION *****
 			
-			// get out of the crowd of rovers
 			moveToAClearArea();
 				
-			// random motion		
-			randomMotion(cardinals);
 
+			
+			
+			
+			//randomMotion(cardinals);
 			Thread.sleep(sleepTime);
 
 			System.out
