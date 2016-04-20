@@ -30,7 +30,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class ROVER_12_Kae {
+public class ROVER_12_Kae_sinusoidal {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -41,7 +41,7 @@ public class ROVER_12_Kae {
 	static final int PORT_ADDRESS = 9537;
 	Random rd = new Random();
 
-	public ROVER_12_Kae() {
+	public ROVER_12_Kae_sinusoidal() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -51,7 +51,7 @@ public class ROVER_12_Kae {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12_Kae(String serverAddress) {
+	public ROVER_12_Kae_sinusoidal(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -91,112 +91,106 @@ public class ROVER_12_Kae {
 
 		// ******** Rover logic *********
 		// int cnt=0;
-		String line = "";
+		String line = "", currectDir = "";
 
-		boolean goingSouth = false;
-		boolean stuck = false; // just means it did not change locations between
-								// requests,
-								// could be velocity limit or obstruction etc.
+		boolean stuck = false;
 		boolean blocked = false;
 
 		String[] cardinals = new String[4];
-		cardinals[0] = "N";
-		cardinals[1] = "E";
-		cardinals[2] = "S";
-		cardinals[3] = "W";
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "E";
+		cardinals[3] = "N";
 
 		Coord currentLoc = null;
 		Coord previousLoc = null;
 
-		// ksksksksks
-		// MapTile[][] scanMap_copy = scanMap.getScanMap();
+		moveRover12ToAClearArea();
 
 		// start Rover controller process
 		while (true) {
 
-			// currently the requirements allow sensor calls to be made with no
-			// simulated resource cost
+			// ***** ROVER MOTION *****
+			// sinusoidal(cardinals);
+			sinusoidal(cardinals, 2, 4);
 
-			// **** location call ****
-			out.println("LOC");
-			line = in.readLine();
-			if (line == null) {
-				System.out.println("ROVER_12 check connection to server");
-				line = "";
-			}
-			if (line.startsWith("LOC")) {
-				// loc = line.substring(4);
-				currentLoc = extractLOC(line);
-			}
-			System.out.println("ROVER_12 currentLoc at start: " + currentLoc);
-
-			// after getting location set previous equal current to be able to
-			// check for stuckness and blocked later
-			previousLoc = currentLoc;
-
-			// **** get equipment listing ****
-			ArrayList<String> equipment = new ArrayList<String>();
-			equipment = getEquipment();
-			// System.out.println("ROVER_12 equipment list results drive " +
-			// equipment.get(0));
-			System.out.println("ROVER_12 equipment list results " + equipment
-					+ "\n");
-
-			// ***** do a SCAN *****
-			// System.out.println("ROVER_12 sending SCAN request");
-			this.doScan();
-
-			// ***** MOVING *****
-			for(int i = 0; i < 5; i++)
-				out.println("MOVE E"); // get out of the growd of rovers
-			
-			for (int i = 0; i < 5; i++) {
-				
-				rdNum = randomNum(0, 3);
-				currentDir = cardinals[rdNum];
-				
-				for (int j = 0; j < 4; j++) {
-					out.println("MOVE " + currentDir);
-					System.out.println("## move " + currentDir + " [" + rdNum
-							+ "] ##");
-					Thread.sleep(200);
-				}
-				
-				rdNum = randomNum(0, 3);
-				currentDir = cardinals[rdNum];
-				
-				for (int j = 0; j < 4; j++) {
-					out.println("MOVE " + currentDir);
-					System.out.println("## move " + currentDir + " [" + rdNum
-							+ "] ##");
-					Thread.sleep(200);
-				}
-				Thread.sleep(200);
-			}
-			scanMap.debugPrintMap();
-
-			// another call for current location
-			out.println("LOC");
-			line = in.readLine();
-			System.out.println("DBG line 248 = " + line);
-			if (line == null) {
-				System.out.println("ROVER_12 check connection to server");
-				line = "";
-			}
-			if (line.startsWith("LOC")) {
-				currentLoc = extractLOC(line);
-			}
-
-			stuck = currentLoc.equals(previousLoc);
-
-			System.out.println("is rover stuck? " + stuck);
-
+			// randomMotion(cardinals);
 			Thread.sleep(sleepTime);
 
 			System.out
 					.println("ROVER_12 ------------ bottom process control --------------");
 		}
+	}
 
+	private void sinusoidal(String[] cardinals) throws InterruptedException {
+
+		int waveLength = 3, waveHeight = 6, steps = waveLength;
+		String currentDir;
+
+		for (int i = 0; i < cardinals.length; i++) {
+
+			currentDir = cardinals[i];
+			if (currentDir.equals("E") || currentDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+				out.println("MOVE " + currentDir);	
+				Thread.sleep(700);
+			}
+		}
+	}
+	
+	private void sinusoidal(String[] cardinals, int waveLength, int waveHeight) throws InterruptedException {
+		int steps;
+		
+		steps = waveLength;
+		String currentDir;
+
+		for (int i = 0; i < cardinals.length; i++) {
+
+			currentDir = cardinals[i];
+			if (currentDir.equals("E") || currentDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+				out.println("MOVE " + currentDir);	
+				Thread.sleep(700);
+			}
+		}
+	}
+
+	private void randomMotion(String[] cardinals) throws InterruptedException {
+		int rdNum;
+		String currentDir;
+		for (int i = 0; i < 5; i++) {
+			rdNum = randomNum(0, 3);
+			currentDir = cardinals[rdNum];
+
+			for (int j = 0; j < 3; j++) {
+				out.println("MOVE " + currentDir);
+				System.out.println("## move " + currentDir + " [" + rdNum
+						+ "] ##");
+				Thread.sleep(800);
+			}
+		}
+	}
+
+	private void moveRover12ToAClearArea() throws InterruptedException {
+		for (int i = 0; i < 5; i++) {
+			out.println("MOVE E");
+			Thread.sleep(700);
+		}
+		for (int i = 0; i < 5; i++) {
+			// get out of the crowd of rovers
+			out.println("MOVE S");
+			Thread.sleep(700);
+		}
 	}
 
 	// ################ Support Methods ###########################
@@ -346,7 +340,7 @@ public class ROVER_12_Kae {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_Kae client = new ROVER_12_Kae();
+		ROVER_12_Kae_sinusoidal client = new ROVER_12_Kae_sinusoidal();
 		client.run();
 	}
 }
