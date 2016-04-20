@@ -17,7 +17,6 @@ import json.MyWriter;
 public class jsonConvertionTests {
 
 	public static void main(String[] args) throws ParseException {
-		// TODO Auto-generated method stub
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		
 		
