@@ -111,15 +111,22 @@ public class ROVER_12_Kae_sinusoidal {
 		while (true) {
 
 			// ***** ROVER MOTION *****
+			
+			snake(cardinals,1);
+			
 			// sinusoidal(cardinals);
-			sinusoidal(cardinals, 2, 4);
-
-			// randomMotion(cardinals);
+			// sinusoidal(cardinals, 2, 4);
+			// random(cardinals);
 			Thread.sleep(sleepTime);
 
 			System.out
 					.println("ROVER_12 ------------ bottom process control --------------");
 		}
+	}
+
+	private void snake(String[] cardinals, int scanRange) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	private void sinusoidal(String[] cardinals) throws InterruptedException {
@@ -165,7 +172,7 @@ public class ROVER_12_Kae_sinusoidal {
 		}
 	}
 
-	private void randomMotion(String[] cardinals) throws InterruptedException {
+	private void random(String[] cardinals) throws InterruptedException {
 		int rdNum;
 		String currentDir;
 		for (int i = 0; i < 5; i++) {
