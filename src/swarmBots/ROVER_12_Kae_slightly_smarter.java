@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +33,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class ROVER_12_Kae_sinusoidal {
+public class ROVER_12_Kae_slightly_smarter {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -48,7 +49,7 @@ public class ROVER_12_Kae_sinusoidal {
 	Set<String> openDirs = new HashSet<String>();
 	String[] cardinals = new String[4];
 
-	public ROVER_12_Kae_sinusoidal() {
+	public ROVER_12_Kae_slightly_smarter() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -58,7 +59,7 @@ public class ROVER_12_Kae_sinusoidal {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12_Kae_sinusoidal(String serverAddress) {
+	public ROVER_12_Kae_slightly_smarter(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -71,79 +72,75 @@ public class ROVER_12_Kae_sinusoidal {
 	/**
 	 * Connects to the server then enters the processing loop.
 	 */
-	private void run() throws IOException, InterruptedException {
+	// KSTD - set visibility back to private
+	public void run() throws IOException, InterruptedException {
+
 		int rdNum;
 		String currentDir;
-		// Make connection and initialize streams
+
 		// TODO - need to close this socket
-		Socket socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS); // set port
-																	// here
-		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		out = new PrintWriter(socket.getOutputStream(), true);
-
+		makeConnAndInitStream();
 		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-		// Process all messages from server, wait until server requests Rover ID
-		// name
-		while (true) {
-			String line = in.readLine();
-			System.out.println("DBG line 82 = " + line);
-			if (line.startsWith("SUBMITNAME")) {
-				out.println(rovername); // This sets the name of this instance
-										// of a swarmBot for identifying the
-										// thread to the server
-				break;
-			}
-		}
+		processServerMsgAndWaitForIDRequestCall();
 
 		// ******** Rover logic *********
-		// int cnt=0;
 		String line = "";
-
 		boolean stuck = false;
 		boolean blocked = false;
-
 		cardinals[0] = "E";
 		cardinals[1] = "S";
 		cardinals[2] = "E";
 		cardinals[3] = "N";
-
 		Coord currentLoc = null;
 		Coord previousLoc = null;
 
 		ArrayList<String> equipment = getEquipment();
 		System.out.println("ROVER_12 equipment list " + equipment + "\n");
 
-		moveRover12ToAClearArea();
+		// moveRover12ToAClearArea();
 
 		// start Rover controller process
 		while (true) {
+
+			out.println("MOVE S");
+			out.println("MOVE E");
 
 			currentLoc = locationCall(currentLoc);
 			previousLoc = currentLoc;
 			MapTile[][] scanMapTiles = pullLocalMap();
 
 			getOpenDir(scanMapTiles, currentLoc);
-//			if (blocked) {
-//				for (int i = 0; i < 5; i++) {
-//					out.println("MOVE S");
-//					// System.out.println("ROVER_00 request move E");
-//					Thread.sleep(1100);
-//				}
-//				blocked = false;
-//				takeOppositeDirection();
-//			}
-			// ***** ROVER MOTION *****
+			currentDir = openDirs.toArray(new String[1])[0];
+			for (int i = 0; i < 4; i++) {
+				out.println("MOVE " + currentDir);
+				Thread.sleep(300);
+			}		
 
-			// snake(cardinals, 1);
-
-			 sinusoidal(cardinals);
-			 sinusoidal(cardinals, 2, 4);
-			 random(cardinals);
-			Thread.sleep(sleepTime);
+			// sinusoidal(cardinals);
+			// sinusoidal(cardinals, 2, 4);
+			// random(cardinals);
+			// Thread.sleep(sleepTime);
 
 			System.out
-					.println("ROVER_12 ------------ bottom process control --------------");
+					.println("\nROVER_12 ------------ bottom process control --------------");
+		}
+	}
+
+	private void makeConnAndInitStream() throws UnknownHostException,
+			IOException {
+		Socket socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS); // set port
+																	// here
+		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		out = new PrintWriter(socket.getOutputStream(), true);
+	}
+
+	private void processServerMsgAndWaitForIDRequestCall() throws IOException {
+		while (true) {
+			String line = in.readLine();
+			if (line.startsWith("SUBMITNAME")) {
+				out.println(rovername);
+				break;
+			}
 		}
 	}
 
@@ -160,23 +157,119 @@ public class ROVER_12_Kae_sinusoidal {
 		findBlockedDirs(scanMapTiles, currentLoc);
 
 		// DEBUG - remove before submission
+		System.out.print("\n" + "BLOCK CHECK:");
+		System.out.print("\n" + "blocked:");
 		for (String s : blockedDirs) {
 			System.out.print(s + " ");
 		}
-		System.out.println();
-		for (String s : openDirs) {
-			System.out.print(s + " ");
-		}
-		
-		for (String dir : openDirs) {
+
+		for (String dir : blockedDirs) {
 			if (blockedDirs.contains(dir)) {
 				openDirs.remove(dir);
 			}
+		}
+
+		// DEBUG - remove before submission
+		System.out.print("\n" + "open:");
+		for (String s : openDirs) {
+			System.out.print(s + " ");
 		}
 	}
 
 	private void findBlockedDirs(MapTile[][] scanMapTiles, Coord currentLoc) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+
+		debugPring4Dirs(scanMapTiles, centerIndex);
+
+		if (scanMapTiles[centerIndex][centerIndex - 1].getHasRover()
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
+			System.out.println("north blocked");
+			blockedDirs.add("N");
+		}
+
+		if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
+			System.out.println("south blocked");
+			blockedDirs.add("S");
+		}
+
+		if (scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
+			System.out.println("east blocked");
+			blockedDirs.add("E");
+		}
+
+		if (scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
+			System.out.println("west blocked");
+			blockedDirs.add("W");
+		}
+
+	}
+
+	private void debugPring4Dirs(MapTile[][] scanMapTiles, int centerIndex) {
+		System.out.println("center: "
+				+ scanMapTiles[centerIndex][centerIndex].getHasRover());
+		System.out
+				.println("s: "
+						+ scanMapTiles[centerIndex][centerIndex + 1]
+								.getElevation()
+						+ " "
+						+ scanMapTiles[centerIndex][centerIndex + 1]
+								.getHasRover()
+						+ " "
+						+ scanMapTiles[centerIndex][centerIndex + 1]
+								.getTerrain()
+						+ " "
+						+ scanMapTiles[centerIndex][centerIndex + 1]
+								.getScience());
+		System.out
+				.println("n: "
+						+ scanMapTiles[centerIndex][centerIndex - 1]
+								.getElevation()
+						+ " "
+						+ scanMapTiles[centerIndex][centerIndex - 1]
+								.getHasRover()
+						+ " "
+						+ scanMapTiles[centerIndex][centerIndex - 1]
+								.getTerrain()
+						+ " "
+						+ scanMapTiles[centerIndex][centerIndex - 1]
+								.getScience());
+		System.out
+				.println("w: "
+						+ scanMapTiles[centerIndex - 1][centerIndex]
+								.getElevation()
+						+ " "
+						+ scanMapTiles[centerIndex - 1][centerIndex]
+								.getHasRover()
+						+ " "
+						+ scanMapTiles[centerIndex - 1][centerIndex]
+								.getTerrain()
+						+ " "
+						+ scanMapTiles[centerIndex - 1][centerIndex]
+								.getScience());
+		System.out
+				.println("e: "
+						+ scanMapTiles[centerIndex + 1][centerIndex]
+								.getElevation()
+						+ " "
+						+ scanMapTiles[centerIndex + 1][centerIndex]
+								.getHasRover()
+						+ " "
+						+ scanMapTiles[centerIndex + 1][centerIndex]
+								.getTerrain()
+						+ " "
+						+ scanMapTiles[centerIndex + 1][centerIndex]
+								.getScience());
 
 		blockedDirs.clear();
 		if (currentDir.equals("E")) {
@@ -186,36 +279,6 @@ public class ROVER_12_Kae_sinusoidal {
 					|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
 				System.out.println("east blocked");
 				blockedDirs.add("E");
-			}
-		}
-
-		if (currentDir.equals("W")) {
-			if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
-					|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
-					|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
-					|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
-				System.out.println("west blocked");
-				blockedDirs.add("W");
-			}
-		}
-
-		if (currentDir.equals("N")) {
-			if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
-				System.out.println("north blocked");
-				blockedDirs.add("N");
-			}
-		}
-
-		if (currentDir.equals("S")) {
-			if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
-					|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
-					|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
-					|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
-				System.out.println("south blocked");
-				blockedDirs.add("S");
 			}
 		}
 	}
@@ -267,7 +330,7 @@ public class ROVER_12_Kae_sinusoidal {
 		for (int i = 0; i < cardinals.length; i++) {
 
 			currentDir = cardinals[i];
-			if (currentDir.equals("E") || currentDir.equals("E")) {
+			if (currentDir.equals("E") || currentDir.equals("W")) {
 				steps = waveLength;
 			} else {
 				steps = waveHeight;
@@ -478,7 +541,7 @@ public class ROVER_12_Kae_sinusoidal {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_Kae_sinusoidal client = new ROVER_12_Kae_sinusoidal();
+		ROVER_12_Kae_slightly_smarter client = new ROVER_12_Kae_slightly_smarter();
 		client.run();
 	}
 }
