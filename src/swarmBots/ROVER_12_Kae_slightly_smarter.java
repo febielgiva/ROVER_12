@@ -50,10 +50,13 @@ public class ROVER_12_Kae_slightly_smarter {
 	Set<String> blockedDirs = new HashSet<String>();
 	Set<String> openDirs = new HashSet<String>();
 	String[] cardinals = new String[4];
-	
-	// use deque for time complexity sake? 
-	// please kindly msg me if you know this is a totally wrong approach (at se1k1h1mawar1@gmail.com)
-	Deque<String> scienceBag = new ArrayDeque<String>(); 
+
+	MapTile[][] mapJournal = new MapTile[100][100];
+
+	// use deque for time complexity sake?
+	// please kindly msg me if you know this is a totally wrong approach (at
+	// se1k1h1mawar1@gmail.com)
+	Deque<String> scienceBag = new ArrayDeque<String>();
 
 	public ROVER_12_Kae_slightly_smarter() {
 		// constructor
@@ -88,7 +91,10 @@ public class ROVER_12_Kae_slightly_smarter {
 		makeConnAndInitStream();
 		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		processServerMsgAndWaitForIDRequestCall();
-
+		this.doScan();
+		System.out.println("did scan, now pring scanMap:");
+		scanMap.debugPrintMap();
+		Thread.sleep(10000);
 		// ******** Rover logic *********
 		String line = "";
 		boolean stuck = false;
@@ -112,6 +118,12 @@ public class ROVER_12_Kae_slightly_smarter {
 			out.println("MOVE E");
 
 			setCurrentLoc(currentLoc);
+			debugPring4Dirs(currentLoc);
+
+			if (previousLoc.equals(currentLoc)) {
+				stuck = true;
+			}
+
 			previousLoc = currentLoc;
 			MapTile[][] scanMapTiles = pullLocalMap();
 
@@ -120,7 +132,7 @@ public class ROVER_12_Kae_slightly_smarter {
 			for (int i = 0; i < 4; i++) {
 				out.println("MOVE " + currentDir);
 				Thread.sleep(300);
-			}		
+			}
 
 			// sinusoidal(cardinals);
 			// sinusoidal(cardinals, 2, 4);
@@ -220,10 +232,13 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 
 	}
-	private void debugPring4Dirs() {
-		System.out.println("center: "
-				+ scanMapTiles[currLo][centerIndex].getHasRover());
+
+	private void debugPring4Dirs(Coord currLoc) {
+		// System.out.println("center: "+
+		// getScanMap().[currLoc.getYpos()][currLoc.getXpos()]);
+		scanMap.debugPrintMap();
 	}
+
 	private void debugPring4Dirs(MapTile[][] scanMapTiles, int centerIndex) {
 		System.out.println("center: "
 				+ scanMapTiles[centerIndex][centerIndex].getHasRover());
@@ -293,8 +308,7 @@ public class ROVER_12_Kae_slightly_smarter {
 	}
 
 	private MapTile[][] pullLocalMap() throws IOException {
-		this.doScan();
-		scanMap.debugPrintMap();
+
 		MapTile[][] scanMapTiles = scanMap.getScanMap();
 		return scanMapTiles;
 	}
