@@ -12,7 +12,9 @@ import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -48,6 +50,10 @@ public class ROVER_12_Kae_slightly_smarter {
 	Set<String> blockedDirs = new HashSet<String>();
 	Set<String> openDirs = new HashSet<String>();
 	String[] cardinals = new String[4];
+	
+	// use deque for time complexity sake? 
+	// please kindly msg me if you know this is a totally wrong approach (at se1k1h1mawar1@gmail.com)
+	Deque<String> scienceBag = new ArrayDeque<String>(); 
 
 	public ROVER_12_Kae_slightly_smarter() {
 		// constructor
@@ -105,7 +111,7 @@ public class ROVER_12_Kae_slightly_smarter {
 			out.println("MOVE S");
 			out.println("MOVE E");
 
-			currentLoc = locationCall(currentLoc);
+			setCurrentLoc(currentLoc);
 			previousLoc = currentLoc;
 			MapTile[][] scanMapTiles = pullLocalMap();
 
@@ -214,7 +220,10 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 
 	}
-
+	private void debugPring4Dirs() {
+		System.out.println("center: "
+				+ scanMapTiles[currLo][centerIndex].getHasRover());
+	}
 	private void debugPring4Dirs(MapTile[][] scanMapTiles, int centerIndex) {
 		System.out.println("center: "
 				+ scanMapTiles[centerIndex][centerIndex].getHasRover());
@@ -301,7 +310,7 @@ public class ROVER_12_Kae_slightly_smarter {
 			currentDir = "N";
 	}
 
-	private Coord locationCall(Coord currentLoc) throws IOException {
+	private void setCurrentLoc(Coord currentLoc) throws IOException {
 		String line;
 		out.println("LOC");
 		line = in.readLine();
@@ -315,7 +324,6 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 		// DEBUG
 		System.out.println("ROVER_12 currentLoc at start: " + currentLoc);
-		return currentLoc;
 	}
 
 	private void snake(String[] cardinals, int scanRange) {
