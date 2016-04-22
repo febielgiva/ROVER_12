@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -73,42 +74,23 @@ public class ROVER_12_Kae_slightly_smarter {
 	 */
 	// KSTD - set visibility back to private
 	public void run() throws IOException, InterruptedException {
+
 		int rdNum;
 		String currentDir;
-		// Make connection and initialize streams
+
 		// TODO - need to close this socket
-		Socket socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS); // set port
-																	// here
-		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-		out = new PrintWriter(socket.getOutputStream(), true);
-
+		makeConnAndInitStream();
 		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-		// Process all messages from server, wait until server requests Rover ID
-		// name
-		while (true) {
-			String line = in.readLine();
-			System.out.println("DBG line 82 = " + line);
-			if (line.startsWith("SUBMITNAME")) {
-				out.println(rovername); // This sets the name of this instance
-										// of a swarmBot for identifying the
-										// thread to the server
-				break;
-			}
-		}
+		processServerMsgAndWaitForIDRequestCall();
 
 		// ******** Rover logic *********
-		// int cnt=0;
 		String line = "";
-
 		boolean stuck = false;
 		boolean blocked = false;
-
 		cardinals[0] = "E";
 		cardinals[1] = "S";
 		cardinals[2] = "E";
 		cardinals[3] = "N";
-
 		Coord currentLoc = null;
 		Coord previousLoc = null;
 
@@ -128,15 +110,37 @@ public class ROVER_12_Kae_slightly_smarter {
 			MapTile[][] scanMapTiles = pullLocalMap();
 
 			getOpenDir(scanMapTiles, currentLoc);
-			Thread.sleep(5000);
+			currentDir = openDirs.toArray(new String[1])[0];
+			for (int i = 0; i < 4; i++) {
+				out.println("MOVE " + currentDir);
+				Thread.sleep(300);
+			}		
 
 			// sinusoidal(cardinals);
 			// sinusoidal(cardinals, 2, 4);
 			// random(cardinals);
-			Thread.sleep(sleepTime);
+			// Thread.sleep(sleepTime);
 
 			System.out
-					.println("ROVER_12 ------------ bottom process control --------------");
+					.println("\nROVER_12 ------------ bottom process control --------------");
+		}
+	}
+
+	private void makeConnAndInitStream() throws UnknownHostException,
+			IOException {
+		Socket socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS); // set port
+																	// here
+		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		out = new PrintWriter(socket.getOutputStream(), true);
+	}
+
+	private void processServerMsgAndWaitForIDRequestCall() throws IOException {
+		while (true) {
+			String line = in.readLine();
+			if (line.startsWith("SUBMITNAME")) {
+				out.println(rovername);
+				break;
+			}
 		}
 	}
 
@@ -158,15 +162,17 @@ public class ROVER_12_Kae_slightly_smarter {
 		for (String s : blockedDirs) {
 			System.out.print(s + " ");
 		}
-		System.out.print("\n" + "open:");
-		for (String s : openDirs) {
-			System.out.print(s + " ");
-		}
 
-		for (String dir : openDirs) {
+		for (String dir : blockedDirs) {
 			if (blockedDirs.contains(dir)) {
 				openDirs.remove(dir);
 			}
+		}
+
+		// DEBUG - remove before submission
+		System.out.print("\n" + "open:");
+		for (String s : openDirs) {
+			System.out.print(s + " ");
 		}
 	}
 
