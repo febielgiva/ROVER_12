@@ -1,5 +1,6 @@
 ## CS537-Group12
 ### Links
+- Helpful Time Complexity Chart, Java Library Data Structures (http://bit.ly/1SB3qat)
 - Rover Specs (http://bit.ly/1QnSPYJ)
 - Git Command (Google Doc): http://bit.ly/23FXbY5
 - Class/ Meeting Recap notes (Google Doc): http://bit.ly/1qPuqH0
