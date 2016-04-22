@@ -509,13 +509,26 @@ public class ROVER_12_Kae_slightly_smarter {
 		// System.out.println("ROVER_12 finished scan while");
 
 		String jsonScanMapString = jsonScanMap.toString();
-		// debug print json object to a file
-		// new MyWriter( jsonScanMapString, 0); //gives a strange result -
-		// prints the \n instead of newline character in the file
 
 		// System.out.println("ROVER_12 convert from json back to ScanMap class");
 		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
+		MapTile[][] ptrScanMap = scanMap.getScanMap();
+
+		for (int i = 0; i < ptrScanMap.length; i++) {
+			for (int j = 0; j < ptrScanMap.length; j++) {
+				mapJournal[i][j] = ptrScanMap[i][j];
+			}
+		}
+	}
+
+	public void printMapJournal() {
+		for (int i = 0; i < mapJournal.length; i++) {
+			for (int j = 0; j < mapJournal.length; j++) {
+				System.out.print(mapJournal[i][j]);
+			}
+			System.out.println();
+		}
 	}
 
 	// this takes the LOC response string, parses out the x and y values and
