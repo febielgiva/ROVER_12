@@ -247,6 +247,7 @@ public class ROVER_12_Kae_slightly_smarter {
 
 	}
 
+	// TODO - incomplete
 	private void debugPring4Dirs(Coord currLoc) {
 		// System.out.println("center: "+
 		// getScanMap().[currLoc.getYpos()][currLoc.getXpos()]);
@@ -321,6 +322,7 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 	}
 
+	// TODO - must be implemented
 	private void harvestScience(){
 		String thisScience = "";
 		scienceBag.add(thisScience);
@@ -391,6 +393,9 @@ public class ROVER_12_Kae_slightly_smarter {
 		return curr.equals(prev);
 	}
 
+	// TODO - must be implemented
+	private void awayFromSand(){}
+	
 	private void sinusoidal_LR(String[] cardinals, int waveLength,
 			int waveHeight) throws InterruptedException {
 		int steps;
