@@ -184,7 +184,7 @@ public class SwarmServer {
                 
                 // TODO - the question is whether to store the science in the rover thread or in the rover object
                 // Make an arrayList to hold any collected Science
-                //ArrayList<Science> scienceCargo = new ArrayList<Science>();
+                ArrayList<Science> scienceCargo = new ArrayList<Science>();
                 
                 
                 // ##### Run the Rover server process #####
