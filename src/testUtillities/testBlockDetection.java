@@ -10,13 +10,13 @@ import swarmBots.ROVER_12_Kae_slightly_smarter;
 
 public class testBlockDetection {
 
-	@Test
+	//@Test
 	public void testROVER_12_Kae_slightly_smarte() throws IOException, InterruptedException {
 		ROVER_12_Kae_slightly_smarter rv = new ROVER_12_Kae_slightly_smarter();
 		rv.run();
 	}
 
-	//@Test
+	@Test
 	public void testROVER_12_Kae_slightly_smarteString() {
 		fail("Not yet implemented");
 	}

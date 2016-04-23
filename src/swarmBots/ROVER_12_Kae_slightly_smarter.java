@@ -12,7 +12,9 @@ import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -43,11 +45,22 @@ public class ROVER_12_Kae_slightly_smarter {
 	String SERVER_ADDRESS = "localhost";
 	static final int PORT_ADDRESS = 9537;
 	Random rd = new Random();
+	MapTile[][] scanMapTiles;
+
+	Coord currentLoc = null;
+	Coord previousLoc = null;
 
 	String currentDir = "";
 	Set<String> blockedDirs = new HashSet<String>();
 	Set<String> openDirs = new HashSet<String>();
 	String[] cardinals = new String[4];
+
+	MapTile[][] mapJournal = new MapTile[100][100];
+
+	// use deque for time complexity sake?
+	// please kindly msg me if you know this is a totally wrong approach (at
+	// se1k1h1mawar1@gmail.com)
+	Deque<String> scienceBag = new ArrayDeque<String>();
 
 	public ROVER_12_Kae_slightly_smarter() {
 		// constructor
@@ -82,17 +95,18 @@ public class ROVER_12_Kae_slightly_smarter {
 		makeConnAndInitStream();
 		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		processServerMsgAndWaitForIDRequestCall();
-
+		this.doScan();
+		System.out.println("did scan, now pring scanMap:");
+		scanMap.debugPrintMap();
+		Thread.sleep(10000);
 		// ******** Rover logic *********
 		String line = "";
 		boolean stuck = false;
 		boolean blocked = false;
 		cardinals[0] = "E";
 		cardinals[1] = "S";
-		cardinals[2] = "E";
+		cardinals[2] = "W";
 		cardinals[3] = "N";
-		Coord currentLoc = null;
-		Coord previousLoc = null;
 
 		ArrayList<String> equipment = getEquipment();
 		System.out.println("ROVER_12 equipment list " + equipment + "\n");
@@ -105,24 +119,42 @@ public class ROVER_12_Kae_slightly_smarter {
 			out.println("MOVE S");
 			out.println("MOVE E");
 
-			currentLoc = locationCall(currentLoc);
+			// setCurrentLoc(currentLoc);
+			// debugPring4Dirs(currentLoc);
+			//
+			// if (previousLoc.equals(currentLoc)) {
+			// stuck = true;
+			// }
+			//
 			previousLoc = currentLoc;
-			MapTile[][] scanMapTiles = pullLocalMap();
+			scanMapTiles = pullLocalMap();
 
-			getOpenDir(scanMapTiles, currentLoc);
-			currentDir = openDirs.toArray(new String[1])[0];
-			for (int i = 0; i < 4; i++) {
-				out.println("MOVE " + currentDir);
-				Thread.sleep(300);
-			}		
+			// DEBUG --- delete
+			// System.out.println("DEBUGDEBUGDEBUGDEBUGDEBUG");
+			// printMapJournal();
+			// Thread.sleep(5000);
+
+			//doThisWhenStuck(currentLoc, scanMapTiles);
 
 			// sinusoidal(cardinals);
-			// sinusoidal(cardinals, 2, 4);
+			sinusoidal_LR(cardinals, 6, 4);
 			// random(cardinals);
 			// Thread.sleep(sleepTime);
 
 			System.out
 					.println("\nROVER_12 ------------ bottom process control --------------");
+		}
+	}
+
+	private void doThisWhenStuck(Coord currentLoc, MapTile[][] scanMapTiles)
+			throws InterruptedException {
+		
+		String currentDir;
+		getOpenDir(currentLoc);
+		currentDir = openDirs.toArray(new String[1])[0];
+		for (int i = 0; i < 4; i++) {
+			out.println("MOVE " + currentDir);
+			Thread.sleep(300);
 		}
 	}
 
@@ -151,10 +183,10 @@ public class ROVER_12_Kae_slightly_smarter {
 		openDirs.add("N");
 	}
 
-	private void getOpenDir(MapTile[][] scanMapTiles, Coord currentLoc) {
+	private void getOpenDir(Coord currentLoc) {
 		// KSTD - do I need to run findBlockedDirs every time I do getopendir()?
 		resetOpenDir();
-		findBlockedDirs(scanMapTiles, currentLoc);
+		findBlockedDirs(currentLoc);
 
 		// DEBUG - remove before submission
 		System.out.print("\n" + "BLOCK CHECK:");
@@ -176,7 +208,7 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 	}
 
-	private void findBlockedDirs(MapTile[][] scanMapTiles, Coord currentLoc) {
+	private void findBlockedDirs(Coord currentLoc) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 
 		debugPring4Dirs(scanMapTiles, centerIndex);
@@ -213,6 +245,13 @@ public class ROVER_12_Kae_slightly_smarter {
 			blockedDirs.add("W");
 		}
 
+	}
+
+	// TODO - incomplete
+	private void debugPring4Dirs(Coord currLoc) {
+		// System.out.println("center: "+
+		// getScanMap().[currLoc.getYpos()][currLoc.getXpos()]);
+		scanMap.debugPrintMap();
 	}
 
 	private void debugPring4Dirs(MapTile[][] scanMapTiles, int centerIndex) {
@@ -283,9 +322,14 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 	}
 
+	// TODO - must be implemented
+	private void harvestScience(){
+		String thisScience = "";
+		scienceBag.add(thisScience);
+	}
+	
 	private MapTile[][] pullLocalMap() throws IOException {
-		this.doScan();
-		scanMap.debugPrintMap();
+
 		MapTile[][] scanMapTiles = scanMap.getScanMap();
 		return scanMapTiles;
 	}
@@ -301,12 +345,12 @@ public class ROVER_12_Kae_slightly_smarter {
 			currentDir = "N";
 	}
 
-	private Coord locationCall(Coord currentLoc) throws IOException {
+	private void setCurrentLoc(Coord currentLoc) throws IOException {
 		String line;
 		out.println("LOC");
 		line = in.readLine();
 		if (line == null) {
-			System.out.println("ROVER_99 check connection to server");
+			// System.out.println("ROVER_12 check connection to server");
 			line = "";
 		}
 		if (line.startsWith("LOC")) {
@@ -315,7 +359,6 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 		// DEBUG
 		System.out.println("ROVER_12 currentLoc at start: " + currentLoc);
-		return currentLoc;
 	}
 
 	private void snake(String[] cardinals, int scanRange) {
@@ -326,7 +369,10 @@ public class ROVER_12_Kae_slightly_smarter {
 	private void sinusoidal(String[] cardinals) throws InterruptedException {
 
 		int waveLength = 3, waveHeight = 6, steps = waveLength;
-
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "E";
+		cardinals[3] = "N";
 		for (int i = 0; i < cardinals.length; i++) {
 
 			currentDir = cardinals[i];
@@ -343,13 +389,61 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 	}
 
-	private void sinusoidal(String[] cardinals, int waveLength, int waveHeight)
-			throws InterruptedException {
+	private boolean isStuck(Coord curr, Coord prev) {
+		return curr.equals(prev);
+	}
+
+	// TODO - must be implemented
+	private void awayFromSand(){}
+	
+	private void sinusoidal_LR(String[] cardinals, int waveLength,
+			int waveHeight) throws InterruptedException {
 		int steps;
 
 		steps = waveLength;
 		String currentDir;
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "E";
+		cardinals[3] = "N";
 
+		try {
+			setCurrentLoc(currentLoc);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if (previousLoc != null && isStuck(currentLoc, previousLoc)) {
+			doThisWhenStuck(currentLoc, scanMapTiles);
+		}
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < cardinals.length; i++) {
+
+			currentDir = cardinals[i];
+			if (currentDir.equals("E") || currentDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+				out.println("MOVE " + currentDir);
+				Thread.sleep(700);
+			}
+		}
+	}
+
+	private void sinusoidal_RL(String[] cardinals, int waveLength,
+			int waveHeight) throws InterruptedException {
+		int steps;
+
+		steps = waveLength;
+		String currentDir;
+		cardinals[0] = "W";
+		cardinals[1] = "S";
+		cardinals[2] = "W";
+		cardinals[3] = "N";
 		for (int i = 0; i < cardinals.length; i++) {
 
 			currentDir = cardinals[i];
@@ -487,13 +581,26 @@ public class ROVER_12_Kae_slightly_smarter {
 		// System.out.println("ROVER_12 finished scan while");
 
 		String jsonScanMapString = jsonScanMap.toString();
-		// debug print json object to a file
-		// new MyWriter( jsonScanMapString, 0); //gives a strange result -
-		// prints the \n instead of newline character in the file
 
 		// System.out.println("ROVER_12 convert from json back to ScanMap class");
 		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
+		MapTile[][] ptrScanMap = scanMap.getScanMap();
+
+		for (int i = 0; i < ptrScanMap.length; i++) {
+			for (int j = 0; j < ptrScanMap.length; j++) {
+				mapJournal[i][j] = ptrScanMap[i][j];
+			}
+		}
+	}
+
+	public void printMapJournal() {
+		for (int i = 0; i < mapJournal.length; i++) {
+			for (int j = 0; j < mapJournal.length; j++) {
+				System.out.print(mapJournal[i][j]);
+			}
+			System.out.println();
+		}
 	}
 
 	// this takes the LOC response string, parses out the x and y values and

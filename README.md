@@ -30,6 +30,11 @@ git branch // list only local branches
 git branch -a // list all existing branches, including remote
 ```
 
+* Create New Branch
+```
+git checkout -b branch 
+```
+
 
 * Push to Remote
 ```
