@@ -45,6 +45,10 @@ public class ROVER_12_Kae_slightly_smarter {
 	String SERVER_ADDRESS = "localhost";
 	static final int PORT_ADDRESS = 9537;
 	Random rd = new Random();
+	MapTile[][] scanMapTiles;
+
+	Coord currentLoc = null;
+	Coord previousLoc = null;
 
 	String currentDir = "";
 	Set<String> blockedDirs = new HashSet<String>();
@@ -101,10 +105,8 @@ public class ROVER_12_Kae_slightly_smarter {
 		boolean blocked = false;
 		cardinals[0] = "E";
 		cardinals[1] = "S";
-		cardinals[2] = "E";
+		cardinals[2] = "W";
 		cardinals[3] = "N";
-		Coord currentLoc = null;
-		Coord previousLoc = null;
 
 		ArrayList<String> equipment = getEquipment();
 		System.out.println("ROVER_12 equipment list " + equipment + "\n");
@@ -117,30 +119,42 @@ public class ROVER_12_Kae_slightly_smarter {
 			out.println("MOVE S");
 			out.println("MOVE E");
 
-			setCurrentLoc(currentLoc);
-			debugPring4Dirs(currentLoc);
-
-			if (previousLoc.equals(currentLoc)) {
-				stuck = true;
-			}
-
+			// setCurrentLoc(currentLoc);
+			// debugPring4Dirs(currentLoc);
+			//
+			// if (previousLoc.equals(currentLoc)) {
+			// stuck = true;
+			// }
+			//
 			previousLoc = currentLoc;
-			MapTile[][] scanMapTiles = pullLocalMap();
+			scanMapTiles = pullLocalMap();
 
-			getOpenDir(scanMapTiles, currentLoc);
-			currentDir = openDirs.toArray(new String[1])[0];
-			for (int i = 0; i < 4; i++) {
-				out.println("MOVE " + currentDir);
-				Thread.sleep(300);
-			}
+			// DEBUG --- delete
+			// System.out.println("DEBUGDEBUGDEBUGDEBUGDEBUG");
+			// printMapJournal();
+			// Thread.sleep(5000);
+
+			//doThisWhenStuck(currentLoc, scanMapTiles);
 
 			// sinusoidal(cardinals);
-			// sinusoidal(cardinals, 2, 4);
+			sinusoidal_LR(cardinals, 6, 4);
 			// random(cardinals);
 			// Thread.sleep(sleepTime);
 
 			System.out
 					.println("\nROVER_12 ------------ bottom process control --------------");
+		}
+	}
+
+	private void doThisWhenStuck(Coord currentLoc, MapTile[][] scanMapTiles)
+			throws InterruptedException {
+		
+		String currentDir;
+		getOpenDir(currentLoc);
+		currentDir = openDirs.toArray(new String[1])[0];
+		for (int i = 0; i < 4; i++) {
+			out.println("MOVE " + currentDir);
+			Thread.sleep(300);
 		}
 	}
 
@@ -169,10 +183,10 @@ public class ROVER_12_Kae_slightly_smarter {
 		openDirs.add("N");
 	}
 
-	private void getOpenDir(MapTile[][] scanMapTiles, Coord currentLoc) {
+	private void getOpenDir(Coord currentLoc) {
 		// KSTD - do I need to run findBlockedDirs every time I do getopendir()?
 		resetOpenDir();
-		findBlockedDirs(scanMapTiles, currentLoc);
+		findBlockedDirs(currentLoc);
 
 		// DEBUG - remove before submission
 		System.out.print("\n" + "BLOCK CHECK:");
@@ -194,7 +208,7 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 	}
 
-	private void findBlockedDirs(MapTile[][] scanMapTiles, Coord currentLoc) {
+	private void findBlockedDirs(Coord currentLoc) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 
 		debugPring4Dirs(scanMapTiles, centerIndex);
@@ -307,6 +321,11 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 	}
 
+	private void harvestScience(){
+		String thisScience = "";
+		scienceBag.add(thisScience);
+	}
+	
 	private MapTile[][] pullLocalMap() throws IOException {
 
 		MapTile[][] scanMapTiles = scanMap.getScanMap();
@@ -329,7 +348,7 @@ public class ROVER_12_Kae_slightly_smarter {
 		out.println("LOC");
 		line = in.readLine();
 		if (line == null) {
-			System.out.println("ROVER_99 check connection to server");
+			// System.out.println("ROVER_12 check connection to server");
 			line = "";
 		}
 		if (line.startsWith("LOC")) {
@@ -348,7 +367,10 @@ public class ROVER_12_Kae_slightly_smarter {
 	private void sinusoidal(String[] cardinals) throws InterruptedException {
 
 		int waveLength = 3, waveHeight = 6, steps = waveLength;
-
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "E";
+		cardinals[3] = "N";
 		for (int i = 0; i < cardinals.length; i++) {
 
 			currentDir = cardinals[i];
@@ -365,13 +387,58 @@ public class ROVER_12_Kae_slightly_smarter {
 		}
 	}
 
-	private void sinusoidal(String[] cardinals, int waveLength, int waveHeight)
-			throws InterruptedException {
+	private boolean isStuck(Coord curr, Coord prev) {
+		return curr.equals(prev);
+	}
+
+	private void sinusoidal_LR(String[] cardinals, int waveLength,
+			int waveHeight) throws InterruptedException {
 		int steps;
 
 		steps = waveLength;
 		String currentDir;
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "E";
+		cardinals[3] = "N";
 
+		try {
+			setCurrentLoc(currentLoc);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if (previousLoc != null && isStuck(currentLoc, previousLoc)) {
+			doThisWhenStuck(currentLoc, scanMapTiles);
+		}
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < cardinals.length; i++) {
+
+			currentDir = cardinals[i];
+			if (currentDir.equals("E") || currentDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+				out.println("MOVE " + currentDir);
+				Thread.sleep(700);
+			}
+		}
+	}
+
+	private void sinusoidal_RL(String[] cardinals, int waveLength,
+			int waveHeight) throws InterruptedException {
+		int steps;
+
+		steps = waveLength;
+		String currentDir;
+		cardinals[0] = "W";
+		cardinals[1] = "S";
+		cardinals[2] = "W";
+		cardinals[3] = "N";
 		for (int i = 0; i < cardinals.length; i++) {
 
 			currentDir = cardinals[i];
