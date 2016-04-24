@@ -7,10 +7,6 @@ import enums.Science;
 import enums.Terrain;
 
 public class MapTileUtil extends MapTile {
-	private Terrain terrain;
-	private int elevation; // not currently used
-	private Science science; // for use on ScanMap, not used on PlanetMap
-	private boolean hasRover; // for use on ScanMap, not used on PlanetMap
 
 	public MapTileUtil() {
 		super();
@@ -22,15 +18,15 @@ public class MapTileUtil extends MapTile {
 	}
 
 	public MapTileUtil(String terrainLetter) {
-		super();
+		super(terrainLetter);
 	}
 
 	public MapTileUtil(Terrain ter, int elev) {
-		super();
+		super(ter,elev);
 	}
 
 	public MapTileUtil(Terrain ter, Science sci, int elev, boolean hasR) {
-		super();
+		super(ter,sci,elev,hasR);
 	}
 	
 

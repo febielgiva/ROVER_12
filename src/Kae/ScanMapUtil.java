@@ -5,18 +5,22 @@ import java.util.Arrays;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
+import enums.Science;
+import enums.Terrain;
 
 public class ScanMapUtil extends ScanMap {
-	private MapTile[][] scanArray;
-	private int edgeSize;
-	private Coord centerPoint;
 
 	public ScanMapUtil() {
 		super();
 	}
 
 	public ScanMapUtil(MapTile[][] scanArray, int size, Coord centerPoint) {
-		super();
+		super(scanArray, size, centerPoint);
+	}
+
+	public ScanMapUtil(MapTile[][] scanArray) {
+		super(scanArray, scanArray.length, new Coord(scanArray.length,
+				scanArray.length));
 	}
 
 	public MapTile[][] getScanMap() {
@@ -26,7 +30,7 @@ public class ScanMapUtil extends ScanMap {
 	public boolean containsScience() {
 		for (MapTile[] mapTiles : scanArray) {
 			for (MapTile mapTile : mapTiles) {
-				if (!mapTile.getScience().equals("NONE")) {
+				if (!mapTile.getScience().equals(Science.NONE)) {
 					return true;
 				}
 			}
@@ -37,7 +41,7 @@ public class ScanMapUtil extends ScanMap {
 	public boolean containsSand() {
 		for (MapTile[] mapTiles : scanArray) {
 			for (MapTile mapTile : mapTiles) {
-				if (!mapTile.getTerrain().equals("NONE")) {
+				if (mapTile.getTerrain().equals(Terrain.SAND)) {
 					return true;
 				}
 			}
