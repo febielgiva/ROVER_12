@@ -221,7 +221,7 @@ public class ROVER_12_Kae {
 	private boolean theQuadrantContainsSand(){
 		return true;
 	}
-	// ***********************
+	// **********************************************
 	private void findBlockedDirs(Coord currentLoc) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 
