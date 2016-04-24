@@ -22,7 +22,7 @@ public class test_ks {
 	}
 
 	// @Test
-	public void testContainsSoil() {
+	public void testContainsSand() {
 		ScanMapUtil mt = (ScanMapUtil) constructMockScanMap_noSand();
 		ScanMapUtil mts = (ScanMapUtil) constructMockScanMap_withSand();
 		printMapTileArray(mt.getScanMap());

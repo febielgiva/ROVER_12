@@ -48,4 +48,22 @@ public class ScanMapUtil extends ScanMap {
 		}
 		return false;
 	}
+	
+	public MapTile[][] cloneMapTile(MapTile[][] original){
+		
+		MapTile[][] copy = new MapTile[original.length][original[0].length];
+		Terrain ter; Science sci; int elev; boolean hasR;
+		for (int i = 0; i < original.length; i++) {
+			for (int j = 0; j < original[i].length; j++) {
+				
+				ter = original[i][j].getTerrain();
+				sci = original[i][j].getScience();
+				elev = original[i][j].getElevation();
+				hasR = original[i][j].getHasRover();
+				
+				copy[i][j] = new MapTile(ter, sci, elev, hasR);
+			}
+		}		
+		return copy;
+	}
 }
