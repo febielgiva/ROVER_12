@@ -33,6 +33,9 @@ import enums.Terrain;
  * The seed that this program is built on is a chat program example found here:
  * http://cs.lmu.edu/~ray/notes/javanetexamples/ Many thanks to the authors for
  * publishing their code examples
+ * 
+ * allowed #  request to the server per sec = 500
+ * 2 req / sec
  */
 
 public class ROVER_12_Kae {
@@ -63,17 +66,15 @@ public class ROVER_12_Kae {
 	Deque<String> scienceBag = new ArrayDeque<String>();
 
 	public ROVER_12_Kae() {
-		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
 		SERVER_ADDRESS = "localhost";
 		// this should be a safe but slow timer value
-		sleepTime = 300; // in milliseconds - smaller is faster, but the server
+		sleepTime = 200; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
 
 	public ROVER_12_Kae(String serverAddress) {
-		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
 		SERVER_ADDRESS = serverAddress;
@@ -96,9 +97,9 @@ public class ROVER_12_Kae {
 		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		processServerMsgAndWaitForIDRequestCall();
 		this.doScan();
-		System.out.println("did scan, now pring scanMap:");
+		System.out.println("did scan, now print scanMap:");
 		scanMap.debugPrintMap();
-		//Thread.sleep(10000);
+		
 		// ******** Rover logic *********
 		String line = "";
 		boolean stuck = false;
@@ -113,32 +114,28 @@ public class ROVER_12_Kae {
 
 		// moveRover12ToAClearArea();
 
-		// start Rover controller process
+		// ******** Rover motion *********
 		while (true) {
 
 			out.println("MOVE S");
 			out.println("MOVE E");
 
-			// setCurrentLoc(currentLoc);
-			// debugPring4Dirs(currentLoc);
-			//
-			// if (previousLoc.equals(currentLoc)) {
-			// stuck = true;
-			// }
-			//
+			setCurrentLoc(currentLoc);
+			debugPrint4Dirs(currentLoc);
+			
+			 if (previousLoc!=null && previousLoc.equals(currentLoc)) {
+			 stuck = true;
+			 }
+			
 			previousLoc = currentLoc;
 			scanMapTiles = pullLocalMap();
 
-			// DEBUG --- delete
-			// System.out.println("DEBUGDEBUGDEBUGDEBUGDEBUG");
-			// printMapJournal();
-			// Thread.sleep(5000);
 
 			//doThisWhenStuck(currentLoc, scanMapTiles);
 
 			// sinusoidal(cardinals);
-			sinusoidal_LR(cardinals, 6, 4);
-			// random(cardinals);
+			//sinusoidal_LR(cardinals, 6, 4);
+			random(cardinals);
 			// Thread.sleep(sleepTime);
 
 			System.out
@@ -207,10 +204,29 @@ public class ROVER_12_Kae {
 			System.out.print(s + " ");
 		}
 	}
-
+	// ******* currently developing ****************	
+	// KSTD - implement
+	private boolean isTreasureSpot(){
+		
+		
+		return false;
+	}
+	
+	// KSTD - implement
+	private void avoidSands(){
+		// if the quadrant of scanMap contains sand, add that direction to blockedDir
+	}
+	
+	// KSTD - implement
+	private boolean theQuadrantContainsSand(){
+		return true;
+	}
+	// ***********************
 	private void findBlockedDirs(Coord currentLoc) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 
+		System.out.println("scan map size ( findBlockedDirs() ): " + scanMap.getEdgeSize());
+		
 		debugPring4Dirs(scanMapTiles, centerIndex);
 
 		if (scanMapTiles[centerIndex][centerIndex - 1].getHasRover()
@@ -248,7 +264,7 @@ public class ROVER_12_Kae {
 	}
 
 	// TODO - incomplete
-	private void debugPring4Dirs(Coord currLoc) {
+	private void debugPrint4Dirs(Coord currLoc) {
 		// System.out.println("center: "+
 		// getScanMap().[currLoc.getYpos()][currLoc.getXpos()]);
 		scanMap.debugPrintMap();
@@ -551,12 +567,6 @@ public class ROVER_12_Kae {
 												// returned first
 		System.out.println("DBG jsonScanMapIn 336 = " + jsonScanMapIn);
 
-		try {
-			Thread.sleep(4000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
 		if (jsonScanMapIn == null) {
 			System.out.println("ROVER_12 check connection to server");
 			jsonScanMapIn = "";
@@ -571,7 +581,7 @@ public class ROVER_12_Kae {
 				// jsonScanMapIn);
 				jsonScanMap.append(jsonScanMapIn);
 				jsonScanMap.append("\n");
-				// System.out.println("ROVER_12 doScan() bottom of while");
+				System.out.println("ROVER_12 doScan() bottom of while");
 			}
 		} else {
 			// in case the server call gives unexpected results
@@ -620,28 +630,6 @@ public class ROVER_12_Kae {
 
 	public int randomNum(int min, int max) {
 		return rd.nextInt(max + 1) + min;
-	}
-
-	// one of the motion dictating method (will be moved and adjusted to the
-	// appropriate location)
-	public void zigzagMotion(double[][] dct, int block_size, int channel) {
-
-		double[][] temp_dct = new double[block_size][block_size];
-
-		for (int i = 0; i < dct.length; i += 8) {
-			for (int j = 0; j < dct[i].length; j += 8) {
-
-				for (int i1 = 0; i1 < dct.length; i1++) {
-					for (int j1 = 0; j1 < dct[i1].length; j1++) {
-						temp_dct[i1][j1] = dct[i][j];
-					}
-				}
-
-				// for ( CodeRunLengthPair p : temp_i_rep ) {
-				// intermediate_rep.add( p );
-				// }
-			}
-		}
 	}
 
 	/**
