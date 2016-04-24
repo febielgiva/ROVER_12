@@ -1,9 +1,9 @@
 package common;
 
 public class ScanMap {
-	private MapTile[][] scanArray;
-	private int edgeSize;
-	private Coord centerPoint;
+	protected MapTile[][] scanArray;
+	protected int edgeSize;
+	protected Coord centerPoint;
 	
 	public ScanMap(){
 		this.scanArray = null;

@@ -58,7 +58,7 @@ public class ROVER_12_Kae {
 	Set<String> openDirs = new HashSet<String>();
 	String[] cardinals = new String[4];
 
-	MapTile[][] mapJournal = new MapTile[100][100];
+	MapTile[][] mapJournal = new MapTileUtil[100][100];
 
 	// use deque for time complexity sake?
 	// please kindly msg me if you know this is a totally wrong approach (at
@@ -213,7 +213,13 @@ public class ROVER_12_Kae {
 	}
 	
 	// KSTD - implement
-	private void avoidSands(){
+	private boolean isSand(Coord currentLoc){
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		
+		return scanMapTiles[centerIndex][centerIndex - 1].getTerrain() != Terrain.SAND 
+				&& scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND
+						&& scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.SAND
+								&& scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.SAND;
 		// if the quadrant of scanMap contains sand, add that direction to blockedDir
 	}
 	
@@ -222,6 +228,7 @@ public class ROVER_12_Kae {
 		return true;
 	}
 	// **********************************************
+	
 	private void findBlockedDirs(Coord currentLoc) {
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 
@@ -602,6 +609,9 @@ public class ROVER_12_Kae {
 				mapJournal[i][j] = ptrScanMap[i][j];
 			}
 		}
+		// debug
+		System.out.println("current map journal:");
+		printMapJournal();
 	}
 
 	public void printMapJournal() {
