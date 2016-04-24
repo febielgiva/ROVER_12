@@ -98,7 +98,7 @@ public class ROVER_12_Kae {
 		this.doScan();
 		System.out.println("did scan, now pring scanMap:");
 		scanMap.debugPrintMap();
-		Thread.sleep(10000);
+		//Thread.sleep(10000);
 		// ******** Rover logic *********
 		String line = "";
 		boolean stuck = false;
