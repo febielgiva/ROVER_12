@@ -179,20 +179,30 @@ public class ROVER_12_ks extends ROVER_12 {
 	}
 
 	private boolean isSand(int x, int y) throws IOException {
-		
+
 		// debug
-		System.out.println("current pos: " + currentLoc + "\tx,y = " + x+"," +y);
-		
-		if (mapJournal[y][x] == null) {
-			doScan();
-			return mapJournal[y][x].getTerrain().equals(Terrain.SAND);
-		} else {
-			System.out.println();
-			System.out.println("isSand(): mapJournal[y][x] = "
-					+ mapJournal[y][x].getTerrain() + "("
-					+ mapJournal[y][x].getScience() + ")");
-			return mapJournal[y][x].getTerrain().equals(Terrain.SAND);
+		System.out.println("current pos under scan: " + currentLoc + "\tx,y = "
+				+ x + "," + y);
+		if (withinTheGrid(x, y, mapJournal.length)) {
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			if (mapJournal[y][x] == null) {
+				doScan();
+				return mapJournal[y][x].getTerrain().equals(Terrain.SAND);
+			} else {
+				System.out.println();
+				System.out.println("isSand(): mapJournal[y][x] = "
+						+ mapJournal[y][x].getTerrain() + "("
+						+ mapJournal[y][x].getScience() + ")");
+				return mapJournal[y][x].getTerrain().equals(Terrain.SAND);
+			}
 		}
+		return false;
 	}
 
 	// **********************************************
@@ -635,8 +645,9 @@ public class ROVER_12_ks extends ROVER_12 {
 		Coord start = new Coord(currentLoc.getXpos() - scanMapHalfSize,
 				currentLoc.getYpos() - scanMapHalfSize);
 
-		System.out.println("scanMap: ");
-		debugPrintMapTileArray(ptrScanMap);
+		// debug
+		// System.out.println("scanMap: ");
+		// debugPrintMapTileArray(ptrScanMap);
 
 		// FIXME - must correctly record scanned area of the map from scanMaps
 		// to mapJournal
@@ -658,14 +669,14 @@ public class ROVER_12_ks extends ROVER_12 {
 			}
 		}
 
+		debugPrintMapTileArray(mapJournal);
+
 		try {
-			Thread.sleep(50000);
+			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		debugPrintMapTileArray(mapJournal);
 	}
 
 	public boolean withinTheGrid(int i, int j, int arrayLength) {
