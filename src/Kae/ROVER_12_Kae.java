@@ -496,9 +496,7 @@ public class ROVER_12_Kae {
 
 			for (int j = 0; j < 3; j++) {
 				out.println("MOVE " + currentDir);
-				System.out.println("## move " + currentDir + " [" + rdNum
-						+ "] ##");
-				Thread.sleep(800);
+				Thread.sleep(300);
 			}
 		}
 	}
@@ -565,6 +563,14 @@ public class ROVER_12_Kae {
 		// System.out.println("ROVER_12 returnList " + returnList);
 
 		return returnList;
+	}
+
+	public void initMapJournal() {
+		for (int i = 0; i < mapJournal.length; i++) {
+			for (int j = 0; j < mapJournal[i].length; j++) {
+
+			}
+		}
 	}
 
 	// sends a SCAN request to the server and puts the result in the scanMap
@@ -636,8 +642,10 @@ public class ROVER_12_Kae {
 					sci = ptrScanMap[i][j].getScience();
 					elev = ptrScanMap[i][j].getElevation();
 					hasR = ptrScanMap[i][j].getHasRover();
-					System.out.print("\tter=" + ter + "\tsci=" + sci + "\telev="
-							+ elev + "\thasR=" + hasR);
+					System.out.print("\tter=" + ter + "\tsci=" + sci
+							+ "\telev=" + elev + "\thasR=" + hasR);
+					System.out.println(" i,j,startY,startX " + i + ", " + j
+							+ ", " + start.ypos + ", " + start.xpos);
 					mapJournal[start.ypos + i][start.xpos + j] = new MapTileUtil(
 							ter, sci, elev, hasR);
 				}
@@ -713,8 +721,12 @@ public class ROVER_12_Kae {
 		for (int j = 0; j < edgeSize; j++) {
 			System.out.print("| ");
 			for (int i = 0; i < edgeSize; i++) {
+				if (mapTileArray[i][j] == null) {
+					System.out.print("n");
+				}
 				// check and print edge of map has first priority
-				if (mapTileArray[i][j].getTerrain().toString().equals("NONE")) {
+				else if (mapTileArray[i][j].getTerrain().toString()
+						.equals("NONE")) {
 					System.out.print("XX");
 
 					// next most important - print terrain and/or science
