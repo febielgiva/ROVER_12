@@ -12,6 +12,11 @@ import common.ScanMap;
 public class test_ks {
 
 	@Test
+	public void testBooleanDefault() {
+		boolean[][] tf = new boolean[3][3];
+		System.out.println(tf[0][2]);
+	}
+	//@Test
 	public void testContainsSci() {
 		ScanMapUtil mt = (ScanMapUtil) constructMockScanMap_noSci();
 		ScanMapUtil mts = (ScanMapUtil) constructMockScanMap_withSci();

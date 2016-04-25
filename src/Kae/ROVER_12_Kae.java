@@ -48,7 +48,7 @@ public class ROVER_12_Kae {
 	Random rd = new Random();
 	MapTile[][] scanMapTiles;
 
-	Coord currentLoc = null;
+	CoordUtil currentLoc = null;
 	Coord previousLoc = null;
 
 	String currentDir = "";
@@ -57,6 +57,7 @@ public class ROVER_12_Kae {
 	String[] cardinals = new String[4];
 
 	MapTile[][] mapJournal = new MapTileUtil[100][100];
+	boolean[][] footPrints = new boolean[100][100];
 
 	// use deque for time complexity sake?
 	// please kindly msg me if you know this is a totally wrong approach (at
@@ -118,8 +119,8 @@ public class ROVER_12_Kae {
 		// ******** Rover motion *********
 		while (true) {
 
-			out.println("MOVE S");
-			out.println("MOVE E");
+			// out.println("MOVE S");
+			// out.println("MOVE E");
 
 			setCurrentLoc(currentLoc);
 			debugPrint4Dirs(currentLoc);
@@ -134,7 +135,7 @@ public class ROVER_12_Kae {
 			// doThisWhenStuck(currentLoc, scanMapTiles);
 
 			// sinusoidal(cardinals);
-			// sinusoidal_LR(cardinals, 6, 4);
+			sinusoidal_LR(cardinals, 6, 4);
 			random(cardinals);
 			Thread.sleep(sleepTime);
 
@@ -214,14 +215,8 @@ public class ROVER_12_Kae {
 
 	// KSTD - implement
 	private boolean isSand(Coord currentLoc) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-
-		return scanMapTiles[centerIndex][centerIndex - 1].getTerrain() != Terrain.SAND
-				&& scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND
-				&& scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND
-				&& scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND;
-		// if the quadrant of scanMap contains sand, add that direction to
-		// blockedDir
+		return mapJournal[currentLoc.ypos][currentLoc.xpos].getTerrain()
+				.equals(Terrain.SAND);
 	}
 
 	// KSTD - implement
@@ -381,7 +376,7 @@ public class ROVER_12_Kae {
 		}
 		if (line.startsWith("LOC")) {
 			// loc = line.substring(4);
-			currentLoc = extractLOC(line);
+			currentLoc = (CoordUtil) extractLOC(line);
 		}
 		// DEBUG
 		System.out.println("ROVER_12 currentLoc at start: " + currentLoc);
@@ -461,6 +456,49 @@ public class ROVER_12_Kae {
 		}
 	}
 
+	private void moveWest() {
+		out.println("MOVE W");
+		currentLoc.decrementX(currentLoc);
+		footPrints[currentLoc.getY()][currentLoc.getX()] = true;
+	}
+
+	private void move(String dir) {
+		switch (dir) {
+		case "E":
+			moveEast();
+			break;
+		case "W":
+			moveWest();
+			break;
+		case "N":
+			moveNorth();
+			break;
+		case "S":
+			moveSouth();
+			break;
+		default:
+			break;
+		}
+	}
+
+	private void moveEast() {
+		out.println("MOVE E");
+		currentLoc.incrementX(currentLoc);
+		footPrints[currentLoc.getY()][currentLoc.getX()] = true;
+	}
+
+	private void moveNorth() {
+		out.println("MOVE N");
+		currentLoc.decrementY(currentLoc);
+		footPrints[currentLoc.getY()][currentLoc.getX()] = true;
+	}
+
+	private void moveSouth() {
+		out.println("MOVE S");
+		currentLoc.incrementY(currentLoc);
+		footPrints[currentLoc.getY()][currentLoc.getX()] = true;
+	}
+
 	private void sinusoidal_RL(String[] cardinals, int waveLength,
 			int waveHeight) throws InterruptedException {
 		int steps;
@@ -481,7 +519,8 @@ public class ROVER_12_Kae {
 			}
 
 			for (int j = 0; j < steps; j++) {
-				out.println("MOVE " + currentDir);
+				if (!isSand(currentLoc))
+					out.println("MOVE " + currentDir);
 				Thread.sleep(700);
 			}
 		}
@@ -685,7 +724,7 @@ public class ROVER_12_Kae {
 
 	// this takes the LOC response string, parses out the x and y values and
 	// returns a Coord object
-	public static Coord extractLOC(String sStr) {
+	public static CoordUtil extractLOC(String sStr) {
 		sStr = sStr.substring(4);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -693,7 +732,7 @@ public class ROVER_12_Kae {
 
 			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
 			// System.out.println("extracted yStr " + yStr);
-			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+			return new CoordUtil(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
 	}
