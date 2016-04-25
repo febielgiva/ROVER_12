@@ -28,13 +28,13 @@ import enums.Terrain;
 
 public class ROVER_12 {
 
-	BufferedReader in;
-	PrintWriter out;
-	String rovername;
-	ScanMap scanMap;
-	int sleepTime;
-	String SERVER_ADDRESS = "localhost";
-	static final int PORT_ADDRESS = 9537;
+	protected BufferedReader in;
+	protected PrintWriter out;
+	protected String rovername;
+	protected ScanMap scanMap;
+	protected int sleepTime;
+	protected String SERVER_ADDRESS = "localhost";
+	protected static final int PORT_ADDRESS = 9537;
 
 	public ROVER_12() {
 		// constructor

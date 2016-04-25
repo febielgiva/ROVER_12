@@ -18,6 +18,7 @@ public class CoordUtil extends Coord {
 	public void incrementY(CoordUtil loc) {
 		loc.y = y++;
 	}
+
 	public void decrementX(CoordUtil loc) {
 		loc.x = x--;
 	}
@@ -41,6 +42,12 @@ public class CoordUtil extends Coord {
 	public void setY(int y) {
 		this.y = y;
 	}
-	
 
+	public CoordUtil clone() {
+		return new CoordUtil(x, y);
+	}
+	@Override
+	public String toString() {
+		return "Coord [xpos=" + x + ", ypos=" + y + "]";
+	}
 }
