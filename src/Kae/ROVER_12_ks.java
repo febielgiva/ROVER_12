@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import swarmBots.ROVER_12;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -35,57 +37,25 @@ import enums.Terrain;
  * allowed # request to the server per sec = 500 2 req / sec
  */
 
-public class ROVER_12_Kae {
-
-	BufferedReader in;
-	PrintWriter out;
-	String rovername;
-	// ScanMap scanMap;
-	ScanMap scanMap;
-	int sleepTime;
-	String SERVER_ADDRESS = "localhost";
-	static final int PORT_ADDRESS = 9537;
+public class ROVER_12_ks extends ROVER_12 {
 	Random rd = new Random();
-	MapTile[][] scanMapTiles;
-
-	CoordUtil currentLoc = null;
-	Coord previousLoc = null;
-
+	CoordUtil currentLoc, previousLoc;
 	String currentDir = "";
 	Set<String> blockedDirs = new HashSet<String>();
 	Set<String> openDirs = new HashSet<String>();
 	String[] cardinals = new String[4];
-
 	MapTile[][] mapJournal = new MapTileUtil[100][100];
 	boolean[][] footPrints = new boolean[100][100];
+	MapTile[][] scanMapTiles;
 
-	// use deque for time complexity sake?
-	// please kindly msg me if you know this is a totally wrong approach (at
-	// se1k1h1mawar1@gmail.com)
-	Deque<String> scienceBag = new ArrayDeque<String>();
-
-	public ROVER_12_Kae() {
-		System.out.println("ROVER_12 rover object constructed");
-		rovername = "ROVER_12";
-		SERVER_ADDRESS = "localhost";
-		// this should be a safe but slow timer value
-		sleepTime = 300; // in milliseconds - smaller is faster, but the server
-							// will cut connection if it is too small
+	public ROVER_12_ks() {
+		super();
 	}
 
-	public ROVER_12_Kae(String serverAddress) {
-		System.out.println("ROVER_12 rover object constructed");
-		rovername = "ROVER_12";
-		SERVER_ADDRESS = serverAddress;
-		sleepTime = 300; // in milliseconds - smaller is faster, but the server
-							// will cut connection if it is too small
-
+	public ROVER_12_ks(String serverAddress) {
+		super(serverAddress);
 	}
 
-	/**
-	 * Connects to the server then enters the processing loop.
-	 */
-	// KSTD - set visibility back to private
 	public void run() throws IOException, InterruptedException {
 
 		int rdNum;
@@ -93,23 +63,14 @@ public class ROVER_12_Kae {
 
 		// TODO - need to close this socket
 		makeConnAndInitStream();
-
-		// Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		processServerMsgAndWaitForIDRequestCall();
-
 		this.doScan();
-
-		System.out.println("did scan, now print scanMap:");
 		// scanMap.debugPrintMap();
 
 		// ******** Rover logic *********
+		String[] cardinals = { "E", "S", "W", "N" };
 		String line = "";
-		boolean stuck = false;
-		boolean blocked = false;
-		cardinals[0] = "E";
-		cardinals[1] = "S";
-		cardinals[2] = "W";
-		cardinals[3] = "N";
+		boolean stuck, blocked;
 
 		ArrayList<String> equipment = getEquipment();
 		System.out.println("ROVER_12 equipment list " + equipment + "\n");
@@ -118,9 +79,6 @@ public class ROVER_12_Kae {
 
 		// ******** Rover motion *********
 		while (true) {
-
-			// out.println("MOVE S");
-			// out.println("MOVE E");
 
 			setCurrentLoc(currentLoc);
 			debugPrint4Dirs(currentLoc);
@@ -151,7 +109,7 @@ public class ROVER_12_Kae {
 		getOpenDir(currentLoc);
 		currentDir = openDirs.toArray(new String[1])[0];
 		for (int i = 0; i < 4; i++) {
-			out.println("MOVE " + currentDir);
+			move(currentDir);
 			Thread.sleep(300);
 		}
 	}
@@ -213,10 +171,13 @@ public class ROVER_12_Kae {
 		return false;
 	}
 
-	// KSTD - implement
 	private boolean isSand(Coord currentLoc) {
 		return mapJournal[currentLoc.ypos][currentLoc.xpos].getTerrain()
 				.equals(Terrain.SAND);
+	}
+
+	private boolean isSand(int x, int y) {
+		return mapJournal[y][x].getTerrain().equals(Terrain.SAND);
 	}
 
 	// KSTD - implement
@@ -345,25 +306,12 @@ public class ROVER_12_Kae {
 
 	// TODO - must be implemented
 	private void harvestScience() {
-		String thisScience = "";
-		scienceBag.add(thisScience);
 	}
 
 	private MapTile[][] pullLocalMap() throws IOException {
 
 		MapTile[][] scanMapTiles = scanMap.getScanMap();
 		return scanMapTiles;
-	}
-
-	private void takeOppositeDirection() {
-		if (currentDir.equals("E"))
-			currentDir = "W";
-		if (currentDir.equals("W"))
-			currentDir = "E";
-		if (currentDir.equals("N"))
-			currentDir = "S";
-		if (currentDir.equals("S"))
-			currentDir = "N";
 	}
 
 	private void setCurrentLoc(Coord loc) throws IOException {
@@ -404,7 +352,7 @@ public class ROVER_12_Kae {
 			}
 
 			for (int j = 0; j < steps; j++) {
-				out.println("MOVE " + currentDir);
+				move(currentDir);
 				Thread.sleep(700);
 			}
 		}
@@ -450,31 +398,32 @@ public class ROVER_12_Kae {
 			}
 
 			for (int j = 0; j < steps; j++) {
-				out.println("MOVE " + currentDir);
+				move(currentDir);
 				Thread.sleep(700);
 			}
 		}
 	}
 
-	private void moveWest() {
-		out.println("MOVE W");
-		currentLoc.decrementX(currentLoc);
-		footPrints[currentLoc.getY()][currentLoc.getX()] = true;
-	}
-
 	private void move(String dir) {
+		CoordUtil loc = currentLoc.clone();
+
 		switch (dir) {
+
 		case "E":
-			moveEast();
+			if (!isSand(loc.getX() + 1, loc.getY()))
+				moveEast();
 			break;
 		case "W":
-			moveWest();
+			if (!isSand(loc.getX() - 1, loc.getY()))
+				moveWest();
 			break;
 		case "N":
-			moveNorth();
+			if (!isSand(loc.getX(), loc.getY() - 1))
+				moveNorth();
 			break;
 		case "S":
-			moveSouth();
+			if (!isSand(loc.getX(), loc.getY() + 1))
+				moveSouth();
 			break;
 		default:
 			break;
@@ -483,19 +432,33 @@ public class ROVER_12_Kae {
 
 	private void moveEast() {
 		out.println("MOVE E");
+		System.out.print(currentLoc+" - E -> ");
 		currentLoc.incrementX(currentLoc);
+		System.out.print(currentLoc+"\n");
+		footPrints[currentLoc.getY()][currentLoc.getX()] = true;
+	}
+
+	private void moveWest() {
+		out.println("MOVE W");
+		System.out.print(currentLoc+" - W -> ");
+		currentLoc.decrementX(currentLoc);
+		System.out.print(currentLoc+"\n");
 		footPrints[currentLoc.getY()][currentLoc.getX()] = true;
 	}
 
 	private void moveNorth() {
 		out.println("MOVE N");
+		System.out.print(currentLoc+" - N -> ");
 		currentLoc.decrementY(currentLoc);
+		System.out.print(currentLoc+"\n");
 		footPrints[currentLoc.getY()][currentLoc.getX()] = true;
 	}
 
 	private void moveSouth() {
 		out.println("MOVE S");
+		System.out.print(currentLoc+" - S -> ");
 		currentLoc.incrementY(currentLoc);
+		System.out.print(currentLoc+"\n");
 		footPrints[currentLoc.getY()][currentLoc.getX()] = true;
 	}
 
@@ -519,9 +482,8 @@ public class ROVER_12_Kae {
 			}
 
 			for (int j = 0; j < steps; j++) {
-				if (!isSand(currentLoc))
-					out.println("MOVE " + currentDir);
-				Thread.sleep(700);
+				move(currentDir);
+				Thread.sleep(300);
 			}
 		}
 	}
@@ -534,7 +496,7 @@ public class ROVER_12_Kae {
 			currentDir = cardinals[rdNum];
 
 			for (int j = 0; j < 3; j++) {
-				out.println("MOVE " + currentDir);
+				move(currentDir);
 				Thread.sleep(300);
 			}
 		}
@@ -542,12 +504,12 @@ public class ROVER_12_Kae {
 
 	private void moveRover12ToAClearArea() throws InterruptedException {
 		for (int i = 0; i < 5; i++) {
-			out.println("MOVE E");
+			move("E");
 			Thread.sleep(700);
 		}
 		for (int i = 0; i < 5; i++) {
 			// get out of the crowd of rovers
-			out.println("MOVE S");
+			move("S");
 			Thread.sleep(700);
 		}
 	}
@@ -745,7 +707,7 @@ public class ROVER_12_Kae {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_Kae client = new ROVER_12_Kae();
+		ROVER_12_ks client = new ROVER_12_ks();
 		client.run();
 	}
 
