@@ -57,6 +57,26 @@ public class ROVER_12_ks extends ROVER_12 {
 		super(serverAddress);
 	}
 
+	private void setTargetLoc(Coord loc) throws IOException {
+		String line;
+		setCurrentLoc(currentLoc);
+		int xx = currentLoc.getX(), yy = currentLoc.getY();
+		out.println("TARGET_LOC " + xx + " " + yy);
+		line = in.readLine();
+		if (line == null) {
+			// System.out.println("ROVER_12 check connection to server");
+			line = "";
+		}
+		// debug
+		System.out.println("target loc call returned: " + line);
+		if (line.startsWith("LOC")) {
+			// loc = line.substring(4);
+			CoordUtil targetLoc = (CoordUtil) extractLOC(line);
+		}
+		// DEBUG
+		System.out.println("ROVER_12 currentLoc at start: " + currentLoc);
+	}
+
 	public void run() throws IOException, InterruptedException {
 
 		int rdNum;
@@ -79,6 +99,9 @@ public class ROVER_12_ks extends ROVER_12 {
 		// for debug
 		// moveRover12ToAClearArea();
 		setCurrentLoc(currentLoc);
+
+		
+		// setTargetLoc(currentLoc);
 
 		// ******** Rover motion *********
 		while (true) {
@@ -535,9 +558,10 @@ public class ROVER_12_ks extends ROVER_12 {
 		}
 	}
 
-	private void moveTowardsSandForDebug(){
-		
+	private void moveTowardsSandForDebug() {
+
 	}
+
 	private void random(String[] cardinals) throws InterruptedException,
 			IOException {
 		int rdNum;
