@@ -4,8 +4,7 @@ public class Crystal {
 
 	private int x,y;
 	
-	public Crystal(int x, int y, int count) {
-		super();
+	public Crystal(int x, int y) {
 		this.x = x;
 		this.y = y;
 	}
