@@ -26,6 +26,7 @@ import enums.Terrain;
  * ROVER_12  Spec:	Drive = wheels, Tool 1 = spectral sensor, Tool 2 = range extender
  */
 
+// this comment is for commit 
 public class ROVER_12 {
 
 	BufferedReader in;
