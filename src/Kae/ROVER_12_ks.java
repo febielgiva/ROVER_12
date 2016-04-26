@@ -1,7 +1,7 @@
 package Kae;
 
 /*  scan map size is 11 x 11
- */
+ comment */
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
