@@ -168,7 +168,7 @@ public class R_12 {
 					// Get science location which is same as rover
 					currentLoc = getcurrentLoc(currentLoc);
 					
-					// Add Collected crystals to rover local storage
+					// Add Collected crystals to rover storage
 					RoverStorage.add(new Crystal(currentLoc.getXpos(), currentLoc.getYpos()));
 					System.out.println("CRYSTAL ADDED TO STORAGE");
 					
