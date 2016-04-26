@@ -34,7 +34,8 @@ import enums.Terrain;
  * http://cs.lmu.edu/~ray/notes/javanetexamples/ Many thanks to the authors for
  * publishing their code examples
  * 
- * allowed # request to the server per sec = 500 2 req / sec
+ * allowed # request to the server per sec = 500 2 req / sec Target Loc: Coord
+ * [x=43, y=45] Start Loc: Coord [x=5, y=5] <-- for debug
  */
 
 public class ROVER_12_ks extends ROVER_12 {
@@ -119,9 +120,10 @@ public class ROVER_12_ks extends ROVER_12 {
 		// moveRover12ToAClearArea();
 		setCurrentLoc(currentLoc);
 
+		System.out.println("Current Loc: " + currentLoc);
 		System.out.println("Target Loc: " + requestTargetLoc());
 		System.out.println("Start Loc: " + requestStartLoc());
-		Thread.sleep(10000);
+		//Thread.sleep(10000);
 
 		// ******** Rover motion *********
 		while (true) {
@@ -135,7 +137,7 @@ public class ROVER_12_ks extends ROVER_12 {
 			previousLoc = currentLoc;
 
 			doThisWhenStuck_4stepToOpenDir(currentLoc, scanMap.getScanMap());
-
+			
 			// sinusoidal(cardinals);
 			int waveLength = 6, waveHeight = 4;
 
@@ -387,8 +389,7 @@ public class ROVER_12_ks extends ROVER_12 {
 		xx = currentLoc.getX();
 		yy = currentLoc.getY();
 		if (mapJournal[currentLoc.getX()][currentLoc.getY()] != null
-				&& !mapJournal[centerIndex][centerIndex].getScience()
-						.getSciString().equals("N")) {
+				&& !mapJournal[yy][xx].getScience().getSciString().equals("N")) {
 			System.out.println("ROVER_12(98) request GATHER");
 			out.println("GATHER");
 		}
@@ -522,6 +523,16 @@ public class ROVER_12_ks extends ROVER_12 {
 		currentLoc.incrementX();
 		harvestScience();
 		System.out.print(currentLoc + "\n");
+		System.out.println("mapJournal debug test: " + mapJournal[currentLoc.getX()][currentLoc.getY()]);
+		
+		// debug
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		footPrints[currentLoc.getY()][currentLoc.getX()] = true;
 	}
 
