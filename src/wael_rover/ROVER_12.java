@@ -1,4 +1,4 @@
-package swarmBots;
+package wael_rover;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -84,6 +84,8 @@ public class ROVER_12 {
 		String line = "";
 
 		boolean goingSouth = false;
+		boolean goingEast = false;
+		
 		boolean stuck = false; // just means it did not change locations between requests,
 								// could be velocity limit or obstruction etc.
 		boolean blocked = false;
@@ -97,6 +99,9 @@ public class ROVER_12 {
 		String currentDir = cardinals[0];
 		Coord currentLoc = null;
 		Coord previousLoc = null;
+		
+		// Rover crystal storage array
+		ArrayList<Crystal> RoverStorage = new ArrayList<Crystal>();
 
 		// start Rover controller process
 		while (true) {
@@ -122,7 +127,6 @@ public class ROVER_12 {
 			previousLoc = currentLoc;
 			
 			
-			
 			// **** get equipment listing ****			
 			ArrayList<String> equipment = new ArrayList<String>();
 			equipment = getEquipment();
@@ -146,7 +150,7 @@ public class ROVER_12 {
 				for (int i = 0; i < 5; i++) {
 					out.println("MOVE E");
 					//System.out.println("ROVER_12 request move E");
-					Thread.sleep(300);
+					//Thread.sleep(300);
 				}
 				blocked = false;
 				//reverses direction after being blocked
@@ -158,7 +162,7 @@ public class ROVER_12 {
 				int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
-				if (goingSouth) {
+				if (goingSouth || goingEast) {
 					// check scanMap to see if path is blocked to the south
 					// (scanMap may be old data by now)
 					if (scanMapTiles[centerIndex][centerIndex +1].getHasRover() 
