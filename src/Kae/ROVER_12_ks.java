@@ -96,6 +96,63 @@ public class ROVER_12_ks extends ROVER_12 {
 		}
 		return targetLoc;
 	}
+	public void debugMove(){
+		//***** sand avoidance ******
+		//***** harvest science ******
+	}
+	public void debugRun() throws IOException, InterruptedException {
+
+		int rdNum;
+		String currentDir;
+		boolean stuck;
+
+		// TODO - need to close this socket
+		makeConnAndInitStream();
+		processServerMsgAndWaitForIDRequestCall();
+		this.doScan();
+		// scanMap.debugPrintMap();
+
+		// ******** Rover logic *********
+		String[] cardinals = { "E", "S", "W", "N" };
+		String line = "";
+
+		ArrayList<String> equipment = getEquipment();
+		System.out.println("ROVER_12 equipment list " + equipment + "\n");
+
+		// for debug
+		// moveRover12ToAClearArea();
+		setCurrentLoc(currentLoc);
+
+		System.out.println("Current Loc: " + currentLoc);
+		System.out.println("Target Loc: " + requestTargetLoc());
+		System.out.println("Start Loc: " + requestStartLoc());
+		// Thread.sleep(10000);
+
+		// ******** Rover motion *********
+		while (true) {
+			doScan();
+			debugPrint4Dirs(currentLoc);
+
+			if (previousLoc != null && previousLoc.equals(currentLoc)) {
+				stuck = true;
+			}
+
+			previousLoc = currentLoc;
+
+			doThisWhenStuck_4stepToOpenDir(currentLoc, scanMap.getScanMap());
+
+			// sinusoidal(cardinals);
+			int waveLength = 6, waveHeight = 4;
+
+			sinusoidal_RL(cardinals, waveLength, waveHeight);
+			sinusoidal_LR(cardinals, waveLength, waveHeight);
+			random(cardinals);
+			Thread.sleep(sleepTime);
+
+			System.out
+					.println("\nROVER_12 ------------ bottom process control --------------");
+		}
+	}
 
 	public void run() throws IOException, InterruptedException {
 
@@ -123,7 +180,7 @@ public class ROVER_12_ks extends ROVER_12 {
 		System.out.println("Current Loc: " + currentLoc);
 		System.out.println("Target Loc: " + requestTargetLoc());
 		System.out.println("Start Loc: " + requestStartLoc());
-		//Thread.sleep(10000);
+		// Thread.sleep(10000);
 
 		// ******** Rover motion *********
 		while (true) {
@@ -137,7 +194,7 @@ public class ROVER_12_ks extends ROVER_12 {
 			previousLoc = currentLoc;
 
 			doThisWhenStuck_4stepToOpenDir(currentLoc, scanMap.getScanMap());
-			
+
 			// sinusoidal(cardinals);
 			int waveLength = 6, waveHeight = 4;
 
@@ -523,8 +580,9 @@ public class ROVER_12_ks extends ROVER_12 {
 		currentLoc.incrementX();
 		harvestScience();
 		System.out.print(currentLoc + "\n");
-		System.out.println("mapJournal debug test: " + mapJournal[currentLoc.getX()][currentLoc.getY()]);
-		
+		System.out.println("mapJournal debug test: "
+				+ mapJournal[currentLoc.getX()][currentLoc.getY()]);
+
 		// debug
 		try {
 			Thread.sleep(10000);
@@ -847,7 +905,8 @@ public class ROVER_12_ks extends ROVER_12 {
 	 */
 	public static void main(String[] args) throws Exception {
 		ROVER_12_ks client = new ROVER_12_ks();
-		client.run();
+		// client.run();
+		client.debugRun();
 	}
 
 	public void debugPrintMapTileArray(MapTile[][] mapTileArray) {
