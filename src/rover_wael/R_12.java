@@ -159,11 +159,11 @@ public class R_12 {
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				
-				for (int i = 0; i < scanMapTiles.length; i++) {
+				/*for (int i = 0; i < scanMapTiles.length; i++) {
 					for (int j = 0; j < scanMapTiles.length; j++) {
 						
 					}
-				}
+				}*/
 				
 				
 				int centerIndex = (scanMap.getEdgeSize() - 1)/2;
