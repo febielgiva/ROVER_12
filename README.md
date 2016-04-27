@@ -1,5 +1,6 @@
 ## CS537-Group12 (Wheels,	Spectral Sensor,	Range Extender)
 ### Links
+- Rover Requirements: http://csns.calstatela.edu/site/s16/cs537-1/item/5402135
 - Helpful Time Complexity Chart, Java Library Data Structures (http://bit.ly/1SB3qat)
 - Rover Specs (http://bit.ly/1QnSPYJ)
 - Git Command (Google Doc): http://bit.ly/23FXbY5
