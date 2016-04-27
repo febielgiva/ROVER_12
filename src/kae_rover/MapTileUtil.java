@@ -1,4 +1,4 @@
-package Kae;
+package kae_rover;
 
 import common.MapTile;
 import enums.RoverName;
