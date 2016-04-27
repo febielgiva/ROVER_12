@@ -1,6 +1,6 @@
 package Kae;
 
-public class DBG_RV12_harvestSci extends ROVER_12_ks{
+public class DBG_RV12_harvestSci extends RV_12_ks_current{
 	
 	
 }

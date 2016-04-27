@@ -13,8 +13,15 @@ import common.ScanMap;
 
 public class test_ks {
 
-	
 	@Test
+	public void testCasting() {
+
+		Fruit fr = new Fruit("fruit", "fruit sent");
+		Orange o = new Orange("org", "orange sent");
+		System.out.println((Orange) fr);
+
+	}
+	// @Test
 	public void testIncDecXY() {
 		CoordUtil cd = new CoordUtil(3,4);
 		System.out.println(cd);

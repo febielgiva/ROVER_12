@@ -28,6 +28,10 @@ public class MapTileUtil extends MapTile {
 		super(ter, sci, elev, hasR);
 	}
 
+	public MapTileUtil clone(){
+		return new MapTileUtil(terrain,science,elevation,hasRover);
+	}
+	
 	public void debugPrintMapTileArray(MapTile[][] mapTileArray) {
 
 		int edgeSize = mapTileArray.length;
