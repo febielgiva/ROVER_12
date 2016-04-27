@@ -1,4 +1,4 @@
-package kae_rover;
+package rover_kae;
 
 import common.Coord;
 

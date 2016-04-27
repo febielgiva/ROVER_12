@@ -1,4 +1,4 @@
-package kae_rover;
+package rover_kae;
 
 /*  scan map size is 11 x 11
  */
