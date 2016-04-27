@@ -189,19 +189,19 @@ public class Rover_12Febi {
 
 				//printing the scan map with content and position
 				//to get a clear picture on the obstacles
-//				for (int i = 0; i < scanMapTiles.length; i++) {
-//					for (int j = 0; j < scanMapTiles.length; j++) {
-//						System.out.println("i , j = value"+i+"   "+i+"  "+scanMapTiles[i][j] );
-//					}
-//				}
+				//				for (int i = 0; i < scanMapTiles.length; i++) {
+				//					for (int j = 0; j < scanMapTiles.length; j++) {
+				//						System.out.println("i , j = value"+i+"   "+i+"  "+scanMapTiles[i][j] );
+				//					}
+				//				}
 				int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
 
 				//*************Febi's Logic For motion**********
 				List<NextMoveModel> nextMoveNotifier = new ArrayList<NextMoveModel>();
-//				int tempRowArray;
-//				int tempColumnArray;
+				//				int tempRowArray;
+				//				int tempColumnArray;
 
 				//logic if going in east
 				if(goingEast){
@@ -211,184 +211,291 @@ public class Rover_12Febi {
 					if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
 						System.out.println("ROVER_12 request GATHER");
 						out.println("GATHER");
-
 					} 
+					else if(scanMapTiles[centerIndex+1][centerIndex].getScience().equals("C")){
+						//move east
+						out.println("MOVE E");
+						System.out.println("ROVER_12 request move E");
+						goingSouth = false;
+						goingEast = true;
+						goingNorth = false;
+						goingWest = false;
+					}
+					else if(scanMapTiles[centerIndex][centerIndex+1].getScience().equals("C")){
+						//move south
+						out.println("MOVE S");
+						System.out.println("ROVER_12 request move S");
+						goingSouth = true;
+						goingEast = false;
+						goingNorth = false;
+						goingWest = false;
+					}
+					else if(scanMapTiles[centerIndex][centerIndex-1].getScience().equals("C")){
+						//move north
+						out.println("MOVE N");
+						System.out.println("ROVER_12 request move N");
+						goingSouth = false;
+						goingEast = false;
+						goingNorth = true;
+						goingWest = false;
+					}
 					else{
+						//if next move to east is an obstacle				 
+						if (scanMapTiles[centerIndex-1][centerIndex].getHasRover() 
+								||scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.ROCK
+								|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.NONE
+								|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.FLUID
+								|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.SAND) {
+							//check whether south is obstacle
+							if(scanMapTiles[centerIndex][centerIndex +1].getHasRover() 
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.ROCK
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.NONE
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.FLUID
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.SAND){
+								//check whether north is obstacle
+								if(scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
+										|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.ROCK
+										|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.NONE
+										|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.FLUID
+										|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.SAND){
+									out.println("MOVE W");
+									System.out.println("ROVER_12 request move W");
+									goingSouth = false;
+									goingEast = false;
+									goingNorth = false;
+									goingWest = true;
+								}
+								else{
+									out.println("MOVE N");
+									System.out.println("ROVER_12 request move N");
+									goingSouth = false;
+									goingEast = false;
+									goingNorth = true;
+									goingWest = false;
 
-						nextMoveNotifier = getTheCrystalLocation(scanMapTiles,centerIndex);
-						if(nextMoveNotifier != null){
-							for (NextMoveModel nextMoveModel : nextMoveNotifier) {
-								//move to east position since science is there
-								if(nextMoveModel.getColumn() == centerIndex+1){
-									//request to server to move
-									out.println("MOVE E");
+								}
+
+							}
+							else{
+								out.println("MOVE S");
+								System.out.println("ROVER_12 request move S");
+								goingSouth = true;
+								goingEast = false;
+								goingNorth = false;
+								goingWest = false;
+
+							}
+
+						}
+						//when no obstacle is in next move to east
+						else{
+							out.println("MOVE E");
+							System.out.println("ROVER_12 request move E");
+							goingSouth = false;
+							goingEast = true;
+							goingNorth = false;
+							goingWest = false;
+
+						}
+
+					}
+				}
+
+				else if(goingWest){
+					// Checks to see if there is science on current tile, if not it moves East
+					System.out.println("ROVER_12: scanMapTiles[centerIndex][centerIndex].getScience().getSciString() " + scanMapTiles[centerIndex][centerIndex].getScience().getSciString());
+					//collects the crystal
+					if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
+						System.out.println("ROVER_12 request GATHER");
+						out.println("GATHER");
+					} 
+					else if(scanMapTiles[centerIndex-1][centerIndex].getScience().equals("C")){
+						//move east
+						out.println("MOVE W");
+						System.out.println("ROVER_12 request move W");
+						goingSouth = false;
+						goingEast = false;
+						goingNorth = false;
+						goingWest = true;
+					}
+					else if(scanMapTiles[centerIndex][centerIndex+1].getScience().equals("C")){
+						//move south
+						out.println("MOVE S");
+						System.out.println("ROVER_12 request move S");
+						goingSouth = true;
+						goingEast = false;
+						goingNorth = false;
+						goingWest = false;
+					}
+					else if(scanMapTiles[centerIndex][centerIndex-1].getScience().equals("C")){
+						//move north
+						out.println("MOVE N");
+						System.out.println("ROVER_12 request move N");
+						goingSouth = false;
+						goingEast = false;
+						goingNorth = true;
+						goingWest = false;
+					}
+					else{
+						//if next move to west is an obstacle				 
+						if (scanMapTiles[centerIndex-1][centerIndex].getHasRover() 
+								||scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.ROCK
+								|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.NONE
+								|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.FLUID
+								|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.SAND) {
+							//check whether south is obstacle
+							if(scanMapTiles[centerIndex][centerIndex +1].getHasRover() 
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.ROCK
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.NONE
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.FLUID
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.SAND){
+								//check whether north is obstacle
+								if(scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
+										|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.ROCK
+										|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.NONE
+										|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.FLUID
+										|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.SAND){
+									out.println("E");
 									System.out.println("ROVER_12 request move E");
 									goingSouth = false;
 									goingEast = true;
 									goingNorth = false;
 									goingWest = false;
 								}
-								else if(nextMoveModel.getRow() == centerIndex+1){
-									//move to south position since science is there
-									//request to server to move
-									out.println("MOVE S");
-									System.out.println("ROVER_12 request move S");
-									goingSouth = true;
-									goingEast = false;
-									goingNorth = false;
-									goingWest = false;
-								}
 								else{
-									//if next move to east is an obstacle
-									 
-									if (scanMapTiles[centerIndex][centerIndex +1].getHasRover() 
-											||scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.ROCK
-											|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.NONE
-											|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.FLUID
-											|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.SAND) {
-										//check whether south is obstacle
-										if(scanMapTiles[centerIndex +1][centerIndex].getHasRover() 
-												|| scanMapTiles[centerIndex +1][centerIndex].getTerrain() == Terrain.ROCK
-												|| scanMapTiles[centerIndex +1][centerIndex].getTerrain() == Terrain.NONE
-												|| scanMapTiles[centerIndex +1][centerIndex].getTerrain() == Terrain.FLUID
-												|| scanMapTiles[centerIndex +1][centerIndex].getTerrain() == Terrain.SAND){
-											//check whether north is obstacle
-											if(scanMapTiles[centerIndex -1][centerIndex].getHasRover() 
-													|| scanMapTiles[centerIndex -1][centerIndex].getTerrain() == Terrain.ROCK
-													|| scanMapTiles[centerIndex -1][centerIndex].getTerrain() == Terrain.NONE
-													|| scanMapTiles[centerIndex -1][centerIndex].getTerrain() == Terrain.FLUID
-													|| scanMapTiles[centerIndex -1][centerIndex].getTerrain() == Terrain.SAND){
-												out.println("MOVE W");
-												System.out.println("ROVER_12 request move W");
-												goingSouth = false;
-												goingEast = false;
-												goingNorth = false;
-												goingWest = true;
-												
-
-											}
-											else{
-												out.println("MOVE N");
-												System.out.println("ROVER_12 request move N");
-												goingSouth = false;
-												goingEast = false;
-												goingNorth = true;
-												goingWest = false;
-												
-											}
-
-										}
-										else{
-											out.println("MOVE S");
-											System.out.println("ROVER_12 request move S");
-											goingSouth = true;
-											goingEast = false;
-											goingNorth = false;
-											goingWest = false;
-											
-										}
-								
-									}
-									//when no obstacle is in next move to east
-									else{
-										out.println("MOVE E");
-										System.out.println("ROVER_12 request move E");
-										goingSouth = false;
-										goingEast = true;
-										goingNorth = false;
-										goingWest = false;
-
-									}
-
-
-								}
-							}
-						}
-						else{
-							//if next move to east is an obstacle
-//							scanMapTiles[centerIndex][centerIndex +1].getHasRover() 
-//							|| 
-							if (scanMapTiles[centerIndex][centerIndex+1].getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.SAND) {
-								//check whether south is obstacle
-								if(scanMapTiles[centerIndex +1][centerIndex].getHasRover() 
-										|| scanMapTiles[centerIndex +1][centerIndex].getTerrain() == Terrain.ROCK
-										|| scanMapTiles[centerIndex +1][centerIndex].getTerrain() == Terrain.NONE
-										|| scanMapTiles[centerIndex +1][centerIndex].getTerrain() == Terrain.FLUID
-										|| scanMapTiles[centerIndex +1][centerIndex].getTerrain() == Terrain.SAND){
-									//check whether north is obstacle
-									if(scanMapTiles[centerIndex -1][centerIndex].getHasRover() 
-											|| scanMapTiles[centerIndex -1][centerIndex].getTerrain() == Terrain.ROCK
-											|| scanMapTiles[centerIndex -1][centerIndex].getTerrain() == Terrain.NONE
-											|| scanMapTiles[centerIndex -1][centerIndex].getTerrain() == Terrain.FLUID
-											|| scanMapTiles[centerIndex -1][centerIndex].getTerrain() == Terrain.SAND){
-										out.println("MOVE W");
-										System.out.println("ROVER_12 request move W");
-										goingSouth = false;
-										goingEast = false;
-										goingNorth = false;
-										goingWest = true;
-										
-
-									}
-									else{
-										out.println("MOVE N");
-										System.out.println("ROVER_12 request move N");
-										goingSouth = false;
-										goingEast = false;
-										goingNorth = true;
-										goingWest = false;
-										
-									}
-
-								}
-								else{
-									out.println("MOVE S");
-									System.out.println("ROVER_12 request move S");
-									goingSouth = true;
+									out.println("MOVE N");
+									System.out.println("ROVER_12 request move N");
+									goingSouth = false;
 									goingEast = false;
-									goingNorth = false;
+									goingNorth = true;
 									goingWest = false;
-									
+
 								}
-						
+
 							}
-							//when no obstacle is in next move to east
 							else{
-								out.println("MOVE E");
-								System.out.println("ROVER_12 request move E");
-								goingSouth = false;
-								goingEast = true;
+								out.println("MOVE S");
+								System.out.println("ROVER_12 request move S");
+								goingSouth = true;
+								goingEast = false;
 								goingNorth = false;
 								goingWest = false;
 
 							}
 
+						}
+						//when no obstacle is in next move to west
+						else{
+							out.println("MOVE W");
+							System.out.println("ROVER_12 request move W");
+							goingSouth = false;
+							goingEast = false;
+							goingNorth = false;
+							goingWest = true;
 
 						}
+
 					}
-
-
-				}
-
-				else if(goingWest){
-					out.println("MOVE W");
-					System.out.println("ROVER_12 request move W");
-					goingSouth = false;
-					goingEast = false;
-					goingNorth = false;
-					goingWest = true;
 
 				}
 				else if(goingSouth){
-					out.println("MOVE S");
-					System.out.println("ROVER_12 request move S");
-					goingSouth = true;
-					goingEast = false;
-					goingNorth = false;
-					goingWest = false;
+					// Checks to see if there is science on current tile, if not it moves East
+					System.out.println("ROVER_12: scanMapTiles[centerIndex][centerIndex].getScience().getSciString() " + scanMapTiles[centerIndex][centerIndex].getScience().getSciString());
+					//collects the crystal
+					if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
+						System.out.println("ROVER_12 request GATHER");
+						out.println("GATHER");
+					} 
+					else if(scanMapTiles[centerIndex][centerIndex+1].getScience().equals("C")){
+						//move zouth
+						out.println("MOVE S");
+						System.out.println("ROVER_12 request move S");
+						goingSouth = true;
+						goingEast = false;
+						goingNorth = false;
+						goingWest = false;
+					}
+					else if(scanMapTiles[centerIndex+1][centerIndex].getScience().equals("C")){
+						//move east
+						out.println("MOVE E");
+						System.out.println("ROVER_12 request move E");
+						goingSouth = false;
+						goingEast = true;
+						goingNorth = false;
+						goingWest = false;
+					}
+					else if(scanMapTiles[centerIndex-1][centerIndex].getScience().equals("C")){
+						//move west
+						out.println("MOVE W");
+						System.out.println("ROVER_12 request move W");
+						goingSouth = false;
+						goingEast = false;
+						goingNorth = false;
+						goingWest = true;
+					}
+					else{
+						
+							//check whether south is obstacle
+							if(scanMapTiles[centerIndex][centerIndex +1].getHasRover() 
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.ROCK
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.NONE
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.FLUID
+									|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.SAND){
+								//if next move to west is an obstacle				 
+
+								if (scanMapTiles[centerIndex-1][centerIndex].getHasRover() 
+										||scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.ROCK
+										|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.NONE
+										|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.FLUID
+										|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.SAND) {
+								//check whether east is obstacle
+								if(scanMapTiles[centerIndex+1][centerIndex].getHasRover() 
+										|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.ROCK
+										|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.NONE
+										|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.FLUID
+										|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.SAND){
+									out.println("MOVE N");
+									System.out.println("ROVER_12 request move N");
+									goingSouth = false;
+									goingEast = false;
+									goingNorth = true;
+									goingWest = false;
+								}
+								else{
+									out.println("MOVE E");
+									System.out.println("ROVER_12 request move E");
+									goingSouth = false;
+									goingEast = true;
+									goingNorth = false;
+									goingWest = false;
+
+								}
+
+							}
+							else{
+								out.println("MOVE W");
+								System.out.println("ROVER_12 request move W");
+								goingSouth = false;
+								goingEast = false;
+								goingNorth = false;
+								goingWest = true;
+
+							}
+
+						}
+						//when no obstacle is in next move to south
+						else{
+							out.println("MOVE S");
+							System.out.println("ROVER_12 request move S");
+							goingSouth = true;
+							goingEast = false;
+							goingNorth = false;
+							goingWest = false;
+
+						}
+
+					}
+					
 
 				}
 				else if(goingNorth){
@@ -472,7 +579,7 @@ public class Rover_12Febi {
 			for (int j = 0; j < scanMapTiles.length; j++) {
 				if(scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")){
 					System.out.println("crystal found");
-					element.add(new NextMoveModel(i, j, true));
+					element.add(new NextMoveModel(j, i, true));
 				}
 			}
 		}
