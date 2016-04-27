@@ -1,4 +1,4 @@
-package wael_rover;
+package rover_wael;
 
 public class Crystal {
 

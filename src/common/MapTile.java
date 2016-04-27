@@ -5,10 +5,10 @@ import enums.Science;
 import enums.Terrain;
 
 public class MapTile {
-	private Terrain terrain;
-	private int elevation; // not currently used
-	private Science science; // for use on ScanMap, not used on PlanetMap
-	private boolean hasRover; // for use on ScanMap, not used on PlanetMap
+	protected Terrain terrain;
+	protected int elevation; // not currently used
+	protected Science science; // for use on ScanMap, not used on PlanetMap
+	protected boolean hasRover; // for use on ScanMap, not used on PlanetMap
 
 	public MapTile() {
 		terrain = Terrain.SOIL;
