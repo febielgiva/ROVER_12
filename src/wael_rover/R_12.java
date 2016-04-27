@@ -27,7 +27,7 @@ import enums.Terrain;
  */
 
 // this comment is for commit 
-public class ROVER_12 {
+public class R_12 {
 
 	protected BufferedReader in;
 	protected PrintWriter out;
@@ -37,7 +37,7 @@ public class ROVER_12 {
 	protected String SERVER_ADDRESS = "localhost";
 	protected static final int PORT_ADDRESS = 9537;
 
-	public ROVER_12() {
+	public R_12() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -46,7 +46,7 @@ public class ROVER_12 {
 		sleepTime = 300; // in milliseconds - smaller is faster, but the server will cut connection if it is too small
 	}
 	
-	public ROVER_12(String serverAddress) {
+	public R_12(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -84,8 +84,6 @@ public class ROVER_12 {
 		String line = "";
 
 		boolean goingSouth = false;
-		boolean goingEast = true;
-		
 		boolean stuck = false; // just means it did not change locations between requests,
 								// could be velocity limit or obstruction etc.
 		boolean blocked = false;
@@ -96,15 +94,14 @@ public class ROVER_12 {
 		cardinals[2] = "S";
 		cardinals[3] = "W";
 
-		String currentDir = cardinals[1];
+		String currentDir = cardinals[0];
 		Coord currentLoc = null;
 		Coord previousLoc = null;
+
 		
 		// Rover crystal storage array
 		ArrayList<Crystal> RoverStorage = new ArrayList<Crystal>();
 		
-		
-
 		// start Rover controller process
 		while (true) {
 
@@ -112,11 +109,13 @@ public class ROVER_12 {
 			// simulated resource cost
 			
 			
-			currentLoc = callForLocation(currentLoc);
+			// **** location call ****
+			currentLoc = getcurrentLoc(currentLoc);
 			System.out.println("ROVER_12 currentLoc at start: " + currentLoc);
 			
 			// after getting location set previous equal current to be able to check for stuckness and blocked later
 			previousLoc = currentLoc;
+			
 			
 			
 			// **** get equipment listing ****			
@@ -139,39 +138,16 @@ public class ROVER_12 {
 			// ***** MOVING *****
 			// try moving east 5 block if blocked
 			if (blocked) {
-				/*for (int i = 0; i < 5; i++) {
+				for (int i = 0; i < 6; i++) {
 					out.println("MOVE E");
-					//System.out.println("ROVER_12 request move E");
-					//Thread.sleep(300);
-				}*/
+					System.out.println("ROVER_12 request move E");
+					Thread.sleep(300);
+				}
+				out.println("MOVE E");
+				currentDir = cardinals[1];
 				blocked = false;
 				//reverses direction after being blocked
-				switch (currentDir) {
-				case "S":
-					out.println("MOVE N");
-					goingSouth = false;
-					goingEast = false;
-					currentDir = cardinals[0];
-					break;
-				case "N":
-					out.println("MOVE S");
-					goingSouth = true;
-					goingEast = false;
-					currentDir = cardinals[2];
-					break;
-				case "W":
-					out.println("MOVE E");
-					goingSouth = false;
-					goingEast = true;
-					currentDir = cardinals[1];
-					break;
-				case "E":
-					out.println("MOVE W");
-					goingSouth = false;
-					goingEast = false;
-					currentDir = cardinals[3];
-					break;
-				}
+				goingSouth = !goingSouth;
 			} else {
 
 				// pull the MapTile array out of the ScanMap object
@@ -180,94 +156,59 @@ public class ROVER_12 {
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
 				// Detect current position for existing crystal and collect it if exist
+				
+				//	to collect anything detected use the below condition 
+				// !scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("N")
+				
 				if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
 					System.out.println("ROVER_12 request GATHER");
 					// Notify server of gathering to update the scanMap
 					out.println("GATHER");
 					
 					// Get science location which is same as rover
-					currentLoc = callForLocation(currentLoc);
+					currentLoc = getcurrentLoc(currentLoc);
 					
-					// Add Collected crystals to rover local storage
+					// Add Collected crystals to rover storage
 					RoverStorage.add(new Crystal(currentLoc.getXpos(), currentLoc.getYpos()));
+					System.out.println("CRYSTAL ADDED TO STORAGE");
 					
 				}else{
-				
-					// TODO Need to separate directions conditions
-				
-				if (goingSouth || goingEast) {
-
+					
+				if (goingSouth) {
 					// check scanMap to see if path is blocked to the south
 					// (scanMap may be old data by now)
 					if (scanMapTiles[centerIndex][centerIndex +1].getHasRover() 
-							|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.ROCK
-							|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.NONE
-							|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.SAND) {
-						
-						// Set blocked area ahead
+						|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.ROCK
+						|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.NONE
+						|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.SAND
+							) {
 						blocked = true;
-						
-						// Temporary Store Current Direction
-						if (goingSouth) {
-							currentDir = cardinals[2];
-						}
-						if (goingEast) {
-							currentDir = cardinals[1];
-						}
-						
 					} else {
 						// request to server to move
-						// Check if Going South or East to keep moving forward
-						if (goingSouth) {
-							System.out.println("ROVER_12 request move S");
-							out.println("MOVE S");
-						}
-						if (goingEast){
-							System.out.println("ROVER_12 request move E");
-							out.println("MOVE E");
-						}
+						out.println("MOVE S");
+						currentDir = cardinals[2];
+						System.out.println("ROVER_12 request move S");
 					}
 					
 				} else {
-					// check scanMap to see if path is blocked to the north
-					// (scanMap may be old data by now)
-					//System.out.println("ROVER_12 scanMapTiles[2][1].getHasRover() " + scanMapTiles[2][1].getHasRover());
-					//System.out.println("ROVER_12 scanMapTiles[2][1].getTerrain() " + scanMapTiles[2][1].getTerrain().toString());
 					
 					if (scanMapTiles[centerIndex][centerIndex -1].getHasRover() 
 							|| scanMapTiles[centerIndex][centerIndex -1].getTerrain() == Terrain.ROCK
 							|| scanMapTiles[centerIndex][centerIndex -1].getTerrain() == Terrain.NONE
-							|| scanMapTiles[centerIndex][centerIndex -1].getTerrain() == Terrain.SAND) {
-						
-						// Set blocked area ahead
+							|| scanMapTiles[centerIndex][centerIndex -1].getTerrain() == Terrain.SAND
+							) {
 						blocked = true;
-						
-						// Temporary Store Current Direction
-						if (!goingSouth) {
-							currentDir = cardinals[0];
-						}
-						if (!goingEast) {
-							currentDir = cardinals[3];
-						}
-						
 					} else {
 						// request to server to move
-						// Check if Going North or West to keep moving forward
-						if (!goingSouth) {
-							System.out.println("ROVER_12 request move E");
-							out.println("MOVE N");
-						}
-						if(!goingEast){
-							System.out.println("ROVER_12 request move W");
-							out.println("MOVE W");
-						}
+						out.println("MOVE N");
+						currentDir = cardinals[0];
+						System.out.println("ROVER_12 request move N");
 					}					
 				}
 			}
-		}
+	}
 
-			// another call for current location
-			currentLoc = callForLocation(currentLoc);
+			currentLoc = getcurrentLoc(currentLoc);
 
 			//System.out.println("ROVER_12 currentLoc after recheck: " + currentLoc);
 			//System.out.println("ROVER_12 previousLoc: " + previousLoc);
@@ -289,16 +230,16 @@ public class ROVER_12 {
 
 	}
 
-	// Method for getting current location
-	private Coord callForLocation(Coord currentLoc) throws IOException {
+	private Coord getcurrentLoc(Coord currentLoc) throws IOException {
 		String line;
 		out.println("LOC");
 		line = in.readLine();
-		if(line == null){
+		if (line == null) {
 			System.out.println("ROVER_12 check connection to server");
 			line = "";
 		}
 		if (line.startsWith("LOC")) {
+			// loc = line.substring(4);
 			currentLoc = extractLOC(line);
 		}
 		return currentLoc;
@@ -431,7 +372,7 @@ public class ROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12 client = new ROVER_12();
+		R_12 client = new R_12();
 		client.run();
 	}
 }

@@ -1,4 +1,4 @@
-## CS537-Group12
+## CS537-Group12 (Wheels,	Spectral Sensor,	Range Extender)
 ### Links
 - Helpful Time Complexity Chart, Java Library Data Structures (http://bit.ly/1SB3qat)
 - Rover Specs (http://bit.ly/1QnSPYJ)
