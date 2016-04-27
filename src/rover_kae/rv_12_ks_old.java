@@ -1,4 +1,4 @@
-package Kae;
+package rover_kae;
 
 /*  scan map size is 11 x 11
  */
@@ -35,7 +35,7 @@ import enums.Terrain;
  * allowed # request to the server per sec = 500 2 req / sec
  */
 
-public class rv_12_Kae {
+public class rv_12_ks_old {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -64,7 +64,7 @@ public class rv_12_Kae {
 	// se1k1h1mawar1@gmail.com)
 	Deque<String> scienceBag = new ArrayDeque<String>();
 
-	public rv_12_Kae() {
+	public rv_12_ks_old() {
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
 		SERVER_ADDRESS = "localhost";
@@ -73,7 +73,7 @@ public class rv_12_Kae {
 							// will cut connection if it is too small
 	}
 
-	public rv_12_Kae(String serverAddress) {
+	public rv_12_ks_old(String serverAddress) {
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
 		SERVER_ADDRESS = serverAddress;
@@ -753,7 +753,7 @@ public class rv_12_Kae {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		rv_12_Kae client = new rv_12_Kae();
+		rv_12_ks_old client = new rv_12_ks_old();
 		client.run();
 	}
 

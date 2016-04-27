@@ -1,4 +1,4 @@
-package Kae;
+package rover_kae;
 
 /*  scan map size is 11 x 11
  comment */
@@ -38,7 +38,7 @@ import enums.Terrain;
  * [x=43, y=45] Start Loc: Coord [x=5, y=5] <-- for debug
  */
 
-public class ROVER_12_ks extends ROVER_12 {
+public class RV_12_ks_current extends ROVER_12 {
 	Random rd = new Random();
 	CoordUtil currentLoc, previousLoc, startLoc, targetLoc;
 	String currentDir = "", line;
@@ -51,11 +51,11 @@ public class ROVER_12_ks extends ROVER_12 {
 	MapTile[][] tempScanMap;
 	int centerIndex = -1, xx = -1, yy = -1;
 
-	public ROVER_12_ks() {
+	public RV_12_ks_current() {
 		super();
 	}
 
-	public ROVER_12_ks(String serverAddress) {
+	public RV_12_ks_current(String serverAddress) {
 		super(serverAddress);
 	}
 
@@ -96,10 +96,12 @@ public class ROVER_12_ks extends ROVER_12 {
 		}
 		return targetLoc;
 	}
-	public void debugMove(){
-		//***** sand avoidance ******
-		//***** harvest science ******
+
+	public void debugMove() {
+		// ***** sand avoidance ******
+		// ***** harvest science ******
 	}
+
 	public void debugRun() throws IOException, InterruptedException {
 
 		int rdNum;
@@ -786,6 +788,7 @@ public class ROVER_12_ks extends ROVER_12 {
 
 		// set the pointer object to currently scanned ScanMap
 		MapTile[][] ptrScanMap = scanMap.getScanMap();
+		int scanRange = 11;
 
 		Terrain ter;
 		Science sci;
@@ -802,30 +805,55 @@ public class ROVER_12_ks extends ROVER_12 {
 				currentLoc.getYpos() - scanMapHalfSize);
 
 		// debug
-		// System.out.println("scanMap: ");
-		// debugPrintMapTileArray(ptrScanMap);
+		System.out.println("scanMap: ");
+		debugPrintMapTileArray(ptrScanMap);
 
 		// FIXME - must correctly record scanned area of the map from scanMaps
 		// to mapJournal
 		for (int i = 0; i < ptrScanMap.length; i++) {
 			for (int j = 0; j < ptrScanMap.length; j++) {
-
+				System.out.println("current loc: " + currentLoc + "\t(i,j)="
+						+ "(" + i + "," + j
+						+ ")\t[start.ypos + i][start.xpos + j]=" + "["
+						+ (start.ypos + i) + "][" + (start.xpos + j) + "]");
 				if (withinTheGrid(start.ypos + i, start.xpos + j,
-						mapJournal.length)) {
+						mapJournal.length)
+						&& mapJournal[start.ypos + i][start.xpos + j] == null) {
 					ter = ptrScanMap[i][j].getTerrain();
 					sci = ptrScanMap[i][j].getScience();
 					elev = ptrScanMap[i][j].getElevation();
 					hasR = ptrScanMap[i][j].getHasRover();
+					System.out.println("************"+ter+" "+sci+" "+elev+" "+hasR);
 
-					if (mapJournal[start.ypos + i][start.xpos + j] == null) {
-						mapJournal[start.ypos + i][start.xpos + j] = new MapTileUtil(
-								ter, sci, elev, hasR);
-					}
+					mapJournal[start.ypos + i][start.xpos + j] = new MapTileUtil(
+							ter, sci, elev, hasR);
+					System.out.println("scanMap:"
+							+ ptrScanMap[i][j].getTerrain() + " "
+							+ ptrScanMap[i][j].getScience() + " "
+							+ ptrScanMap[i][j].getHasRover());
+					System.out.println("map journal:"
+//							+ mapJournal[start.ypos + i][start.ypos + j]
+//									.getTerrain()
+							+ " "
+							+ mapJournal[start.ypos + i][start.ypos + j]
+									//.getScience()
+//							+ " "
+//							+ mapJournal[start.ypos + i][start.ypos + j]
+//									.getHasRover()
+									);
 				}
 			}
 		}
 
 		debugPrintMapTileArray(mapJournal);
+
+		// debug
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public boolean withinTheGrid(int i, int j, int arrayLength) {
@@ -904,7 +932,7 @@ public class ROVER_12_ks extends ROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_ks client = new ROVER_12_ks();
+		RV_12_ks_current client = new RV_12_ks_current();
 		// client.run();
 		client.debugRun();
 	}
