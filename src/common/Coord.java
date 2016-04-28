@@ -43,13 +43,5 @@ public class Coord {
 //            isEquals();
         return ((this.xpos == theOther.xpos) && (this.ypos == theOther.ypos));
     }
-
-	public int getXpos() {
-		return xpos;
-	}
-
-	public int getYpos() {
-		return ypos;
-	}
 	
 }
