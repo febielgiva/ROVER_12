@@ -225,12 +225,6 @@ public class SwarmServer {//
                 //System.out.println("SWARM: make a rover name " + rname);
                 Rover rover = new Rover(rname);
                 
-                //System.out.println("SWARM: returned from making rover " + rname);
-                
-                // TODO - the question is whether to store the science in the rover thread or in the rover object
-                // Make an arrayList to hold any collected Science
-                ArrayList<Science> scienceCargo = new ArrayList<Science>();
-
                 
                 
                 // ##### Run the Rover server process #####
@@ -828,10 +822,13 @@ public class SwarmServer {//
 	private static int getCorpNumber(Rover aRover){
 		int tnum = 0;
 		String roverNumber = aRover.getRoverName().toString().substring(6);
+		// check for Blue Corp - return int 1
 		if(roverNumber.equals("01") || roverNumber.equals("02") || roverNumber.equals("03") 
 				|| roverNumber.equals("04") || roverNumber.equals("05") || roverNumber.equals("06") 
 				|| roverNumber.equals("07") || roverNumber.equals("08") || roverNumber.equals("09")){
 			tnum = 1;
+		
+			// check for Green Corp - return int 2
 		} else if(roverNumber.equals("10") || roverNumber.equals("11") || roverNumber.equals("12") 
 				|| roverNumber.equals("13") || roverNumber.equals("14") || roverNumber.equals("15") 
 				|| roverNumber.equals("16") || roverNumber.equals("17") || roverNumber.equals("18")){

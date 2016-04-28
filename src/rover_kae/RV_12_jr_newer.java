@@ -37,7 +37,7 @@ import enums.Terrain;
  * allowed # request to the server per sec = 500 2 req / sec
  */
 
-public class RV_12_ks_current extends ROVER_12 {
+public class RV_12_jr_newer extends ROVER_12 {
 	Random rd = new Random();
 	Coord currentLoc, previousLoc;
 	String currentDir = "";
@@ -50,11 +50,11 @@ public class RV_12_ks_current extends ROVER_12 {
 
 	MapTile[][] tempScanMap;
 
-	public RV_12_ks_current() {
+	public RV_12_jr_newer() {
 		super();
 	}
 
-	public RV_12_ks_current(String serverAddress) {
+	public RV_12_jr_newer(String serverAddress) {
 		super(serverAddress);
 	}
 
@@ -784,7 +784,7 @@ public class RV_12_ks_current extends ROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		RV_12_ks_current client = new RV_12_ks_current();
+		RV_12_jr_newer client = new RV_12_jr_newer();
 		client.run();
 	}
 
