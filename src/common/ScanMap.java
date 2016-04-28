@@ -22,7 +22,6 @@ public class ScanMap {
 	}
 	
 	public void debugPrintMap(){
-		System.out.println("edge size: " + edgeSize);
 		for(int k=0;k<edgeSize + 2;k++){System.out.print("--");}
 		System.out.print("\n");
 		for(int j= 0; j< edgeSize; j++){

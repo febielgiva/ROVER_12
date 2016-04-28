@@ -5,7 +5,7 @@
 //public class SwingThreadMain {
 //
 //	public static void main(String[] args) throws InterruptedException {
-//		
+//		// TODO Auto-generated method stub
 //
 //		SwingThreadingEg mainPanel = new SwingThreadingEg();
 //		MyWorker myWorker = new MyWorker(mainPanel);
