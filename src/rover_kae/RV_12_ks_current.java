@@ -84,6 +84,7 @@ public class RV_12_ks_current extends ROVER_12 {
 		while (true) {
 			doScan();
 			debugPrint4Dirs(currentLoc);
+			debugPrintMapTileArray(mapJournal);
 			// moveTowardsSandForDebug();
 			for (int i = 0; i < 17; i++) {
 				move("E");
@@ -106,15 +107,18 @@ public class RV_12_ks_current extends ROVER_12 {
 			}
 			// sinusoidal(cardinals);
 			int waveLength = 6, waveHeight = 4;
-			printMapJournal();
+			
+			Thread.sleep(5000);
 			sinusoidal_RL(cardinals, waveLength, waveHeight);
 			sinusoidal_RL(cardinals, waveLength, waveHeight);
 			sinusoidal_RL(cardinals, waveLength, waveHeight);
-			printMapJournal();
+			debugPrintMapTileArray(mapJournal);
+			Thread.sleep(5000);
 			sinusoidal_LR(cardinals, waveLength, waveHeight);
 			sinusoidal_LR(cardinals, waveLength, waveHeight);
 			sinusoidal_LR(cardinals, waveLength, waveHeight);
-			printMapJournal();
+			debugPrintMapTileArray(mapJournal);
+			Thread.sleep(5000);
 			// random(cardinals);
 			Thread.sleep(sleepTime);
 
@@ -376,7 +380,7 @@ public class RV_12_ks_current extends ROVER_12 {
 		}
 		if (line.startsWith("LOC")) {
 			// loc = line.substring(4);
-			currentLoc = (CoordUtil) extractLOC(line);
+			currentLoc =  extractLOC(line);
 		}
 	}
 
@@ -666,8 +670,8 @@ public class RV_12_ks_current extends ROVER_12 {
 			jsonScanMapIn = "";
 		}
 		StringBuilder jsonScanMap = new StringBuilder();
-		System.out.println("ROVER_12 incomming SCAN result - first readline: "
-				+ jsonScanMapIn);
+//		System.out.println("ROVER_12 incomming SCAN result - first readline: "
+//				+ jsonScanMapIn);
 
 		if (jsonScanMapIn.startsWith("SCAN")) {
 			while (!(jsonScanMapIn = in.readLine()).equals("SCAN_END")) {
@@ -686,7 +690,7 @@ public class RV_12_ks_current extends ROVER_12 {
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
 
 		// set the pointer object to currently scanned ScanMap
-		MapTile[][] ptrScanMap = scanMap.getScanMap();
+		//MapTile[][] ptrScanMap = scanMap.getScanMap();
 
 		Terrain ter;
 		Science sci;
@@ -758,7 +762,7 @@ public class RV_12_ks_current extends ROVER_12 {
 
 	// this takes the LOC response string, parses out the x and y values and
 	// returns a Coord object
-	public static CoordUtil extractLOC(String sStr) {
+	public static Coord extractLOC(String sStr) {
 		sStr = sStr.substring(4);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -766,7 +770,7 @@ public class RV_12_ks_current extends ROVER_12 {
 
 			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
 			// System.out.println("extracted yStr " + yStr);
-			return new CoordUtil(Integer.parseInt(xStr), Integer.parseInt(yStr));
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
 	}
