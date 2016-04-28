@@ -107,7 +107,7 @@ public class RV_12_ks_current extends ROVER_12 {
 			}
 			// sinusoidal(cardinals);
 			int waveLength = 6, waveHeight = 4;
-			
+
 			Thread.sleep(5000);
 			sinusoidal_RL(cardinals, waveLength, waveHeight);
 			sinusoidal_RL(cardinals, waveLength, waveHeight);
@@ -285,13 +285,6 @@ public class RV_12_ks_current extends ROVER_12 {
 
 	}
 
-	// TODO - incomplete
-	private void debugPrint4Dirs(Coord currLoc) {
-		// System.out.println("center: "+
-		// getScanMap().[currLoc.getYpos()][currLoc.getXpos()]);
-		scanMap.debugPrintMap();
-	}
-
 	private void debugPrintDirs(MapTile[][] scanMapTiles, int centerIndex) {
 		System.out.println("center: "
 				+ scanMapTiles[centerIndex][centerIndex].getHasRover());
@@ -360,7 +353,7 @@ public class RV_12_ks_current extends ROVER_12 {
 		}
 	}
 
-	// TODO - must be implemented
+	// TODO - we will not
 	private void harvestScience() {
 	}
 
@@ -380,7 +373,7 @@ public class RV_12_ks_current extends ROVER_12 {
 		}
 		if (line.startsWith("LOC")) {
 			// loc = line.substring(4);
-			currentLoc =  extractLOC(line);
+			currentLoc = extractLOC(line);
 		}
 	}
 
@@ -415,10 +408,6 @@ public class RV_12_ks_current extends ROVER_12 {
 
 	private boolean isStuck(Coord curr, Coord prev) {
 		return curr.equals(prev);
-	}
-
-	// TODO - must be implemented
-	private void awayFromSand() {
 	}
 
 	private void sinusoidal_LR(String[] cardinals, int waveLength,
@@ -670,8 +659,8 @@ public class RV_12_ks_current extends ROVER_12 {
 			jsonScanMapIn = "";
 		}
 		StringBuilder jsonScanMap = new StringBuilder();
-//		System.out.println("ROVER_12 incomming SCAN result - first readline: "
-//				+ jsonScanMapIn);
+		// System.out.println("ROVER_12 incomming SCAN result - first readline: "
+		// + jsonScanMapIn);
 
 		if (jsonScanMapIn.startsWith("SCAN")) {
 			while (!(jsonScanMapIn = in.readLine()).equals("SCAN_END")) {
@@ -686,11 +675,12 @@ public class RV_12_ks_current extends ROVER_12 {
 
 		String jsonScanMapString = jsonScanMap.toString();
 
+		setCurrentLoc(currentLoc);
 		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
 
 		// set the pointer object to currently scanned ScanMap
-		//MapTile[][] ptrScanMap = scanMap.getScanMap();
+		MapTile[][] ptrScanMap = scanMap.getScanMap();
 
 		Terrain ter;
 		Science sci;
@@ -698,8 +688,6 @@ public class RV_12_ks_current extends ROVER_12 {
 		boolean hasR;
 
 		int scanMapHalfSize = (int) Math.floor(ptrScanMap.length / 2.);
-
-		setCurrentLoc(currentLoc);
 
 		// set top left corner of the section of the map on the global map
 		// journal
@@ -736,30 +724,6 @@ public class RV_12_ks_current extends ROVER_12 {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
 
-	public void printMapTileArray(MapTile[][] array) {
-		for (int i = 0; i < array.length; i++) {
-			for (int j = 0; j < array[i].length; j++) {
-				System.out.print(array[i][j] + " ");
-			}
-			System.out.println();
-		}
-	}
-
-	public void printMapJournal() {
-		System.out.println("current map journal status:");
-		for (int i = 0; i < mapJournal.length; i++) {
-			for (int j = 0; j < mapJournal.length; j++) {
-				if (mapJournal[i][j] == null) {
-					System.out.print("nn");
-				} else {
-					System.out.print(mapJournal[i][j].getTerrain() + "("
-							+ mapJournal[i][j].getScience() + ")" + " ");
-				}
-			}
-			System.out.println();
-		}
-	}
-
 	// this takes the LOC response string, parses out the x and y values and
 	// returns a Coord object
 	public static Coord extractLOC(String sStr) {
@@ -785,6 +749,13 @@ public class RV_12_ks_current extends ROVER_12 {
 	public static void main(String[] args) throws Exception {
 		RV_12_ks_current client = new RV_12_ks_current();
 		client.run();
+	}
+
+	// TODO - incomplete
+	private void debugPrint4Dirs(Coord currLoc) {
+		// System.out.println("center: "+
+		// getScanMap().[currLoc.getYpos()][currLoc.getXpos()]);
+		scanMap.debugPrintMap();
 	}
 
 	public void debugPrintMapTileArray(MapTile[][] mapTileArray) {
