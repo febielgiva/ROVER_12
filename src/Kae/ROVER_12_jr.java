@@ -37,9 +37,9 @@ import enums.Terrain;
  * allowed # request to the server per sec = 500 2 req / sec
  */
 
-public class RV_12_ks_current extends ROVER_12 {
+public class ROVER_12_jr extends ROVER_12 {
 	Random rd = new Random();
-	Coord currentLoc, previousLoc;
+	CoordUtil currentLoc, previousLoc;
 	String currentDir = "";
 	Set<String> blockedDirs = new HashSet<String>();
 	Set<String> openDirs = new HashSet<String>();
@@ -49,11 +49,11 @@ public class RV_12_ks_current extends ROVER_12 {
 
 	MapTile[][] tempScanMap;
 
-	public RV_12_ks_current() {
+	public ROVER_12_jr() {
 		super();
 	}
 
-	public RV_12_ks_current(String serverAddress) {
+	public ROVER_12_jr(String serverAddress) {
 		super(serverAddress);
 	}
 
@@ -61,7 +61,7 @@ public class RV_12_ks_current extends ROVER_12 {
 
 		int rdNum;
 		String currentDir;
-		boolean stuck = false;
+		boolean stuck;
 
 		// TODO - need to close this socket
 		makeConnAndInitStream();
@@ -84,38 +84,21 @@ public class RV_12_ks_current extends ROVER_12 {
 		while (true) {
 			doScan();
 			debugPrint4Dirs(currentLoc);
-			// moveTowardsSandForDebug();
-			for (int i = 0; i < 17; i++) {
-				move("E");
-			}
-			System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5");
 
-			for (int i = 0; i < 5; i++) {
-				move("S");
-			}
-			System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5");
 			if (previousLoc != null && previousLoc.equals(currentLoc)) {
 				stuck = true;
 			}
 
-			System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5");
 			previousLoc = currentLoc;
 
-			if (stuck) {
-				doThisWhenStuck_4stepToOpenDir(currentLoc, scanMap.getScanMap());
-			}
+			doThisWhenStuck_4stepToOpenDir(currentLoc, scanMap.getScanMap());
+
 			// sinusoidal(cardinals);
 			int waveLength = 6, waveHeight = 4;
-			printMapJournal();
+
 			sinusoidal_RL(cardinals, waveLength, waveHeight);
-			sinusoidal_RL(cardinals, waveLength, waveHeight);
-			sinusoidal_RL(cardinals, waveLength, waveHeight);
-			printMapJournal();
 			sinusoidal_LR(cardinals, waveLength, waveHeight);
-			sinusoidal_LR(cardinals, waveLength, waveHeight);
-			sinusoidal_LR(cardinals, waveLength, waveHeight);
-			printMapJournal();
-			// random(cardinals);
+			random(cardinals);
 			Thread.sleep(sleepTime);
 
 			System.out
@@ -457,24 +440,24 @@ public class RV_12_ks_current extends ROVER_12 {
 
 	private void move(String dir) throws IOException {
 		System.out.println("current location in move(): " + currentLoc);
-		setCurrentLoc(currentLoc);
+		CoordUtil loc = currentLoc.clone();
 
 		switch (dir) {
 
 		case "E":
-			if (!isSand(currentLoc.getXpos() + 1, currentLoc.getYpos()))
+			if (!isSand(loc.getX() + 1, loc.getY()))
 				moveEast();
 			break;
 		case "W":
-			if (!isSand(currentLoc.getXpos() - 1, currentLoc.getYpos()))
+			if (!isSand(loc.getX() - 1, loc.getY()))
 				moveWest();
 			break;
 		case "N":
-			if (!isSand(currentLoc.getXpos(), currentLoc.getYpos() - 1))
+			if (!isSand(loc.getX(), loc.getY() - 1))
 				moveNorth();
 			break;
 		case "S":
-			if (!isSand(currentLoc.getXpos(), currentLoc.getYpos() + 1))
+			if (!isSand(loc.getX(), loc.getY() + 1))
 				moveSouth();
 			break;
 		default:
@@ -482,39 +465,28 @@ public class RV_12_ks_current extends ROVER_12 {
 		}
 	}
 
-	private void moveEast() throws IOException {
-
-		if (!isSand(currentLoc.xpos, currentLoc.ypos)) {
-			out.println("MOVE E");
-			System.out.print(currentLoc + " - E -> ");
-			System.out.print(currentLoc + "\n");
-		}
+	private void moveEast() {
+		out.println("MOVE E");
+		System.out.print(currentLoc + " - E -> ");
+		System.out.print(currentLoc + "\n");
 	}
 
-	private void moveWest() throws IOException {
-
-		if (!isSand(currentLoc.xpos, currentLoc.ypos)) {
-			out.println("MOVE W");
-			System.out.print(currentLoc + " - W -> ");
-			System.out.print(currentLoc + "\n");
-		}
+	private void moveWest() {
+		out.println("MOVE W");
+		System.out.print(currentLoc + " - W -> ");
+		System.out.print(currentLoc + "\n");
 	}
 
-	private void moveNorth() throws IOException {
-
-		if (!isSand(currentLoc.xpos, currentLoc.ypos)) {
-			out.println("MOVE N");
-			System.out.print(currentLoc + " - N -> ");
-			System.out.print(currentLoc + "\n");
-		}
+	private void moveNorth() {
+		out.println("MOVE N");
+		System.out.print(currentLoc + " - N -> ");
+		System.out.print(currentLoc + "\n");
 	}
 
-	private void moveSouth() throws IOException {
-		if (!isSand(currentLoc.xpos, currentLoc.ypos)) {
-			out.println("MOVE S");
-			System.out.print(currentLoc + " - S -> ");
-			System.out.print(currentLoc + "\n");
-		}
+	private void moveSouth() {
+		out.println("MOVE S");
+		System.out.print(currentLoc + " - S -> ");
+		System.out.print(currentLoc + "\n");
 	}
 
 	private void sinusoidal_RL(String[] cardinals, int waveLength,
@@ -555,15 +527,9 @@ public class RV_12_ks_current extends ROVER_12 {
 		}
 	}
 
-	private void moveTowardsSandForDebug() throws IOException {
-		while (currentLoc.getXpos() < 23) {
-			move("E");
-		}
-		while (currentLoc.getYpos() < 30) {
-			move("S");
-		}
+	private void moveTowardsSandForDebug(){
+		
 	}
-
 	private void random(String[] cardinals) throws InterruptedException,
 			IOException {
 		int rdNum;
@@ -745,12 +711,9 @@ public class RV_12_ks_current extends ROVER_12 {
 		System.out.println("current map journal status:");
 		for (int i = 0; i < mapJournal.length; i++) {
 			for (int j = 0; j < mapJournal.length; j++) {
-				if (mapJournal[i][j] == null) {
-					System.out.print("nn");
-				} else {
-					System.out.print(mapJournal[i][j].getTerrain() + "("
-							+ mapJournal[i][j].getScience() + ")" + " ");
-				}
+
+				System.out.print(mapJournal[i][j].getTerrain() + "("
+						+ mapJournal[i][j].getScience() + ")" + " ");
 			}
 			System.out.println();
 		}
@@ -779,7 +742,7 @@ public class RV_12_ks_current extends ROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		RV_12_ks_current client = new RV_12_ks_current();
+		ROVER_12_jr client = new ROVER_12_jr();
 		client.run();
 	}
 
