@@ -91,8 +91,16 @@ public class RV_12_ks_current extends ROVER_12 {
 		int xPosTracker = 0, yPosTracker = 0;
 		while (true) {
 			doScan();
-			debugPrint4Dirs(currentLoc);
-			debugPrintMapTileArray(mapJournal);
+			// debugPrint4Dirs(currentLoc);
+			// debugPrintMapTileArray(mapJournal);
+
+			// debug - test sand avoidance
+			// for (int i = 0; i < 25; i++) {
+			// move("E");
+			// }
+			// for (int i = 0; i < 25; i++) {
+			// move("S");
+			// }
 
 			// debug
 			// moveTowardsSandForDebug();
@@ -110,11 +118,11 @@ public class RV_12_ks_current extends ROVER_12 {
 			{
 				doThisWhenStuck_4stepToOpenDir(currentLoc, scanMap.getScanMap());
 			}
-	
-			debugPrintMapTileArray(mapJournal);
-			//Thread.sleep(5000);
 
-			//random(cardinals);
+			debugPrintMapTileArray(mapJournal);
+			// Thread.sleep(5000);
+
+			// random(cardinals);
 			Thread.sleep(sleepTime);
 
 			System.out
@@ -205,50 +213,62 @@ public class RV_12_ks_current extends ROVER_12 {
 		}
 	}
 
-	// ******* currently developing ****************
-	// KSTD - implement
-	private boolean isTreasureSpot() {
+	private boolean isSand(String direction) throws IOException {
+
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex;
+		if (direction == "S") {
+			System.out.print("heading south\t");
+			x = centerIndex + 1;
+		} else if (direction == "N") {
+			System.out.print("heading north\t");
+			x = centerIndex - 1;
+		} else if (direction == "E") {
+			System.out.print("heading east\t");
+			y = centerIndex + 1;
+		} else {
+			System.out.print("heading west\t");
+			y = centerIndex - 1;
+		}
+		// Checks whether there is sand in the next tile
+		if (scanMap.getScanMap()[x][y].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 1][y].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 1][y].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x][y + 1].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x][y - 1].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 1][y + 1].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 1][y - 1].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 1][y + 1].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 1][y - 1].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 2][y].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 2][y].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x][y + 2].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x][y - 2].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 2][y + 2].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 2][y - 2].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 2][y + 2].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 2][y - 2].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 3][y].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 3][y].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x][y + 3].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x][y - 3].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 3][y + 3].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 3][y - 3].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 3][y + 3].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 3][y - 3].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 4][y].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 4][y].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x][y + 4].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x][y - 4].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 4][y + 4].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x + 4][y - 4].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 4][y + 4].getTerrain() == Terrain.SAND
+				|| scanMap.getScanMap()[x - 4][y - 4].getTerrain() == Terrain.SAND) {
+			System.out.println("That's sand!!!");
+			return true;
+		}
 
 		return false;
-	}
-
-	private boolean isSand(String dir) throws IOException {
-
-		int x = 5, y = 5; // half of the scan range
-
-		// debug
-		System.out.println("from isSand()\n"
-				+ "e: "
-				+ scanMap.getScanMap()[y][x + 1].getTerrain().equals(
-						Terrain.SAND)
-				+ "\tw: "
-				+ scanMap.getScanMap()[y][x - 1].getTerrain().equals(
-						Terrain.SAND)
-				+ "\tn: "
-				+ scanMap.getScanMap()[y - 1][x].getTerrain().equals(
-						Terrain.SAND)
-				+ "\ts: "
-				+ scanMap.getScanMap()[y + 1][x].getTerrain().equals(
-						Terrain.SAND));
-
-		if (dir.equals("E")) {
-			return scanMap.getScanMap()[y][x + 1].getTerrain().equals(
-					Terrain.SAND);
-		}
-		if (dir.equals("W")) {
-			return scanMap.getScanMap()[y][x - 1].getTerrain().equals(
-					Terrain.SAND);
-		}
-		if (dir.equals("N")) {
-			return scanMap.getScanMap()[y - 1][x].getTerrain().equals(
-					Terrain.SAND);
-		}
-		if (dir.equals("S")) {
-			return scanMap.getScanMap()[y + 1][x].getTerrain().equals(
-					Terrain.SAND);
-		}
-
-		return true;
 	}
 
 	// **********************************************
@@ -437,12 +457,10 @@ public class RV_12_ks_current extends ROVER_12 {
 		return curr.equals(prev);
 	}
 
-	
-
 	private void move(String dir) throws IOException {
 		System.out.println("current location in move(): " + currentLoc);
 		setCurrentLoc(currentLoc);
-		doScanOriginal();
+		// doScanOriginal();
 
 		switch (dir) {
 
@@ -501,16 +519,17 @@ public class RV_12_ks_current extends ROVER_12 {
 		System.out.print(currentLoc + "\n");
 
 	}
+
 	private void sinusoidal_LR(String[] cardinals, int waveLength,
 			int waveHeight) throws InterruptedException, IOException {
-		
+
 		int numSteps = waveLength;
 		String currentDir;
 		cardinals[0] = "E";
 		cardinals[1] = "S";
 		cardinals[2] = "E";
 		cardinals[3] = "N";
-		
+
 		for (int i = 0; i < cardinals.length; i++) {
 
 			currentDir = cardinals[i];
@@ -521,32 +540,37 @@ public class RV_12_ks_current extends ROVER_12 {
 			}
 
 			for (int j = 0; j < numSteps; j++) {
-				move(currentDir);
-				Thread.sleep(300);
+				if (!isSand(currentDir)) {
+					move(currentDir);
+					Thread.sleep(300);
+				}
 			}
 		}
 	}
+
 	private void sinusoidal_RL(String[] cardinals, int waveLength,
 			int waveHeight) throws InterruptedException, IOException {
-		int numSteps = waveLength;
+		int stepsLeft = waveLength;
 		String currentDir;
 		cardinals[0] = "W";
 		cardinals[1] = "S";
 		cardinals[2] = "W";
 		cardinals[3] = "N";
-		
+
 		for (int i = 0; i < cardinals.length; i++) {
 
 			currentDir = cardinals[i];
 			if (currentDir.equals("W")) {
-				numSteps = waveLength;
+				stepsLeft = waveLength;
 			} else {
-				numSteps = waveHeight;
+				stepsLeft = waveHeight;
 			}
 
-			for (int j = 0; j < numSteps; j++) {
-				move(currentDir);
-				Thread.sleep(300);
+			for (int j = 0; j < stepsLeft; j++) {
+				if (!isSand(currentDir)) {
+					move(currentDir);
+					Thread.sleep(300);
+				}
 			}
 		}
 	}
@@ -858,5 +882,14 @@ public class RV_12_ks_current extends ROVER_12 {
 			System.out.print("--");
 		}
 		System.out.print("\n");
+	}
+	
+	public void myNotes(){
+		
+		/*
+		 * - must coordinate with other scanner rovers which area to cover first. Even though we all need to cover as much area as we can,
+		 * we still have to build a map to the target location as quickly as we can.
+		 * 
+		 * */
 	}
 }
