@@ -83,9 +83,6 @@ public class RV_12_ks_current extends ROVER_12 {
 		ArrayList<String> equipment = getEquipment();
 		System.out.println("ROVER_12 equipment list " + equipment + "\n");
 
-		// for debug
-		// moveRover12ToAClearArea();
-
 		// ******** Rover motion *********
 
 		int waveLength = 6, waveHeight = 6;
@@ -438,6 +435,7 @@ public class RV_12_ks_current extends ROVER_12 {
 			currentLoc = extractLOC(line);
 		}
 	}
+	
 
 	private void snake(String[] cardinals, int scanRange) {
 		// TODO Auto-generated method stub
