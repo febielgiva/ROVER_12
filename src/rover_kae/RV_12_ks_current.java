@@ -45,7 +45,7 @@ public class RV_12_ks_current extends ROVER_12 {
 	Set<String> blockedDirs = new HashSet<String>();
 	Set<String> openDirs = new HashSet<String>();
 	String[] cardinals = new String[4];
-	MapTile[][] mapTileLog = new MapTileUtil[100][100];
+	MapTile[][] mapTileLog = new MapTile[100][100];
 	boolean[][] footPrints = new boolean[100][100];
 	Socket socket;
 	MapTile[][] tempScanMap;
@@ -751,7 +751,7 @@ public class RV_12_ks_current extends ROVER_12 {
 					if (mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc
 							.getXpos() - 5 + j] == null) {
 						mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc
-								.getXpos() - 5 + j] = new MapTileUtil(ter, sci,
+								.getXpos() - 5 + j] = new MapTile(ter, sci,
 								elev, hasR);
 					}
 				}
