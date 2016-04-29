@@ -1,4 +1,4 @@
-package group12_Rover_Febi;
+package rover_febi;
 
 import java.io.BufferedReader;
 import java.io.IOException;

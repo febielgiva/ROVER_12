@@ -26,15 +26,16 @@ import enums.Terrain;
  * ROVER_12  Spec:	Drive = wheels, Tool 1 = spectral sensor, Tool 2 = range extender
  */
 
+// this comment is for commit 
 public class ROVER_12 {
 
-	BufferedReader in;
-	PrintWriter out;
-	String rovername;
-	ScanMap scanMap;
-	int sleepTime;
-	String SERVER_ADDRESS = "localhost";
-	static final int PORT_ADDRESS = 9537;
+	protected BufferedReader in;
+	protected PrintWriter out;
+	protected String rovername;
+	protected ScanMap scanMap;
+	protected int sleepTime;
+	protected String SERVER_ADDRESS = "localhost";
+	protected static final int PORT_ADDRESS = 9537;
 
 	public ROVER_12() {
 		// constructor

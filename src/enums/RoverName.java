@@ -27,7 +27,7 @@ public enum RoverName {
 	ROVER_12 ("WHEELS", "RANGE_BOOTER", "SPECTRAL_SENSOR"),
 	ROVER_13 ("TREADS", "EXCAVATOR", "CHEMICAL_SENSOR"),
 	ROVER_14 ("WHEELS", "RANGE_BOOTER", "CHEMICAL_SENSOR"),
-	ROVER_15 ("TREADS", "DRILL", "EXCAVATOR"),
+	ROVER_15 ("WHEELS", "DRILL", "EXCAVATOR"),
 	ROVER_16 ("WALKER", "DRILL", "RADIATION_SENSOR"),
 	ROVER_17 ("WHEELS", "RANGE_BOOTER", "RADAR_SENSOR"),
 	ROVER_18 ("WHEELS", "EXCAVATOR", "RADAR_SENSOR"),
@@ -91,7 +91,6 @@ public enum RoverName {
     		output = RoverName.ROVER_11;
     		break;
     	case "ROVER_12":
-     		// System.out.println("ROVERNAME: case ROVER_12");
     		output = RoverName.ROVER_12;
     		break;    		
     	case "ROVER_13":

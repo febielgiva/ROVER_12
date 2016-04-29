@@ -1,4 +1,4 @@
-package group12_Rover_Febi;
+package rover_febi;
 
 public class NextMoveModel {
 	int row;
