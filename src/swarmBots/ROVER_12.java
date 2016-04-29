@@ -107,12 +107,12 @@ public class ROVER_12 {
 					+ equipment + "\n");
 
 			// **** Request START_LOC Location from SwarmServer ****
-			requestStartLoc();
+			rovergroupStartPosition = requestStartLoc();
 			System.out.println(rovername + " START_LOC "
 					+ rovergroupStartPosition);
 
 			// **** Request TARGET_LOC Location from SwarmServer ****
-			requestTargetLoc();
+			targetLocation = requestTargetLoc();
 			System.out.println(rovername + " TARGET_LOC " + targetLocation);
 
 			// could be velocity limit or obstruction etc.
@@ -134,7 +134,7 @@ public class ROVER_12 {
 			while (true) {
 
 				// **** Request Rover Location from SwarmServer ****
-				setCurrentLoc();
+				currentLoc = setCurrentLoc();
 
 				System.out.println(rovername + " currentLoc at start: "
 						+ currentLoc);
@@ -166,7 +166,7 @@ public class ROVER_12 {
 				boolean stuck;
 				roverMotionLogic(scanMapTiles, centerIndex);
 
-				setCurrentLoc();
+				currentLoc = setCurrentLoc();
 
 				// test for stuckness
 				stuck = currentLoc.equals(previousLoc);
@@ -679,10 +679,9 @@ public class ROVER_12 {
 
 	private Coord requestTargetLoc() throws IOException {
 
-		// setCurrentLoc();
+		currentLoc = setCurrentLoc();
 
-		out.println("TARGET_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("TARGET_LOC " + currentLoc.getXpos() + " " + currentLoc.getYpos());
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -700,10 +699,10 @@ public class ROVER_12 {
 		sStr = sStr.substring(11);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
-			// System.out.println("extracted xStr " + xStr);
+			 System.out.println("extracted xStr " + xStr);
 
 			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
-			// System.out.println("extracted yStr " + yStr);
+			 System.out.println("extracted yStr " + yStr);
 			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
@@ -711,10 +710,10 @@ public class ROVER_12 {
 
 	private Coord requestStartLoc() throws IOException {
 
-		setCurrentLoc();
-		
+		currentLoc = setCurrentLoc();
+
+		out.println("START_LOC " + currentLoc.getXpos() + " " + currentLoc.getYpos());
 		line = in.readLine();
-		System.out.println(line);
 
 		if (line == null || line == "") {
 			System.out.println("ROVER_12 check connection to server");
@@ -724,10 +723,11 @@ public class ROVER_12 {
 		//
 		System.out.println();
 		if (line.startsWith("START")) {
-			rovergroupStartPosition = extractStartLOC(line);
+			rovergroupStartPosition =  extractStartLOC(line);
 		}
 		return rovergroupStartPosition;
 	}
+
 
 	public static Coord extractCurrLOC(String sStr) {
 		sStr = sStr.substring(4);
@@ -736,7 +736,7 @@ public class ROVER_12 {
 			// System.out.println("extracted xStr " + xStr);
 
 			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
-			System.out.println("extracted yStr " + yStr);
+			//System.out.println("extracted yStr " + yStr);
 			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
@@ -757,36 +757,39 @@ public class ROVER_12 {
 		return null;
 	}
 
+
 	private Coord setCurrentLoc() throws IOException {
 		String line;
 
 		out.println("LOC");
 		line = in.readLine();
 		if (line == null) {
-			// System.out.println("ROVER_12 check connection to server");
+			System.out.println("ROVER_12 check connection to server");
 			line = "";
 		}
 		if (line.startsWith("LOC")) {
 			// loc = line.substring(4);
 			currentLoc = extractCurrLOC(line);
+			return currentLoc;
 		}
+		return null;
 	}
-
-	private Coord getCurrentLoc() throws IOException {
+	private Coord copyCurrentLoc(Coord copy) throws IOException {
 		String line;
-		Coord loc = null;
 
 		out.println("LOC");
 		line = in.readLine();
 		if (line == null) {
-			// System.out.println("ROVER_12 check connection to server");
+			System.out.println("ROVER_12 check connection to server");
 			line = "";
 		}
 		if (line.startsWith("LOC")) {
 			// loc = line.substring(4);
-			loc = extractCurrLOC(line);
+			copy = extractCurrLOC(line);
 		}
-		return loc;
+		// debug
+		System.out.println("copied curr loc: " + copy);
+		return copy;
 	}
 
 	/**
