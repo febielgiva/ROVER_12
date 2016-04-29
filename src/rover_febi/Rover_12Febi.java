@@ -247,7 +247,7 @@ public class Rover_12Febi {
 					}
 					else{
 						//if next move to east is an obstacle				 
-						if (scanMapTiles[centerIndex-1][centerIndex].getHasRover() 
+						if (scanMapTiles[centerIndex+1][centerIndex].getHasRover() 
 								||scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.ROCK
 								|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.NONE
 								|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.FLUID
