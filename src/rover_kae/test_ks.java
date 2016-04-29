@@ -14,6 +14,11 @@ import common.ScanMap;
 public class test_ks {
 
 	@Test
+	public void testMapTile() {
+		MapTile mt = new MapTile(0);
+		
+	}
+	//@Test
 	public void testCasting() {
 
 		Fruit fr = new Fruit("fruit", "fruit sent");

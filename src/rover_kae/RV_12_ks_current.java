@@ -45,9 +45,9 @@ public class RV_12_ks_current extends ROVER_12 {
 	Set<String> blockedDirs = new HashSet<String>();
 	Set<String> openDirs = new HashSet<String>();
 	String[] cardinals = new String[4];
-	MapTile[][] mapJournal = new MapTileUtil[100][100];
+	MapTile[][] mapTileLog = new MapTileUtil[100][100];
 	boolean[][] footPrints = new boolean[100][100];
-
+	Socket socket;
 	MapTile[][] tempScanMap;
 
 	public RV_12_ks_current() {
@@ -64,14 +64,16 @@ public class RV_12_ks_current extends ROVER_12 {
 		String currentDir;
 		boolean stuck = false;
 
+		// initMapTileLog();
+
 		// TODO - need to close this socket
 		makeConnAndInitStream();
 		processServerMsgAndWaitForIDRequestCall();
 		this.doScan();
+
 		scanMap.debugPrintMap();
-		debugPrintMapTileArray(mapJournal);
+		debugPrintMapTileArray(mapTileLog);
 		System.out.println(currentLoc);
-		// Thread.sleep(5000);
 
 		// ******** Rover logic *********
 		String[] cardinals = { "E", "S", "W", "N" };
@@ -82,7 +84,6 @@ public class RV_12_ks_current extends ROVER_12 {
 
 		// for debug
 		// moveRover12ToAClearArea();
-		setCurrentLoc(currentLoc);
 
 		// ******** Rover motion *********
 		int waveLength = 6, waveHeight = 4;
@@ -90,7 +91,12 @@ public class RV_12_ks_current extends ROVER_12 {
 		hzDir = 1;
 		int xPosTracker = 0, yPosTracker = 0;
 		while (true) {
+
 			doScan();
+			debugCompareScanMapAndMapTileLog();
+
+			Thread.sleep(10000);
+
 			// debugPrint4Dirs(currentLoc);
 			// debugPrintMapTileArray(mapJournal);
 
@@ -119,7 +125,7 @@ public class RV_12_ks_current extends ROVER_12 {
 				doThisWhenStuck_4stepToOpenDir(currentLoc, scanMap.getScanMap());
 			}
 
-			debugPrintMapTileArray(mapJournal);
+			debugPrintMapTileArray(mapTileLog);
 			// Thread.sleep(5000);
 
 			// random(cardinals);
@@ -165,8 +171,8 @@ public class RV_12_ks_current extends ROVER_12 {
 
 	private void makeConnAndInitStream() throws UnknownHostException,
 			IOException {
-		Socket socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS); // set port
-																	// here
+		socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS); // set port
+															// here
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		out = new PrintWriter(socket.getOutputStream(), true);
 	}
@@ -213,6 +219,7 @@ public class RV_12_ks_current extends ROVER_12 {
 		}
 	}
 
+	// KSTD - very ugly. Does anyone know how to make this better?
 	private boolean isSand(String direction) throws IOException {
 
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -400,14 +407,47 @@ public class RV_12_ks_current extends ROVER_12 {
 		}
 	}
 
-	// TODO - we will not
+	// TODO - we will not need it. (we don't carry any excavation tool)
 	private void harvestScience() {
 	}
 
-	private MapTile[][] pullLocalMap() throws IOException {
+	private void debugCompareScanMapAndMapTileLog() {
 
-		MapTile[][] scanMapTiles = scanMap.getScanMap();
-		return scanMapTiles;
+		int scanRange = 11;
+
+		try {
+			doScan();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		for (int i = 0; i < scanRange; i++) {
+			for (int j = 0; j < scanRange; j++) {
+				System.out.print("i,j = " + i + ", " + j + "\t");
+				System.out.print("terr: "
+						+ scanMap.getScanMap()[i][j].getTerrain() + "\t");
+				System.out.print("sci: "
+						+ scanMap.getScanMap()[i][j].getScience() + "\n");
+			}
+		}
+		System.out.println("************ current location " + currentLoc
+				+ "******************************");
+		for (int i = 0; i < 25; i++) {
+			for (int j = 0; j < 25; j++) {
+
+				System.out.print("i,j = " + i + ", " + j + "\t");
+				if (mapTileLog[i][j] == null) {
+					System.out.println("null");
+				} else {
+					System.out.print("terr: " + mapTileLog[i][j].getTerrain()
+							+ "\t");
+					System.out.print("sci: " + mapTileLog[i][j].getScience()
+							+ "\n");
+				}
+			}
+		}
+
 	}
 
 	private void setCurrentLoc(Coord loc) throws IOException {
@@ -669,19 +709,13 @@ public class RV_12_ks_current extends ROVER_12 {
 		return returnList;
 	}
 
-	public void initMapJournal() {
-		for (int i = 0; i < mapJournal.length; i++) {
-			for (int j = 0; j < mapJournal[i].length; j++) {
-
-			}
-		}
-	}
-
 	// sends a SCAN request to the server and puts the result in the scanMap
 	// array
 	public void doScan() throws IOException {
 		System.out.println("ROVER_12 method doScan()");
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+		setCurrentLoc(currentLoc);
 		out.println("SCAN");
 
 		// grabs the string that was returned first
@@ -692,8 +726,6 @@ public class RV_12_ks_current extends ROVER_12 {
 			jsonScanMapIn = "";
 		}
 		StringBuilder jsonScanMap = new StringBuilder();
-		// System.out.println("ROVER_12 incomming SCAN result - first readline: "
-		// + jsonScanMapIn);
 
 		if (jsonScanMapIn.startsWith("SCAN")) {
 			while (!(jsonScanMapIn = in.readLine()).equals("SCAN_END")) {
@@ -707,8 +739,6 @@ public class RV_12_ks_current extends ROVER_12 {
 		}
 
 		String jsonScanMapString = jsonScanMap.toString();
-
-		setCurrentLoc(currentLoc);
 		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
 
@@ -736,21 +766,21 @@ public class RV_12_ks_current extends ROVER_12 {
 			for (int j = 0; j < ptrScanMap.length; j++) {
 
 				if (withinTheGrid(start.ypos + i, start.xpos + j,
-						mapJournal.length)) {
+						mapTileLog.length)) {
 					ter = ptrScanMap[i][j].getTerrain();
 					sci = ptrScanMap[i][j].getScience();
 					elev = ptrScanMap[i][j].getElevation();
 					hasR = ptrScanMap[i][j].getHasRover();
 
-					if (mapJournal[start.ypos + i][start.xpos + j] == null) {
-						mapJournal[start.ypos + i][start.xpos + j] = new MapTileUtil(
+					if (mapTileLog[start.ypos + i][start.xpos + j] == null) {
+						mapTileLog[start.ypos + i][start.xpos + j] = new MapTileUtil(
 								ter, sci, elev, hasR);
 					}
 				}
 			}
 		}
 
-		debugPrintMapTileArray(mapJournal);
+		debugPrintMapTileArray(mapTileLog);
 	}
 
 	public void doScanOriginal() throws IOException {
@@ -883,13 +913,28 @@ public class RV_12_ks_current extends ROVER_12 {
 		}
 		System.out.print("\n");
 	}
-	
-	public void myNotes(){
-		
+
+	public void myNotes() {
+
 		/*
-		 * - must coordinate with other scanner rovers which area to cover first. Even though we all need to cover as much area as we can,
-		 * we still have to build a map to the target location as quickly as we can.
+		 * - must coordinate with other scanner rovers which area to cover
+		 * first. Even though we all need to cover as much area as we can, we
+		 * still have to build a map to the target location as quickly as we
+		 * can.
 		 * 
-		 * */
+		 * - print out maptile 2d array in the different way so that it is easy
+		 * to compare scanMap v.s. mapJournal
+		 * 
+		 * -
+		 */
+	}
+
+	public void initMapTileLog() {
+		for (int i = 0; i < mapTileLog.length; i++) {
+			for (int j = 0; j < mapTileLog.length; j++) {
+				System.out.println("what's wrong with it");
+				mapTileLog[i][j] = new MapTile("m");
+			}
+		}
 	}
 }
