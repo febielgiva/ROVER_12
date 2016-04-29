@@ -1,4 +1,4 @@
-package Kae;
+package rover_kae;
 
 import static org.junit.Assert.*;
 
@@ -13,15 +13,20 @@ import common.ScanMap;
 
 public class test_ks {
 
-	
 	@Test
-	public void testIncDecXY() {
-		CoordUtil cd = new CoordUtil(3,4);
-		System.out.println(cd);
-		cd.incrementX();
-		System.out.println(cd);
+	public void testMapTile() {
+		MapTile mt = new MapTile(0);
 		
 	}
+	//@Test
+	public void testCasting() {
+
+		Fruit fr = new Fruit("fruit", "fruit sent");
+		Orange o = new Orange("org", "orange sent");
+		System.out.println((Orange) fr);
+
+	}
+	
 	//@Test
 	public void testBooleanDefault() {
 		boolean[][] tf = new boolean[3][3];

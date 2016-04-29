@@ -26,6 +26,7 @@ public class ScanMap {
 		for (int k = 0; k < edgeSize + 2; k++) {
 			System.out.print("--");
 		}
+
 		System.out.print("\n");
 		for (int j = 0; j < edgeSize; j++) {
 			System.out.print("| ");
