@@ -180,7 +180,10 @@ public class ROVER_12 {
 					if (scanMapTiles[centerIndex][centerIndex -1].getHasRover() 
 							|| scanMapTiles[centerIndex][centerIndex -1].getTerrain() == Terrain.ROCK
 							|| scanMapTiles[centerIndex][centerIndex -1].getTerrain() == Terrain.NONE) {
+						System.out.println(scanMapTiles[centerIndex][centerIndex -1].getHasRover());
 						blocked = true;
+						System.out.println(scanMapTiles[centerIndex][centerIndex -1]);
+						System.out.println();
 					} else {
 						// request to server to move
 						out.println("MOVE N");
