@@ -36,6 +36,10 @@ public class R_12 {
 	protected int sleepTime;
 	protected String SERVER_ADDRESS = "localhost";
 	protected static final int PORT_ADDRESS = 9537;
+	
+	MapTile[][] myScannedMap = new MapTile[100][100];
+	ArrayList<Path> pathMap = new ArrayList<Path>();
+	
 
 	public R_12() {
 		// constructor
@@ -150,27 +154,41 @@ public class R_12 {
 				goingSouth = !goingSouth;
 			} else {
 
+				
+				
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
+				
+				/*for (int i = 0; i < scanMapTiles.length; i++) {
+					for (int j = 0; j < scanMapTiles.length; j++) {
+						
+					}
+				}*/
+				
+				
 				int centerIndex = (scanMap.getEdgeSize() - 1)/2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
-
+				
+				
+				
 				// Detect current position for existing crystal and collect it if exist
 				
 				//	to collect anything detected use the below condition 
 				// !scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("N")
 				
 				if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
-					System.out.println("ROVER_12 request GATHER");
+					//System.out.println("ROVER_12 request GATHER");
 					// Notify server of gathering to update the scanMap
-					out.println("GATHER");
+					//out.println("GATHER");
 					
 					// Get science location which is same as rover
 					currentLoc = getcurrentLoc(currentLoc);
 					
+					pathMap.add(new Path(currentLoc,currentDir));
+					
 					// Add Collected crystals to rover storage
-					RoverStorage.add(new Crystal(currentLoc.getXpos(), currentLoc.getYpos()));
-					System.out.println("CRYSTAL ADDED TO STORAGE");
+					//RoverStorage.add(new Crystal(currentLoc.getXpos(), currentLoc.getYpos()));
+					//System.out.println("CRYSTAL ADDED TO STORAGE");
 					
 				}else{
 					
