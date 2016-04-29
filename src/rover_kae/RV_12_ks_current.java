@@ -71,9 +71,10 @@ public class RV_12_ks_current extends ROVER_12 {
 		processServerMsgAndWaitForIDRequestCall();
 		this.doScan();
 
-		scanMap.debugPrintMap();
-		debugPrintMapTileArray(mapTileLog);
-		System.out.println(currentLoc);
+		// debug
+		// scanMap.debugPrintMap();
+		// debugPrintMapTileArray(mapTileLog);
+		// System.out.println(currentLoc);
 
 		// ******** Rover logic *********
 		String[] cardinals = { "E", "S", "W", "N" };
@@ -86,49 +87,23 @@ public class RV_12_ks_current extends ROVER_12 {
 		// moveRover12ToAClearArea();
 
 		// ******** Rover motion *********
-		int waveLength = 6, waveHeight = 4;
+
+		int waveLength = 6, waveHeight = 6;
 		sinusoidal_LR(cardinals, waveLength, waveHeight);
 		hzDir = 1;
-		int xPosTracker = 0, yPosTracker = 0;
+
 		while (true) {
 
-			doScan();
-			debugCompareScanMapAndMapTileLog();
+			setCurrentLoc(currentLoc);
+			if (currentLoc.getXpos() > 45) {
+				sinusoidal_RL(cardinals, waveLength, waveHeight);
+			} else {
 
-			Thread.sleep(10000);
-
-			// debugPrint4Dirs(currentLoc);
-			// debugPrintMapTileArray(mapJournal);
-
-			// debug - test sand avoidance
-			// for (int i = 0; i < 25; i++) {
-			// move("E");
-			// }
-			// for (int i = 0; i < 25; i++) {
-			// move("S");
-			// }
-
-			// debug
-			// moveTowardsSandForDebug();
-
-			previousLoc = currentLoc;
-			if (previousLoc.getXpos() == previousLoc.getXpos()) {
-				xPosTracker++;
-			}
-			if (currentLoc.getYpos() == previousLoc.getYpos()) {
-				yPosTracker++;
-			}
-			if (xPosTracker > 10 || yPosTracker > 10) {
-				switchDir_sinusoidal();
-			}
-			{
-				doThisWhenStuck_4stepToOpenDir(currentLoc, scanMap.getScanMap());
+				sinusoidal_LR(cardinals, waveLength, waveHeight);
 			}
 
-			debugPrintMapTileArray(mapTileLog);
-			// Thread.sleep(5000);
+			sinusoidal(cardinals);
 
-			// random(cardinals);
 			Thread.sleep(sleepTime);
 
 			System.out
@@ -562,7 +537,9 @@ public class RV_12_ks_current extends ROVER_12 {
 
 	private void sinusoidal_LR(String[] cardinals, int waveLength,
 			int waveHeight) throws InterruptedException, IOException {
-
+		
+		
+		Coord startPos;
 		int numSteps = waveLength;
 		String currentDir;
 		cardinals[0] = "E";
@@ -578,19 +555,23 @@ public class RV_12_ks_current extends ROVER_12 {
 			} else {
 				numSteps = waveHeight;
 			}
-
-			for (int j = 0; j < numSteps; j++) {
+			startPos = currentLoc.clone();
+			while ((currentLoc.getXpos() - startPos.getXpos()) < numSteps) {
 				if (!isSand(currentDir)) {
 					move(currentDir);
+					if(currentLoc.getXpos() > 45) // should not be hard coded
+						{break;}
 					Thread.sleep(300);
 				}
+				setCurrentLoc(currentLoc);
 			}
 		}
 	}
 
 	private void sinusoidal_RL(String[] cardinals, int waveLength,
 			int waveHeight) throws InterruptedException, IOException {
-		int stepsLeft = waveLength;
+		Coord startPos;
+		int numSteps = waveLength;
 		String currentDir;
 		cardinals[0] = "W";
 		cardinals[1] = "S";
@@ -601,19 +582,19 @@ public class RV_12_ks_current extends ROVER_12 {
 
 			currentDir = cardinals[i];
 			if (currentDir.equals("W")) {
-				stepsLeft = waveLength;
+				numSteps = waveLength;
 			} else {
-				stepsLeft = waveHeight;
+				numSteps = waveHeight;
 			}
-
-			for (int j = 0; j < stepsLeft; j++) {
+			startPos = currentLoc.clone();
+			while ((currentLoc.getXpos() - startPos.getXpos()) < numSteps) {
 				if (!isSand(currentDir)) {
 					move(currentDir);
 					Thread.sleep(300);
 				}
+				setCurrentLoc(currentLoc);
 			}
-		}
-	}
+		}	}
 
 	private void moveTowardsSandForDebug() throws IOException {
 		for (int i = 0; i < 17; i++) {
@@ -752,11 +733,6 @@ public class RV_12_ks_current extends ROVER_12 {
 
 		int scanMapHalfSize = (int) Math.floor(ptrScanMap.length / 2.);
 
-		// set top left corner of the section of the map on the global map
-		// journal
-		Coord start = new Coord(currentLoc.getXpos() - scanMapHalfSize,
-				currentLoc.getYpos() - scanMapHalfSize);
-
 		// debug
 		// System.out.println("scanMap: ");
 		// debugPrintMapTileArray(ptrScanMap);
@@ -765,16 +741,18 @@ public class RV_12_ks_current extends ROVER_12 {
 		for (int i = 0; i < ptrScanMap.length; i++) {
 			for (int j = 0; j < ptrScanMap.length; j++) {
 
-				if (withinTheGrid(start.ypos + i, start.xpos + j,
-						mapTileLog.length)) {
+				if (withinTheGrid(currentLoc.getYpos() - 5 + i,
+						currentLoc.getXpos() - 5 + j, mapTileLog.length)) {
 					ter = ptrScanMap[i][j].getTerrain();
 					sci = ptrScanMap[i][j].getScience();
 					elev = ptrScanMap[i][j].getElevation();
 					hasR = ptrScanMap[i][j].getHasRover();
 
-					if (mapTileLog[start.ypos + i][start.xpos + j] == null) {
-						mapTileLog[start.ypos + i][start.xpos + j] = new MapTileUtil(
-								ter, sci, elev, hasR);
+					if (mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc
+							.getXpos() - 5 + j] == null) {
+						mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc
+								.getXpos() - 5 + j] = new MapTileUtil(ter, sci,
+								elev, hasR);
 					}
 				}
 			}

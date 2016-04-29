@@ -52,4 +52,8 @@ public class Coord {
 		return ypos;
 	}
 	
+	public Coord clone(){
+		return new Coord(xpos, ypos);
+	}
+	
 }
