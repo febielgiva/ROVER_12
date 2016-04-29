@@ -211,6 +211,12 @@ public class Rover_12Febi {
 					if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
 						System.out.println("ROVER_12 request GATHER");
 						out.println("GATHER");
+						out.println("MOVE E");
+						System.out.println("ROVER_12 request move E");
+						goingSouth = false;
+						goingEast = true;
+						goingNorth = false;
+						goingWest = false;
 					} 
 					else if(scanMapTiles[centerIndex+1][centerIndex].getScience().equals("C")){
 						//move east
@@ -308,6 +314,12 @@ public class Rover_12Febi {
 					if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
 						System.out.println("ROVER_12 request GATHER");
 						out.println("GATHER");
+						out.println("MOVE W");
+						System.out.println("ROVER_12 request move W");
+						goingSouth = false;
+						goingEast = false;
+						goingNorth = false;
+						goingWest = true;
 					} 
 					else if(scanMapTiles[centerIndex-1][centerIndex].getScience().equals("C")){
 						//move east
@@ -405,6 +417,12 @@ public class Rover_12Febi {
 					if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
 						System.out.println("ROVER_12 request GATHER");
 						out.println("GATHER");
+						out.println("MOVE S");
+						System.out.println("ROVER_12 request move S");
+						goingSouth = true;
+						goingEast = false;
+						goingNorth = false;
+						goingWest = false;
 					} 
 					else if(scanMapTiles[centerIndex][centerIndex+1].getScience().equals("C")){
 						//move zouth
@@ -505,6 +523,12 @@ public class Rover_12Febi {
 					if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
 						System.out.println("ROVER_12 request GATHER");
 						out.println("GATHER");
+						out.println("MOVE N");
+						System.out.println("ROVER_12 request move N");
+						goingSouth = false;
+						goingEast = false;
+						goingNorth = true;
+						goingWest = false;
 					} 
 					else if(scanMapTiles[centerIndex][centerIndex-1].getScience().equals("C")){
 						//move zouth
