@@ -38,7 +38,7 @@ public class R_12 {
 	protected String SERVER_ADDRESS = "localhost";
 	protected static final int PORT_ADDRESS = 9537;
 
-	protected CoordUtil currentLoc, targetLoc, startLoc;
+	protected Coord currentLoc, targetLoc, startLoc;
 
 	public R_12() {
 		// constructor
@@ -103,10 +103,10 @@ public class R_12 {
 
 		String currentDir = cardinals[0];
 
-		CoordUtil previousLoc = null;
+		Coord previousLoc = null;
 
 		// Rover crystal storage array
-		ArrayList<CoordUtil> RoverStorage = new ArrayList<CoordUtil>();
+		ArrayList<Coord> RoverStorage = new ArrayList<Coord>();
 
 		// start Rover controller process
 		while (true) {
@@ -171,8 +171,8 @@ public class R_12 {
 					currentLoc = getcurrentLoc(currentLoc);
 
 					// Add Collected crystals to rover storage
-					RoverStorage.add(new CoordUtil(currentLoc.getX(),
-							currentLoc.getY()));
+					RoverStorage.add(new Coord(currentLoc.getXpos(),
+							currentLoc.getYpos()));
 					System.out.println("CRYSTAL ADDED TO STORAGE");
 
 				} else {
@@ -239,7 +239,7 @@ public class R_12 {
 
 	}
 
-	private CoordUtil getcurrentLoc(CoordUtil currentLoc) throws IOException {
+	private Coord getcurrentLoc(Coord currentLoc) throws IOException {
 		String line;
 		out.println("LOC");
 		line = in.readLine();
@@ -349,7 +349,7 @@ public class R_12 {
 
 	// this takes the LOC response string, parses out the x and x values and
 	// returns a Coord object
-	public static CoordUtil extractLOC(String sStr) {
+	public static Coord extractLOC(String sStr) {
 		sStr = sStr.substring(4);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -357,16 +357,16 @@ public class R_12 {
 
 			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
 			// System.out.println("extracted yStr " + yStr);
-			return new CoordUtil(Integer.parseInt(xStr), Integer.parseInt(yStr));
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
 	}
 
-	private CoordUtil requestTargetLoc() throws IOException {
+	private Coord requestTargetLoc() throws IOException {
 
 		// setCurrentLoc(currentLoc);
 
-		out.println("TARGET_LOC " + currentLoc.getX() + " " + currentLoc.getY());
+		out.println("TARGET_LOC " + currentLoc.getXpos() + " " + currentLoc.getYpos());
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -375,16 +375,16 @@ public class R_12 {
 		}
 
 		if (line.startsWith("TARGET")) {
-			targetLoc = (CoordUtil) extractTargetLOC(line);
+			targetLoc = (Coord) extractTargetLOC(line);
 		}
 		return targetLoc;
 	}
 
-	private CoordUtil requestStartLoc() throws IOException {
+	private Coord requestStartLoc() throws IOException {
 
 		// setCurrentLoc(currentLoc);
 
-		out.println("START_LOC " + currentLoc.getX() + " " + currentLoc.getY());
+		out.println("START_LOC " + currentLoc.getXpos() + " " + currentLoc.getYpos());
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -395,12 +395,12 @@ public class R_12 {
 		//
 		System.out.println();
 		if (line.startsWith("START")) {
-			startLoc = (CoordUtil) extractStartLOC(line);
+			startLoc = (Coord) extractStartLOC(line);
 		}
 		return startLoc;
 	}
 
-	public static CoordUtil extractTargetLOC(String sStr) {
+	public static Coord extractTargetLOC(String sStr) {
 		sStr = sStr.substring(11);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -408,12 +408,12 @@ public class R_12 {
 
 			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
 			// System.out.println("extracted yStr " + yStr);
-			return new CoordUtil(Integer.parseInt(xStr), Integer.parseInt(yStr));
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
 	}
 
-	public static CoordUtil extractStartLOC(String sStr) {
+	public static Coord extractStartLOC(String sStr) {
 
 		sStr = sStr.substring(10);
 
@@ -423,7 +423,7 @@ public class R_12 {
 
 			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
 			// System.out.println("extracted yStr " + yStr);
-			return new CoordUtil(Integer.parseInt(xStr), Integer.parseInt(yStr));
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
 	}

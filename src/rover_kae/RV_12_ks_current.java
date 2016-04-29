@@ -104,7 +104,7 @@ public class RV_12_ks_current extends ROVER_12 {
 			if (currentLoc.getYpos() == previousLoc.getYpos()) {
 				yPosTracker++;
 			}
-			if (xPosTracker > 5 || yPosTracker > 5) {
+			if (xPosTracker > 10 || yPosTracker > 10) {
 				switchDir_sinusoidal();
 			}
 			{
@@ -112,7 +112,7 @@ public class RV_12_ks_current extends ROVER_12 {
 			}
 	
 			debugPrintMapTileArray(mapJournal);
-			Thread.sleep(5000);
+			//Thread.sleep(5000);
 
 			//random(cardinals);
 			Thread.sleep(sleepTime);
@@ -428,7 +428,7 @@ public class RV_12_ks_current extends ROVER_12 {
 
 			for (int j = 0; j < steps; j++) {
 				move(currentDir);
-				Thread.sleep(700);
+				Thread.sleep(300);
 			}
 		}
 	}
@@ -522,7 +522,7 @@ public class RV_12_ks_current extends ROVER_12 {
 
 			for (int j = 0; j < numSteps; j++) {
 				move(currentDir);
-				Thread.sleep(700);
+				Thread.sleep(300);
 			}
 		}
 	}
@@ -546,7 +546,7 @@ public class RV_12_ks_current extends ROVER_12 {
 
 			for (int j = 0; j < numSteps; j++) {
 				move(currentDir);
-				Thread.sleep(700);
+				Thread.sleep(300);
 			}
 		}
 	}
@@ -590,7 +590,7 @@ public class RV_12_ks_current extends ROVER_12 {
 		for (int i = 0; i < 5; i++) {
 			// get out of the crowd of rovers
 			move("S");
-			Thread.sleep(700);
+			Thread.sleep(300);
 		}
 	}
 
