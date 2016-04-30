@@ -81,4 +81,8 @@ public class MapTile {
 	public void setSciecne(Science sci) {
 		this.science = sci;
 	}
+
+	public String toString() {
+		return null;
+	}
 }
