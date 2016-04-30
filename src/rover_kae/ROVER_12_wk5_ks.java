@@ -27,7 +27,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class CopyOfROVER_12 {
+public class ROVER_12_wk5_ks {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -41,7 +41,7 @@ public class CopyOfROVER_12 {
 	MapTile[][] mapTileLog = new MapTile[100][100];
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 
-	public CopyOfROVER_12() {
+	public ROVER_12_wk5_ks() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -51,7 +51,7 @@ public class CopyOfROVER_12 {
 							// will cut connection if it is too small
 	}
 
-	public CopyOfROVER_12(String serverAddress) {
+	public ROVER_12_wk5_ks(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -101,22 +101,30 @@ public class CopyOfROVER_12 {
 			System.out.println(rovername + " equipment list results "
 					+ equipment + "\n");
 
+			
+			
 			// **** Request START_LOC Location from SwarmServer ****
 			rovergroupStartPosition = requestStartLoc(socket);
 			System.out.println(rovername + " START_LOC "
 					+ rovergroupStartPosition);
 			// Thread.sleep(10000);
+			
+			
+			
 			// **** Request TARGET_LOC Location from SwarmServer ****
 			targetLocation = requestTargetLoc(socket);
 			System.out.println(rovername + " TARGET_LOC " + targetLocation);
 			// Thread.sleep(10000);
+		
+			
+			
 			boolean goingSouth = false;
 			boolean goingEast = true;
 			boolean goingNorth = false;
 			boolean goingWest = true;
 			boolean stuck = false; // just means it did not change locations
 									// between requests,
-			// could be velocity limit or obstruction etc.
+			// could be velocity limit or obstruction etc. group12 - anyone knows what this means?
 			boolean blocked = false;
 
 			String[] cardinals = new String[4];
@@ -134,22 +142,29 @@ public class CopyOfROVER_12 {
 			 */
 			while (true) {
 
-				// **** Request Rover Location from SwarmServer ****
-				out.println("LOC");
-				line = in.readLine();
-				if (line == null) {
-					System.out.println(rovername
-							+ " check connection to server");
-					line = "";
-				}
-				if (line.startsWith("LOC")) {
-					// loc = line.substring(4);
-					currentLoc = extractLocationFromString(line);
+				currentLoc = setCurrentLoc(currentLoc);
+				/* 0. check to see if rover 12 has moved (the server has responded to move-request) 
+				 * 		a) moved - go to 1. 
+				 * 		b) not moved, Thread.sleep(800), continue to the next iteration of the loop*/
+				
+				/* 1. scan map tile (forget about mapLog b/c of JsonCopy) */
 
-				}
-				System.out.println(rovername + " currentLoc at start: "
-						+ currentLoc);
+				/* 2. check for stuckness (can be checked by observing 11 x 11 map tile) */
+				
+				/* 3. check 3 steps ahead (sands or rock?) */
+				
+				/* 4-a. move if next 3 tiles in current direction is clear */
+				
+				/* 4-b. switch direction if next 3 tiles contains sand or rock */
+				
+				/* end the controller process loop */
+				
 
+
+				
+				
+				
+				
 				// after getting location set previous equal current to be able
 				// to check for stuckness and blocked later
 				previousLoc = currentLoc;
@@ -161,7 +176,8 @@ public class CopyOfROVER_12 {
 				loadScanMapFromSwarmServer();
 				// prints the scanMap to the Console output for debug purposes
 				scanMap.debugPrintMap();
-	
+				
+				
 
 				// ***** MOVING *****
 				// try moving east 5 block if blocked
@@ -530,8 +546,8 @@ public class CopyOfROVER_12 {
 				// System.out.println("ROVER_12 stuck test " + stuck);
 				System.out.println("ROVER_12 blocked test " + blocked);
 
-				
-				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc.getYpos()));
+				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
+						.getYpos()));
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
 				Thread.sleep(sleepTime);
@@ -556,6 +572,27 @@ public class CopyOfROVER_12 {
 		}
 
 	} // END of Rover main control loop
+
+	private Coord setCurrentLoc(Coord currentLoc) throws IOException {
+		
+		String line;
+		// **** Request Rover Location from SwarmServer ****
+		out.println("LOC");
+		line = in.readLine();
+		if (line == null) {
+			System.out.println(rovername
+					+ " check connection to server");
+			line = "";
+		}
+		if (line.startsWith("LOC")) {
+			// loc = line.substring(4);
+			currentLoc = extractLocationFromString(line);
+
+		}
+		System.out.println(rovername + " currentLoc at start: "
+				+ currentLoc);
+		return currentLoc;
+	}
 
 	// to get the position of the rover--Febi added
 	private List<NextMoveModel> getTheCrystalLocation(MapTile[][] scanMapTiles,
@@ -627,7 +664,7 @@ public class CopyOfROVER_12 {
 	}
 
 	// sends a SCAN request to the server and puts the result in the scanMap
-	// array
+	// array group12 - this raw JsonData should be used for our maptileLog?
 	public void loadScanMapFromSwarmServer() throws IOException {
 		// System.out.println("ROVER_12 method doScan()");
 		Gson gson = new GsonBuilder().setPrettyPrinting()
@@ -643,6 +680,7 @@ public class CopyOfROVER_12 {
 		StringBuilder jsonScanMap = new StringBuilder();
 		System.out.println("ROVER_12 incomming SCAN result - first readline: "
 				+ jsonScanMapIn);
+	
 
 		if (jsonScanMapIn.startsWith("SCAN")) {
 			while (!(jsonScanMapIn = in.readLine()).equals("SCAN_END")) {
@@ -883,8 +921,94 @@ public class CopyOfROVER_12 {
 			}
 		}
 
-		
 		debugPrintMapTileArray(mapTileLog);
+	}
+
+	private void move(String dir) throws IOException {
+		System.out.println("current location in move(): " + currentLoc);
+		setCurrentLoc(currentLoc);
+		// doScanOriginal();
+
+		switch (dir) {
+
+		case "E":
+			if (!checkSand("E")) {
+				System.out.println("request move -> E");
+				moveEast();
+			}
+			break;
+		case "W":
+			if (!checkSand("W")) {
+				System.out.println("request move -> W");
+				moveWest();
+			}
+			break;
+		case "N":
+			if (!checkSand("N")) {
+				System.out.println("request move -> N");
+				moveNorth();
+			}
+			break;
+		case "S":
+			if (!checkSand("S")) {
+				System.out.println("request move -> S");
+				moveSouth();
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	private void moveEast() throws IOException {
+
+		out.println("MOVE E");
+		System.out.print(currentLoc + " - E -> ");
+		System.out.print(currentLoc + "\n");
+	}
+
+	private void moveWest() throws IOException {
+		out.println("MOVE W");
+		System.out.print(currentLoc + " - W -> ");
+		System.out.print(currentLoc + "\n");
+	}
+
+	private void moveNorth() throws IOException {
+		out.println("MOVE N");
+		System.out.print(currentLoc + " - N -> ");
+		System.out.print(currentLoc + "\n");
+
+	}
+
+	private void moveSouth() throws IOException {
+		out.println("MOVE S");
+		System.out.print(currentLoc + " - S -> ");
+		System.out.print(currentLoc + "\n");
+
+	}
+
+	// KSTD - very ugly. Does anyone know how to make this better?
+	public boolean checkSand(String direction) {
+
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex, scanRange = 2;
+
+		for (int i = 1; i < scanRange; i++) {
+			if (direction == "S")
+				x = centerIndex + i;
+			else if (direction == "N")
+				x = centerIndex - i;
+			else if (direction == "E")
+				y = centerIndex + i;
+			else
+				y = centerIndex - i;
+
+			// Checks whether there is sand in the next tile
+			if (scanMap.getScanMap()[x][y].getTerrain() == Terrain.SAND)
+				return true;
+		}
+
+		return false;
 	}
 
 	public boolean withinTheGrid(int i, int j, int arrayLength) {
@@ -895,7 +1019,7 @@ public class CopyOfROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		CopyOfROVER_12 client = new CopyOfROVER_12();
+		ROVER_12_wk5_ks client = new ROVER_12_wk5_ks();
 		client.run();
 	}
 }
