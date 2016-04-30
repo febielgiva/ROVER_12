@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import swarmBots.ROVER_12;
+import temp.ROVER_12_ks;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -37,7 +37,7 @@ import enums.Terrain;
  * allowed # request to the server per sec = 500 2 req / sec
  */
 
-public class RV_12_ks_current extends ROVER_12 {
+public class RV_12_ks_current extends ROVER_12_ks {
 	Random rd = new Random();
 	Coord currentLoc, previousLoc;
 	String currentDir = "";
@@ -82,9 +82,6 @@ public class RV_12_ks_current extends ROVER_12 {
 
 		ArrayList<String> equipment = getEquipment();
 		System.out.println("ROVER_12 equipment list " + equipment + "\n");
-
-		// for debug
-		// moveRover12ToAClearArea();
 
 		// ******** Rover motion *********
 
@@ -438,6 +435,7 @@ public class RV_12_ks_current extends ROVER_12 {
 			currentLoc = extractLOC(line);
 		}
 	}
+	
 
 	private void snake(String[] cardinals, int scanRange) {
 		// TODO Auto-generated method stub
