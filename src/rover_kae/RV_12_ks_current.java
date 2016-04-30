@@ -117,8 +117,7 @@ public class RV_12_ks_current extends ROVER_12 {
 			//random(cardinals);
 			Thread.sleep(sleepTime);
 
-			System.out
-					.println("\nROVER_12 ------------ bottom process control --------------");
+			System.out.println("\nROVER_12 ------------ bottom process control --------------");
 		}
 	}
 
