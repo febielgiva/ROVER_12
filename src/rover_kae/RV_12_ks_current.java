@@ -735,6 +735,14 @@ public class RV_12_ks_current extends ROVER_12_ks {
 		// System.out.println("scanMap: ");
 		// debugPrintMapTileArray(ptrScanMap);
 
+		logGeoInfo(ptrScanMap);
+	}
+
+	private void logGeoInfo(MapTile[][] ptrScanMap) {
+		Terrain ter;
+		Science sci;
+		int elev;
+		boolean hasR;
 		// FIXME - there's a problem with the map copy
 		for (int i = 0; i < ptrScanMap.length; i++) {
 			for (int j = 0; j < ptrScanMap.length; j++) {

@@ -1,4 +1,4 @@
-package swarmBots;
+package rover_kae;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,7 +27,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class ROVER_12 {
+public class CopyOfROVER_12 {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -41,7 +41,7 @@ public class ROVER_12 {
 	MapTile[][] mapTileLog = new MapTile[100][100];
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 
-	public ROVER_12() {
+	public CopyOfROVER_12() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -51,7 +51,7 @@ public class ROVER_12 {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12(String serverAddress) {
+	public CopyOfROVER_12(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -895,7 +895,7 @@ public class ROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12 client = new ROVER_12();
+		CopyOfROVER_12 client = new CopyOfROVER_12();
 		client.run();
 	}
 }
