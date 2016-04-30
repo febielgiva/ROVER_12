@@ -37,7 +37,7 @@ import enums.Terrain;
  * allowed # request to the server per sec = 500 2 req / sec
  */
 
-public class RV_12_ks_current extends ROVER_12_ks {
+public class RV_12_ks_wk5_current extends ROVER_12_ks {
 	Random rd = new Random();
 	Coord currentLoc, previousLoc;
 	String currentDir = "";
@@ -45,24 +45,24 @@ public class RV_12_ks_current extends ROVER_12_ks {
 	Set<String> blockedDirs = new HashSet<String>();
 	Set<String> openDirs = new HashSet<String>();
 	String[] cardinals = new String[4];
-	MapTile[][] mapTileLog = new MapTile[100][100];
+
+	MapTile[][] mapTileLog = new MapTile[100][100], tempMapTiles;
 	boolean[][] footPrints = new boolean[100][100];
 	Socket socket;
-	MapTile[][] tempScanMap;
 
-	public RV_12_ks_current() {
+	public RV_12_ks_wk5_current() {
 		super();
 	}
 
-	public RV_12_ks_current(String serverAddress) {
+	public RV_12_ks_wk5_current(String serverAddress) {
 		super(serverAddress);
 	}
 
 	public void run() throws IOException, InterruptedException {
 
-
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
+		int pedometer = 0;
 		try {
 			socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS);
 
@@ -70,11 +70,8 @@ public class RV_12_ks_current extends ROVER_12_ks {
 					socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
 
-
 			// ********* Start a communication to the server *********
 			submiteRoverName();
-			
-			
 
 			// ********* Rover logic setup *********
 			/**
@@ -82,43 +79,100 @@ public class RV_12_ks_current extends ROVER_12_ks {
 			 */
 			String line = "";
 			ArrayList<String> equipment = new ArrayList<String>();
+			equipment = getEquipment();
+
+			// **** Request START_LOC Location from SwarmServer ****
+			rovergroupStartPosition = requestStartLoc(socket);
+			System.out.println(rovername + " START_LOC "
+					+ rovergroupStartPosition);
+			// Thread.sleep(10000);
+
+			// **** Request TARGET_LOC Location from SwarmServer ****
+			targetLocation = requestTargetLoc(socket);
+			System.out.println(rovername + " TARGET_LOC " + targetLocation);
+			// Thread.sleep(10000);
 			boolean goingSouth = false;
 			boolean goingEast = true;
 			boolean goingNorth = false;
 			boolean goingWest = true;
 			boolean stuck = false; // just means it did not change locations
 									// between requests,
-			String[] cardinals = new String[4];
-			cardinals[0] = "N";
-			cardinals[1] = "E";
-			cardinals[2] = "S";
-			cardinals[3] = "W";
-			
+
+			Coord previousLoc;
+			int i = 0;
+			switchDir_ESWS();
 			// **** get equipment listing ****
 			equipment = getEquipment();
 			System.out.println(rovername + " equipment list results "
 					+ equipment + "\n");
 
-			
-			
-			// **** Request START_LOC Location from SwarmServer ****
-			rovergroupStartPosition = requestStartLoc(socket);
-			System.out.println(rovername + " START_LOC "
-					+ rovergroupStartPosition);
-			// Thread.sleep(10000);
-			
-			
-			
-			// **** Request TARGET_LOC Location from SwarmServer ****
-			targetLocation = requestTargetLoc(socket);
-			System.out.println(rovername + " TARGET_LOC " + targetLocation);
-			// Thread.sleep(10000);
-			
-			
-			
-			
-			// could be velocity limit or obstruction etc.
+			/**
+			 * #### Rover controller process loop ####
+			 */
+			currentLoc = setCurrentLoc(currentLoc);
+			while (true) {
+
+				previousLoc = currentLoc.clone();
+
+				System.out.println("curr loc (before a move request): "
+						+ currentLoc);
+				System.out.println("prev loc (before a move request): "
+						+ previousLoc);
+
+				/*
+				 * 0. check to see if rover 12 has moved (the server has
+				 * responded to move-request) a) moved - go to 1. b) not moved,
+				 * Thread.sleep(800), continue to the next iteration of the loop
+				 */
+				doScanOriginal();
+				/* 1. scan map tile (forget about mapLog b/c of JsonCopy) */
+
+				/*
+				 * 2. check for stuckness (can be checked by observing 11 x 11
+				 * map tile)
+				 */
+
+				/* 3. check 3 steps ahead (sands or rock?) */
+
+				/* 4-a. move if next 3 tiles in current direction is clear */
+
+				/* 4-b. switch direction if next 3 tiles contains sand or rock */
+
+				/* end the controller process loop */
+
+				scanMap.debugPrintMap();
+				
+				i = (i > 2) ? 0 : (i + 1);
+				move(cardinals[i]);
+				System.out.println("curr direction:" + cardinals[i] + "\ti="
+						+ i);
+
+				setCurrentLoc(currentLoc);
+				System.out.println("curr loc (after a move request): "
+						+ currentLoc);
+
+				pedometer = incrementPedometer(pedometer, previousLoc);
+
+				Thread.sleep(3000);
+
+			}// end of controller process loop
+		} finally {
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (IOException e) {
+					System.out.println("ROVER_12 problem closing socket");
+				}
+			}
+		}
+
 	}
+
+	private int incrementPedometer(int pedometer, Coord previousLoc) {
+		// increment pedometer
+		return pedometer += Math.abs(currentLoc.getXpos()
+				- previousLoc.getXpos())
+				+ Math.abs(currentLoc.getYpos() - previousLoc.getYpos());
 	}
 
 	private void submiteRoverName() throws IOException {
@@ -280,42 +334,42 @@ public class RV_12_ks_current extends ROVER_12_ks {
 		System.out.println("scan map size ( findBlockedDirs() ): "
 				+ scanMap.getEdgeSize());
 
-		tempScanMap = scanMap.getScanMap();
+		tempMapTiles = scanMap.getScanMap();
 
 		// debugPrintDirs(scanMapTiles, centerIndex);
 		System.out.println("scanMapTiles: " + scanMap.getScanMap());
-		if (withinTheGrid(centerIndex, centerIndex - 1, tempScanMap.length)
-				&& tempScanMap[centerIndex][centerIndex - 1].getHasRover()
-				|| tempScanMap[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
-				|| tempScanMap[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
-				|| tempScanMap[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
+		if (withinTheGrid(centerIndex, centerIndex - 1, tempMapTiles.length)
+				&& tempMapTiles[centerIndex][centerIndex - 1].getHasRover()
+				|| tempMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
+				|| tempMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
+				|| tempMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
 			System.out.println("north blocked");
 			blockedDirs.add("N");
 		}
 
-		if (withinTheGrid(centerIndex, centerIndex + 1, tempScanMap.length)
-				&& tempScanMap[centerIndex][centerIndex + 1].getHasRover()
-				|| tempScanMap[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
-				|| tempScanMap[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
-				|| tempScanMap[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
+		if (withinTheGrid(centerIndex, centerIndex + 1, tempMapTiles.length)
+				&& tempMapTiles[centerIndex][centerIndex + 1].getHasRover()
+				|| tempMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
+				|| tempMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
+				|| tempMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
 			System.out.println("south blocked");
 			blockedDirs.add("S");
 		}
 
-		if (withinTheGrid(centerIndex + 1, centerIndex, tempScanMap.length)
-				&& tempScanMap[centerIndex + 1][centerIndex].getHasRover()
-				|| tempScanMap[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
-				|| tempScanMap[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
-				|| tempScanMap[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
+		if (withinTheGrid(centerIndex + 1, centerIndex, tempMapTiles.length)
+				&& tempMapTiles[centerIndex + 1][centerIndex].getHasRover()
+				|| tempMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
+				|| tempMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
+				|| tempMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
 			System.out.println("east blocked");
 			blockedDirs.add("E");
 		}
 
-		if (withinTheGrid(centerIndex - 1, centerIndex, tempScanMap.length)
-				&& tempScanMap[centerIndex - 1][centerIndex].getHasRover()
-				|| tempScanMap[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
-				|| tempScanMap[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
-				|| tempScanMap[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
+		if (withinTheGrid(centerIndex - 1, centerIndex, tempMapTiles.length)
+				&& tempMapTiles[centerIndex - 1][centerIndex].getHasRover()
+				|| tempMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
+				|| tempMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
+				|| tempMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
 			System.out.println("west blocked");
 			blockedDirs.add("W");
 		}
@@ -390,7 +444,7 @@ public class RV_12_ks_current extends ROVER_12_ks {
 		}
 	}
 
-	// TODO - we will not need it. (we don't carry any excavation tool)
+	// TODO - we will not need it. (we don't carry any of the excavation tools)
 	private void harvestScience() {
 	}
 
@@ -433,21 +487,24 @@ public class RV_12_ks_current extends ROVER_12_ks {
 
 	}
 
-	private void setCurrentLoc(Coord loc) throws IOException {
+	private Coord setCurrentLoc(Coord currentLoc) throws IOException {
+
 		String line;
+		// **** Request Rover Location from SwarmServer ****
 		out.println("LOC");
 		line = in.readLine();
 		if (line == null) {
-			// System.out.println("ROVER_12 check connection to server");
+			System.out.println(rovername + " check connection to server");
 			line = "";
 		}
 		if (line.startsWith("LOC")) {
 			// loc = line.substring(4);
-			currentLoc = extractLOC(line);
+			currentLoc = extractLocationFromString(line);
+
 		}
+		System.out.println(rovername + " currentLoc at start: " + currentLoc);
+		return currentLoc;
 	}
-
-
 
 	private void sinusoidal(String[] cardinals) throws InterruptedException,
 			IOException {
@@ -479,8 +536,11 @@ public class RV_12_ks_current extends ROVER_12_ks {
 
 	private void move(String dir) throws IOException {
 		System.out.println("current location in move(): " + currentLoc);
-		setCurrentLoc(currentLoc);
-		// doScanOriginal();
+
+		System.out.println(dir.equals("E"));
+		System.out.println(dir.equals("W"));
+		System.out.println(dir.equals("S"));
+		System.out.println(dir.equals("N"));
 
 		switch (dir) {
 
@@ -831,7 +891,7 @@ public class RV_12_ks_current extends ROVER_12_ks {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		RV_12_ks_current client = new RV_12_ks_current();
+		RV_12_ks_wk5_current client = new RV_12_ks_wk5_current();
 		client.run();
 	}
 
