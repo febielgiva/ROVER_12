@@ -1,4 +1,4 @@
-package rover_febi;
+package swarmBots;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,18 +24,19 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class Rover_12Febi {
+public class r {
 
 	BufferedReader in;
 	PrintWriter out;
 	String rovername;
 	ScanMap scanMap;
 	int sleepTime;
-	String SERVER_ADDRESS = "localhost";
+	String SERVER_ADDRESS = "localhost", line;
 	static final int PORT_ADDRESS = 9537;
 	static String myJSONStringBackupofMap;
+	Coord currentLoc,rovergroupStartPosition = null,targetLocation = null;
 
-	public Rover_12Febi() {
+	public r() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -44,7 +45,7 @@ public class Rover_12Febi {
 		sleepTime = 300; // in milliseconds - smaller is faster, but the server will cut connection if it is too small
 	}
 
-	public Rover_12Febi(String serverAddress) {
+	public r(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -82,8 +83,6 @@ public class Rover_12Febi {
 			// ********* Rover logic setup *********
 
 			String line = "";
-			Coord rovergroupStartPosition = null;
-			Coord targetLocation = null;
 
 			/**
 			 *  Get initial values that won't change
@@ -792,12 +791,84 @@ public class Rover_12Febi {
 		return null;
 	}
 
+	private Coord requestStartLoc(Socket soc) throws IOException {
 
+		// **** Request Rover Location from SwarmServer ****
+		out.println("LOC");
+		line = in.readLine();
+		if (line == null) {
+			System.out.println(rovername + " check connection to server");
+			line = "";
+		}
+		if (line.startsWith("LOC")) {
+			// loc = line.substring(4);
+			currentLoc = extractLocationFromString(line);
+
+		}
+		System.out.println(rovername + " currentLoc at start: " + currentLoc);
+
+		out.println("START_LOC " + currentLoc.getXpos() + " "
+				+ currentLoc.getYpos());
+		line = in.readLine();
+
+		if (line == null || line == "") {
+			System.out.println("ROVER_12 check connection to server");
+			line = "";
+		}
+
+		//
+		System.out.println();
+		if (line.startsWith("START")) {
+			rovergroupStartPosition = extractStartLOC(line);
+		}
+		return rovergroupStartPosition;
+	}
+	
+	public static Coord extractCurrLOC(String sStr) {
+		sStr = sStr.substring(4);
+		if (sStr.lastIndexOf(" ") != -1) {
+			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			// System.out.println("extracted xStr " + xStr);
+
+			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+			// System.out.println("extracted yStr " + yStr);
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+		}
+		return null;
+	}
+
+	public static Coord extractStartLOC(String sStr) {
+
+		sStr = sStr.substring(10);
+
+		if (sStr.lastIndexOf(" ") != -1) {
+			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			// System.out.println("extracted xStr " + xStr);
+
+			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+			// System.out.println("extracted yStr " + yStr);
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+		}
+		return null;
+	}
+	
+	public static Coord extractTargetLOC(String sStr) {
+		sStr = sStr.substring(11);
+		if (sStr.lastIndexOf(" ") != -1) {
+			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			System.out.println("extracted xStr " + xStr);
+
+			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+			System.out.println("extracted yStr " + yStr);
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+		}
+		return null;
+	}
 	/**
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		Rover_12Febi client = new Rover_12Febi();
+		r client = new r();
 		client.run();
 	}
 }

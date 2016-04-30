@@ -1,10 +1,10 @@
 ## CS537-Group12 (Wheels,	Spectral Sensor,	Range Extender)
 ### Links
-- Rover Requirements: http://csns.calstatela.edu/site/s16/cs537-1/item/5402135
-- Helpful Time Complexity Chart, Java Library Data Structures (http://bit.ly/1SB3qat)
-- Rover Specs (http://bit.ly/1QnSPYJ)
-- Git Command (Google Doc): http://bit.ly/23FXbY5
-- Class/ Meeting Recap notes (Google Doc): http://bit.ly/1qPuqH0
+- <a href="http://csns.calstatela.edu/site/s16/cs537-1/item/5402135" target="_blank">Rover Requirements</a>
+- <a href="http://bit.ly/1SB3qat" target="_blank">Helpful Time Complexity Chart, Java Library Data Structure</a>
+- <a href="http://bit.ly/1QnSPYJ" target="_blank">Rover Specs</a>
+- <a href="http://bit.ly/23FXbY5" target="_blank">Git Command (Google Doc)</a>
+- <a href="http://bit.ly/1qPuqH0 " target="_blank">Class/ Meeting Recap notes (Google Doc)</a>
 
 ###Git Commands:
 * Sync with SwermServerAndSampleRover repo
