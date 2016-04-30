@@ -6,7 +6,6 @@ import org.junit.Test;
 
 import common.Coord;
 import common.MapTile;
-import d1.Fruit;
 import enums.Terrain;
 import enums.Science;
 import common.ScanMap;
