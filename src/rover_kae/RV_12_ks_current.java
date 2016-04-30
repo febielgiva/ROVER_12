@@ -60,63 +60,80 @@ public class RV_12_ks_current extends ROVER_12_ks {
 
 	public void run() throws IOException, InterruptedException {
 
-		int rdNum;
-		String currentDir;
-		boolean stuck = false;
 
-		// initMapTileLog();
+		// Make connection to SwarmServer and initialize streams
+		Socket socket = null;
+		try {
+			socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS);
 
-		// TODO - need to close this socket
-		makeConnAndInitStream();
-		processServerMsgAndWaitForIDRequestCall();
-		this.doScan();
+			in = new BufferedReader(new InputStreamReader(
+					socket.getInputStream()));
+			out = new PrintWriter(socket.getOutputStream(), true);
 
-		// debug
-		// scanMap.debugPrintMap();
-		// debugPrintMapTileArray(mapTileLog);
-		// System.out.println(currentLoc);
 
-		// ******** Rover logic *********
-		String[] cardinals = { "E", "S", "W", "N" };
-		String line = "";
+			// ********* Start a communication to the server *********
+			submiteRoverName();
+			
+			
 
-		ArrayList<String> equipment = getEquipment();
-		System.out.println("ROVER_12 equipment list " + equipment + "\n");
+			// ********* Rover logic setup *********
+			/**
+			 * Get initial values that won't change
+			 */
+			String line = "";
+			ArrayList<String> equipment = new ArrayList<String>();
+			boolean goingSouth = false;
+			boolean goingEast = true;
+			boolean goingNorth = false;
+			boolean goingWest = true;
+			boolean stuck = false; // just means it did not change locations
+									// between requests,
+			String[] cardinals = new String[4];
+			cardinals[0] = "N";
+			cardinals[1] = "E";
+			cardinals[2] = "S";
+			cardinals[3] = "W";
+			
+			// **** get equipment listing ****
+			equipment = getEquipment();
+			System.out.println(rovername + " equipment list results "
+					+ equipment + "\n");
 
-		// ******** Rover motion *********
-
-		int waveLength = 6, waveHeight = 6;
-		sinusoidal_LR(cardinals, waveLength, waveHeight);
-		hzDir = 1;
-
-		while (true) {
-
-			setCurrentLoc(currentLoc);
-			if (currentLoc.getXpos() > 45) {
-				sinusoidal_RL(cardinals, waveLength, waveHeight);
-			} else {
-
-				sinusoidal_LR(cardinals, waveLength, waveHeight);
-			}
-
-			sinusoidal(cardinals);
-
-			Thread.sleep(sleepTime);
-
-			System.out
-					.println("\nROVER_12 ------------ bottom process control --------------");
-		}
+			
+			
+			// **** Request START_LOC Location from SwarmServer ****
+			rovergroupStartPosition = requestStartLoc(socket);
+			System.out.println(rovername + " START_LOC "
+					+ rovergroupStartPosition);
+			// Thread.sleep(10000);
+			
+			
+			
+			// **** Request TARGET_LOC Location from SwarmServer ****
+			targetLocation = requestTargetLoc(socket);
+			System.out.println(rovername + " TARGET_LOC " + targetLocation);
+			// Thread.sleep(10000);
+			
+			
+			
+			
+			// could be velocity limit or obstruction etc.
+	}
 	}
 
-	private void switchDir_sinusoidal() throws InterruptedException,
-			IOException {
-		int waveLength = 6, waveHeight = 4;
-		if (hzDir == 1) {
-			sinusoidal_RL(cardinals, waveLength, waveHeight);
-			hzDir = 0;
-		} else {
-			sinusoidal_LR(cardinals, waveLength, waveHeight);
-			hzDir = 1;
+	private void submiteRoverName() throws IOException {
+		// Process all messages from server, wait until server requests
+		// Rover ID
+		// name - Return Rover Name to complete connection
+		while (true) {
+			String line = in.readLine();
+			if (line.startsWith("SUBMITNAME")) {
+				out.println(rovername); // This sets the name of this
+										// instance
+				// of a swarmBot for identifying the
+				// thread to the server
+				break;
+			}
 		}
 	}
 
@@ -150,13 +167,7 @@ public class RV_12_ks_current extends ROVER_12_ks {
 	}
 
 	private void processServerMsgAndWaitForIDRequestCall() throws IOException {
-		while (true) {
-			String line = in.readLine();
-			if (line.startsWith("SUBMITNAME")) {
-				out.println(rovername);
-				break;
-			}
-		}
+		submiteRoverName();
 	}
 
 	private void resetOpenDir() {
@@ -435,12 +446,8 @@ public class RV_12_ks_current extends ROVER_12_ks {
 			currentLoc = extractLOC(line);
 		}
 	}
-	
 
-	private void snake(String[] cardinals, int scanRange) {
-		// TODO Auto-generated method stub
 
-	}
 
 	private void sinusoidal(String[] cardinals) throws InterruptedException,
 			IOException {
@@ -535,8 +542,7 @@ public class RV_12_ks_current extends ROVER_12_ks {
 
 	private void sinusoidal_LR(String[] cardinals, int waveLength,
 			int waveHeight) throws InterruptedException, IOException {
-		
-		
+
 		Coord startPos;
 		int numSteps = waveLength;
 		String currentDir;
@@ -557,8 +563,10 @@ public class RV_12_ks_current extends ROVER_12_ks {
 			while ((currentLoc.getXpos() - startPos.getXpos()) < numSteps) {
 				if (!isSand(currentDir)) {
 					move(currentDir);
-					if(currentLoc.getXpos() > 45) // should not be hard coded
-						{break;}
+					if (currentLoc.getXpos() > 45) // should not be hard coded
+					{
+						break;
+					}
 					Thread.sleep(300);
 				}
 				setCurrentLoc(currentLoc);
@@ -592,7 +600,8 @@ public class RV_12_ks_current extends ROVER_12_ks {
 				}
 				setCurrentLoc(currentLoc);
 			}
-		}	}
+		}
+	}
 
 	private void moveTowardsSandForDebug() throws IOException {
 		for (int i = 0; i < 17; i++) {
@@ -911,6 +920,54 @@ public class RV_12_ks_current extends ROVER_12_ks {
 		 * 
 		 * -
 		 */
+	}
+
+	public void switchDir_ESWS() {
+		// towards south
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "W";
+		cardinals[3] = "S";
+	}
+
+	public void switchDir_ENWN() {
+		// towards north
+		cardinals[0] = "E";
+		cardinals[1] = "N";
+		cardinals[2] = "W";
+		cardinals[3] = "N";
+	}
+
+	public void switchDir_ESWN() {
+		// clock wise
+		cardinals[0] = "N";
+		cardinals[1] = "E";
+		cardinals[2] = "S";
+		cardinals[3] = "W";
+	}
+
+	public void switchDir_ESEN() {
+		// towards east
+		cardinals[0] = "N";
+		cardinals[1] = "E";
+		cardinals[2] = "S";
+		cardinals[3] = "W";
+	}
+
+	public void switchDir_WSWN() {
+		// towards west
+		cardinals[0] = "N";
+		cardinals[1] = "E";
+		cardinals[2] = "S";
+		cardinals[3] = "W";
+	}
+
+	public void switchDir_ENWS() {
+		// counter-clock wise
+		cardinals[0] = "N";
+		cardinals[1] = "E";
+		cardinals[2] = "S";
+		cardinals[3] = "W";
 	}
 
 	public void initMapTileLog() {

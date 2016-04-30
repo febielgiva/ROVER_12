@@ -161,7 +161,6 @@ public class CopyOfROVER_12 {
 				loadScanMapFromSwarmServer();
 				// prints the scanMap to the Console output for debug purposes
 				scanMap.debugPrintMap();
-	
 
 				// ***** MOVING *****
 				// try moving east 5 block if blocked
@@ -530,8 +529,8 @@ public class CopyOfROVER_12 {
 				// System.out.println("ROVER_12 stuck test " + stuck);
 				System.out.println("ROVER_12 blocked test " + blocked);
 
-				
-				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc.getYpos()));
+				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
+						.getYpos()));
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
 				Thread.sleep(sleepTime);
@@ -883,8 +882,94 @@ public class CopyOfROVER_12 {
 			}
 		}
 
-		
 		debugPrintMapTileArray(mapTileLog);
+	}
+
+	private void move(String dir) throws IOException {
+		System.out.println("current location in move(): " + currentLoc);
+		setCurrentLoc(currentLoc);
+		// doScanOriginal();
+
+		switch (dir) {
+
+		case "E":
+			if (!checkSand("E")) {
+				System.out.println("request move -> E");
+				moveEast();
+			}
+			break;
+		case "W":
+			if (!checkSand("W")) {
+				System.out.println("request move -> W");
+				moveWest();
+			}
+			break;
+		case "N":
+			if (!checkSand("N")) {
+				System.out.println("request move -> N");
+				moveNorth();
+			}
+			break;
+		case "S":
+			if (!checkSand("S")) {
+				System.out.println("request move -> S");
+				moveSouth();
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	private void moveEast() throws IOException {
+
+		out.println("MOVE E");
+		System.out.print(currentLoc + " - E -> ");
+		System.out.print(currentLoc + "\n");
+	}
+
+	private void moveWest() throws IOException {
+		out.println("MOVE W");
+		System.out.print(currentLoc + " - W -> ");
+		System.out.print(currentLoc + "\n");
+	}
+
+	private void moveNorth() throws IOException {
+		out.println("MOVE N");
+		System.out.print(currentLoc + " - N -> ");
+		System.out.print(currentLoc + "\n");
+
+	}
+
+	private void moveSouth() throws IOException {
+		out.println("MOVE S");
+		System.out.print(currentLoc + " - S -> ");
+		System.out.print(currentLoc + "\n");
+
+	}
+
+	// KSTD - very ugly. Does anyone know how to make this better?
+	public boolean checkSand(String direction) {
+
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex, scanRange = 2;
+
+		for (int i = 1; i < scanRange; i++) {
+			if (direction == "S")
+				x = centerIndex + i;
+			else if (direction == "N")
+				x = centerIndex - i;
+			else if (direction == "E")
+				y = centerIndex + i;
+			else
+				y = centerIndex - i;
+
+			// Checks whether there is sand in the next tile
+			if (scanMap.getScanMap()[x][y].getTerrain() == Terrain.SAND)
+				return true;
+		}
+
+		return false;
 	}
 
 	public boolean withinTheGrid(int i, int j, int arrayLength) {
