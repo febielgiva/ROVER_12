@@ -161,26 +161,25 @@ public class Rover_12 {
 					if(!checkSand(scanMapTiles, "S"))	
 					{
 					out.println("MOVE S");
-					// System.out.println("ROVER_00 request move E");
+					
 					Thread.sleep(1100);
 					}
 					
 					else if(!checkSand(scanMapTiles, "E"))	
 						{
 						out.println("MOVE E");
-						// System.out.println("ROVER_00 request move E");
+						
 						Thread.sleep(1100);
 						}
 					else if(!checkSand(scanMapTiles, "W"))	
 					{
 					out.println("MOVE W");
-					// System.out.println("ROVER_00 request move E");
-					Thread.sleep(1100);
+										Thread.sleep(1100);
 					}
 					else if(!checkSand(scanMapTiles, "N"))	
 					{
 					out.println("MOVE N");
-					// System.out.println("ROVER_00 request move E");
+					
 					Thread.sleep(1100);
 					}
 				}
@@ -380,6 +379,43 @@ public class Rover_12 {
 		return false;
 	}
 	
+	// -----> To be done 
+	// TODO - incomplete
+		@SuppressWarnings("unused")
+		private void debugPrint4Dirs(Coord currLoc) {
+			// System.out.println("center: "+
+			// getScanMap().[currLoc.getYpos()][currLoc.getXpos()]);
+			scanMap.debugPrintMap();
+		}
+		
+		public void doScanOriginal() throws IOException {
+			Gson gson = new GsonBuilder().setPrettyPrinting()
+					.enableComplexMapKeySerialization().create();
+			out.println("SCAN");
+
+			String jsonScanMapIn = in.readLine();
+			if (jsonScanMapIn == null) {
+				System.out.println("ROVER_12 check connection to server");
+				jsonScanMapIn = "";
+			}
+			StringBuilder jsonScanMap = new StringBuilder();
+
+			if (jsonScanMapIn.startsWith("SCAN")) {
+				while (!(jsonScanMapIn = in.readLine()).equals("SCAN_END")) {
+					jsonScanMap.append(jsonScanMapIn);
+					jsonScanMap.append("\n");
+				}
+			} else {
+				// in case the server call gives unexpected results
+				clearReadLineBuffer();
+				return; // server response did not start with "SCAN"
+			}
+
+			String jsonScanMapString = jsonScanMap.toString();
+			scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
+
+		}
+
 	
 	
 	/**
