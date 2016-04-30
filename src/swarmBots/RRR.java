@@ -24,7 +24,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class ROVER_12 {
+public class RRR {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -36,7 +36,7 @@ public class ROVER_12 {
 	static String myJSONStringBackupofMap;
 	Coord currentLoc, rovergroupStartPosition = null, targetLocation = null;
 
-	public ROVER_12() {
+	public RRR() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -46,7 +46,7 @@ public class ROVER_12 {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12(String serverAddress) {
+	public RRR(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -953,7 +953,7 @@ public class ROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12 client = new ROVER_12();
+		RRR client = new RRR();
 		client.run();
 	}
 }
