@@ -3,14 +3,14 @@ package swarmBots;
 public class NextMoveModel {
 	int row;
 	int column;
-	boolean crystal;
+	String dir;
 	
 	
-	public NextMoveModel(int row, int column, boolean crystal) {
+	public NextMoveModel(int row, int column, String direction) {
 		super();
 		this.row = row;
 		this.column = column;
-		this.crystal = crystal;
+		this.dir = direction;
 	}
 
 
@@ -34,13 +34,13 @@ public class NextMoveModel {
 	}
 
 
-	public boolean isCrystal() {
-		return crystal;
+	public String isCrystal() {
+		return dir;
 	}
 
 
-	public void setCrystal(boolean crystal) {
-		this.crystal = crystal;
+	public void setCrystal(String crystal) {
+		this.dir = crystal;
 	}
 	
 	

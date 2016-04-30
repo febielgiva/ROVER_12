@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,23 +32,22 @@ import enums.Terrain;
  */
 
 // this comment is for commit
-public class ROVER_12 {
+public class ROVER_12_A {
 
 	protected BufferedReader in;
 	protected PrintWriter out;
-	protected String rovername, line, currDir;
+	protected String rovername, line;
 	protected ScanMap scanMap;
 	protected Coord targetLocation, rovergroupStartPosition, previousLoc;
 	private static Coord currentLoc;
 
-	protected int sleepTime, serverMapSize, roverLogicType = 1;
+	protected int sleepTime, serverMapSize, roverLogicType=1;
 	protected String SERVER_ADDRESS = "localhost";
 	protected static final int PORT_ADDRESS = 9537;
 	protected MapTile[][] mapTileLog = new MapTile[serverMapSize][serverMapSize];
-	Deque<NextMoveModel> dirStack = new ArrayDeque<NextMoveModel>();
-	protected StringBuilder dirTracker = new StringBuilder();
+	
 
-	public ROVER_12() {
+	public ROVER_12_A() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -60,7 +57,7 @@ public class ROVER_12 {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12(String serverAddress) {
+	public ROVER_12_A(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -81,7 +78,12 @@ public class ROVER_12 {
 			in = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
-			
+
+			// Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+			// Process all messages from server, wait until server requests
+			// Rover ID
+			// name
 			while (true) {
 				String line = in.readLine();
 				if (line.startsWith("SUBMITNAME")) {
@@ -117,8 +119,6 @@ public class ROVER_12 {
 			targetLocation = requestTargetLoc(socket);
 			System.out.println(rovername + " TARGET_LOC " + targetLocation);
 
-			
-			Thread.sleep(3000);
 			// could be velocity limit or obstruction etc.
 			boolean blocked = false;
 
@@ -148,500 +148,84 @@ public class ROVER_12 {
 			/**
 			 * #### Rover controller process loop ####
 			 */
-			boolean goingSouth = false;
-			boolean goingEast = true;
-			boolean goingNorth = false;
-			boolean goingWest = true;
-			// ***** MOVING *****
-			// try moving east 5 block if blocked
+			while (true) {
 
-			doScan();
-			// pull the MapTile array out of the ScanMap object
-			MapTile[][] scanMapTiles = scanMap.getScanMap();
+				System.out.println(rovername + " currentLoc at start: "
+						+ currentLoc);
 
-			//printing the scan map with content and position
-			//to get a clear picture on the obstacles
-			//				for (int i = 0; i < scanMapTiles.length; i++) {
-			//					for (int j = 0; j < scanMapTiles.length; j++) {
-			//						System.out.println("i , j = value"+i+"   "+i+"  "+scanMapTiles[i][j] );
-			//					}
-			//				}
-			int centerIndex = (scanMap.getEdgeSize() - 1)/2;
-			// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
+				System.out.println(rovername + " currentLoc at start: "
+						+ currentLoc);
 
+				// after getting location set previous equal current to be able
+				// to check for stuckness and blocked later
+				previousLoc = currentLoc;
+				System.out.println("curr: " + currentLoc);
+				System.out.println("prev: " + previousLoc);
 
-			//*************Febi's Logic For motion**********
-			List<NextMoveModel> nextMoveNotifier = new ArrayList<NextMoveModel>();
-			//				int tempRowArray;
-			//				int tempColumnArray;
+				// ***** do a SCAN ******
 
-			//logic if going in east
-			if(goingEast){
-				// Checks to see if there is science on current tile, if not it moves East
-				System.out.println("ROVER_12: scanMapTiles[centerIndex][centerIndex].getScience().getSciString() " + scanMapTiles[centerIndex][centerIndex].getScience().getSciString());
-				//collects the crystal
-				if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
-					System.out.println("ROVER_12 request GATHER");
-					out.println("GATHER");
-					out.println("MOVE E");
-					System.out.println("ROVER_12 request move E");
-					goingSouth = false;
-					goingEast = true;
-					goingNorth = false;
-					goingWest = false;
-				} 
-				else if(scanMapTiles[centerIndex+1][centerIndex].getScience().equals("C")){
-					//move east
-					out.println("MOVE E");
-					System.out.println("ROVER_12 request move E");
-					goingSouth = false;
-					goingEast = true;
-					goingNorth = false;
-					goingWest = false;
-				}
-				else if(scanMapTiles[centerIndex][centerIndex+1].getScience().equals("C")){
-					//move south
-					out.println("MOVE S");
-					System.out.println("ROVER_12 request move S");
-					goingSouth = true;
-					goingEast = false;
-					goingNorth = false;
-					goingWest = false;
-				}
-				else if(scanMapTiles[centerIndex][centerIndex-1].getScience().equals("C")){
-					//move north
-					out.println("MOVE N");
-					System.out.println("ROVER_12 request move N");
-					goingSouth = false;
-					goingEast = false;
-					goingNorth = true;
-					goingWest = false;
-				}
-				else{
-					//if next move to east is an obstacle				 
-					if (scanMapTiles[centerIndex+1][centerIndex].getHasRover() 
-							||scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.ROCK
-							|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.NONE
-							|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.FLUID
-							|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.SAND) {
-						//check whether south is obstacle
-						if(scanMapTiles[centerIndex][centerIndex +1].getHasRover() 
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.ROCK
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.NONE
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.FLUID
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.SAND){
-							//check whether north is obstacle
-							if(scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
-									|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.SAND){
-								out.println("MOVE W");
-								System.out.println("ROVER_12 request move W");
-								goingSouth = false;
-								goingEast = false;
-								goingNorth = false;
-								goingWest = true;
-							}
-							else{
-								out.println("MOVE N");
-								System.out.println("ROVER_12 request move N");
-								goingSouth = false;
-								goingEast = false;
-								goingNorth = true;
-								goingWest = false;
+				// gets the scanMap from the server based on the Rover current
+				// location
+				doScan();
+				copyScanArrayToMapLog();
 
-							}
+				// prints the scanMap to the Console output for debug purposes
+				scanMap.debugPrintMap();
+				debugPrintMapTileArray(mapTileLog);
 
+				// ***** MOVING *****
+				// try moving east 5 block if blocked
+
+				// pull the MapTile array out of the ScanMap object
+				MapTile[][] scanMapTiles = scanMap.getScanMap();
+				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+				boolean stuck;
+				
+				roverMotionLogic1_ewsn(scanMapTiles, centerIndex, socket);
+
+				
+				// FIXME - Confusion in the terminology. help...
+				blocked = currentLoc.equals(previousLoc);
+				//System.out.println("ROVER_12 stuck test " + stuck);
+				System.out.println("ROVER_12 blocked test " + blocked);
+
+				if (blocked) {
+					try {
+						// FIXME - must determine the right amount
+						for (int i = 0; i < 4; i++) {
+							roverMotionLogic2_enws(centerIndex, scanMapTiles);	
 						}
-						else{
-							out.println("MOVE S");
-							System.out.println("ROVER_12 request move S");
-							goingSouth = true;
-							goingEast = false;
-							goingNorth = false;
-							goingWest = false;
-
-						}
-
+						
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-					//when no obstacle is in next move to east
-					else{
-						out.println("MOVE E");
-						System.out.println("ROVER_12 request move E");
-						goingSouth = false;
-						goingEast = true;
-						goingNorth = false;
-						goingWest = false;
-
-					}
-
-				}
-			}
-
-			else if(goingWest){
-				// Checks to see if there is science on current tile, if not it moves East
-				System.out.println("ROVER_12: scanMapTiles[centerIndex][centerIndex].getScience().getSciString() " + scanMapTiles[centerIndex][centerIndex].getScience().getSciString());
-				//collects the crystal
-				if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
-					System.out.println("ROVER_12 request GATHER");
-					out.println("GATHER");
-					out.println("MOVE W");
-					System.out.println("ROVER_12 request move W");
-					goingSouth = false;
-					goingEast = false;
-					goingNorth = false;
-					goingWest = true;
-				} 
-				else if(scanMapTiles[centerIndex-1][centerIndex].getScience().equals("C")){
-					//move east
-					out.println("MOVE W");
-					System.out.println("ROVER_12 request move W");
-					goingSouth = false;
-					goingEast = false;
-					goingNorth = false;
-					goingWest = true;
-				}
-				else if(scanMapTiles[centerIndex][centerIndex+1].getScience().equals("C")){
-					//move south
-					out.println("MOVE S");
-					System.out.println("ROVER_12 request move S");
-					goingSouth = true;
-					goingEast = false;
-					goingNorth = false;
-					goingWest = false;
-				}
-				else if(scanMapTiles[centerIndex][centerIndex-1].getScience().equals("C")){
-					//move north
-					out.println("MOVE N");
-					System.out.println("ROVER_12 request move N");
-					goingSouth = false;
-					goingEast = false;
-					goingNorth = true;
-					goingWest = false;
-				}
-				else{
-					//if next move to west is an obstacle				 
-					if (scanMapTiles[centerIndex-1][centerIndex].getHasRover() 
-							||scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.ROCK
-							|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.NONE
-							|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.FLUID
-							|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.SAND) {
-						//check whether south is obstacle
-						if(scanMapTiles[centerIndex][centerIndex +1].getHasRover() 
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.ROCK
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.NONE
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.FLUID
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.SAND){
-							//check whether north is obstacle
-							if(scanMapTiles[centerIndex][centerIndex-1].getHasRover() 
-									|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex][centerIndex-1].getTerrain() == Terrain.SAND){
-								out.println("E");
-								System.out.println("ROVER_12 request move E");
-								goingSouth = false;
-								goingEast = true;
-								goingNorth = false;
-								goingWest = false;
-							}
-							else{
-								out.println("MOVE N");
-								System.out.println("ROVER_12 request move N");
-								goingSouth = false;
-								goingEast = false;
-								goingNorth = true;
-								goingWest = false;
-
-							}
-
-						}
-						else{
-							out.println("MOVE S");
-							System.out.println("ROVER_12 request move S");
-							goingSouth = true;
-							goingEast = false;
-							goingNorth = false;
-							goingWest = false;
-
-						}
-
-					}
-					//when no obstacle is in next move to west
-					else{
-						out.println("MOVE W");
-						System.out.println("ROVER_12 request move W");
-						goingSouth = false;
-						goingEast = false;
-						goingNorth = false;
-						goingWest = true;
-
-					}
-
-				}
-
-			}
-			else if(goingSouth){
-				// Checks to see if there is science on current tile, if not it moves East
-				System.out.println("ROVER_12: scanMapTiles[centerIndex][centerIndex].getScience().getSciString() " + scanMapTiles[centerIndex][centerIndex].getScience().getSciString());
-				//collects the crystal
-				if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
-					System.out.println("ROVER_12 request GATHER");
-					out.println("GATHER");
-					out.println("MOVE S");
-					System.out.println("ROVER_12 request move S");
-					goingSouth = true;
-					goingEast = false;
-					goingNorth = false;
-					goingWest = false;
-				} 
-				else if(scanMapTiles[centerIndex][centerIndex+1].getScience().equals("C")){
-					//move zouth
-					out.println("MOVE S");
-					System.out.println("ROVER_12 request move S");
-					goingSouth = true;
-					goingEast = false;
-					goingNorth = false;
-					goingWest = false;
-				}
-				else if(scanMapTiles[centerIndex+1][centerIndex].getScience().equals("C")){
-					//move east
-					out.println("MOVE E");
-					System.out.println("ROVER_12 request move E");
-					goingSouth = false;
-					goingEast = true;
-					goingNorth = false;
-					goingWest = false;
-				}
-				else if(scanMapTiles[centerIndex-1][centerIndex].getScience().equals("C")){
-					//move west
-					out.println("MOVE W");
-					System.out.println("ROVER_12 request move W");
-					goingSouth = false;
-					goingEast = false;
-					goingNorth = false;
-					goingWest = true;
-				}
-				else{
-					
-						//check whether south is obstacle
-						if(scanMapTiles[centerIndex][centerIndex +1].getHasRover() 
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.ROCK
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.NONE
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.FLUID
-								|| scanMapTiles[centerIndex][centerIndex +1].getTerrain() == Terrain.SAND){
-							//if next move to west is an obstacle				 
-
-							if (scanMapTiles[centerIndex-1][centerIndex].getHasRover() 
-									||scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.SAND) {
-							//check whether east is obstacle
-							if(scanMapTiles[centerIndex+1][centerIndex].getHasRover() 
-									|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.SAND){
-								out.println("MOVE N");
-								System.out.println("ROVER_12 request move N");
-								goingSouth = false;
-								goingEast = false;
-								goingNorth = true;
-								goingWest = false;
-							}
-							else{
-								out.println("MOVE E");
-								System.out.println("ROVER_12 request move E");
-								goingSouth = false;
-								goingEast = true;
-								goingNorth = false;
-								goingWest = false;
-
-							}
-
-						}
-						else{
-							out.println("MOVE W");
-							System.out.println("ROVER_12 request move W");
-							goingSouth = false;
-							goingEast = false;
-							goingNorth = false;
-							goingWest = true;
-
-						}
-
-					}
-					//when no obstacle is in next move to south
-					else{
-						out.println("MOVE S");
-						System.out.println("ROVER_12 request move S");
-						goingSouth = true;
-						goingEast = false;
-						goingNorth = false;
-						goingWest = false;
-
-					}
-
 				}
 				
+				System.out
+						.println("ROVER_12 ------------ bottom process control --------------");
 
+				// This catch block closes the open socket connection to the
+				// server
 			}
-			else if(goingNorth){
-				// Checks to see if there is science on current tile, if not it moves East
-				System.out.println("ROVER_12: scanMapTiles[centerIndex][centerIndex].getScience().getSciString() " + scanMapTiles[centerIndex][centerIndex].getScience().getSciString());
-				//collects the crystal
-				if (scanMapTiles[centerIndex][centerIndex].getScience().getSciString().equals("C")) {
-					System.out.println("ROVER_12 request GATHER");
-					out.println("GATHER");
-					out.println("MOVE N");
-					System.out.println("ROVER_12 request move N");
-					goingSouth = false;
-					goingEast = false;
-					goingNorth = true;
-					goingWest = false;
-				} 
-				else if(scanMapTiles[centerIndex][centerIndex-1].getScience().equals("C")){
-					//move zouth
-					out.println("MOVE N");
-					System.out.println("ROVER_12 request move N");
-					goingSouth = false;
-					goingEast = false;
-					goingNorth = true;
-					goingWest = false;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (IOException e) {
+					System.out.println("ROVER_12 problem closing socket");
 				}
-				else if(scanMapTiles[centerIndex+1][centerIndex].getScience().equals("C")){
-					//move east
-					out.println("MOVE E");
-					System.out.println("ROVER_12 request move E");
-					goingSouth = false;
-					goingEast = true;
-					goingNorth = false;
-					goingWest = false;
-				}
-				else if(scanMapTiles[centerIndex-1][centerIndex].getScience().equals("C")){
-					//move west
-					out.println("MOVE W");
-					System.out.println("ROVER_12 request move W");
-					goingSouth = false;
-					goingEast = false;
-					goingNorth = false;
-					goingWest = true;
-				}
-				else{
-					
-						//check whether north is obstacle
-						if(scanMapTiles[centerIndex][centerIndex -1].getHasRover() 
-								|| scanMapTiles[centerIndex][centerIndex -1].getTerrain() == Terrain.ROCK
-								|| scanMapTiles[centerIndex][centerIndex -1].getTerrain() == Terrain.NONE
-								|| scanMapTiles[centerIndex][centerIndex -1].getTerrain() == Terrain.FLUID
-								|| scanMapTiles[centerIndex][centerIndex -1].getTerrain() == Terrain.SAND){
-							//if next move to west is an obstacle				 
-
-							if (scanMapTiles[centerIndex-1][centerIndex].getHasRover() 
-									||scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex-1][centerIndex].getTerrain() == Terrain.SAND) {
-							//check whether east is obstacle
-							if(scanMapTiles[centerIndex+1][centerIndex].getHasRover() 
-									|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex+1][centerIndex].getTerrain() == Terrain.SAND){
-								out.println("MOVE S");
-								System.out.println("ROVER_12 request move S");
-								goingSouth = true;
-								goingEast = false;
-								goingNorth = false;
-								goingWest = false;
-							}
-							else{
-								out.println("MOVE E");
-								System.out.println("ROVER_12 request move E");
-								goingSouth = false;
-								goingEast = true;
-								goingNorth = false;
-								goingWest = false;
-
-							}
-
-						}
-						else{
-							out.println("MOVE W");
-							System.out.println("ROVER_12 request move W");
-							goingSouth = false;
-							goingEast = false;
-							goingNorth = false;
-							goingWest = true;
-
-						}
-
-					}
-					//when no obstacle is in next move to north
-					else{
-						out.println("MOVE N");
-						System.out.println("ROVER_12 request move N");
-						goingSouth = false;
-						goingEast = false;
-						goingNorth = true;
-						goingWest = false;
-
-					}
-
-				}
-
-			}
-
-			
-			out.println("LOC");
-			line = in.readLine();
-			if(line == null){
-				System.out.println("ROVER_12 check connection to server");
-				line = "";
-			}
-			if (line.startsWith("LOC")) {
-				currentLoc = extractLocationFromString(line);
-
-			}
-
-
-			// test for stuckness
-		//	stuck = currentLoc.equals(previousLoc);
-
-			//System.out.println("ROVER_12 stuck test " + stuck);
-			System.out.println("ROVER_12 blocked test " + blocked);
-
-			// TODO - logic to calculate where to move next
-
-
-			// this is the Rovers HeartBeat, it regulates how fast the Rover cycles through the control loop
-			Thread.sleep(sleepTime);
-
-			System.out.println("ROVER_12 ------------ bottom process control --------------"); 
-		
-
-
-		// This catch block closes the open socket connection to the server
-	} catch (Exception e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	} finally {
-		if (socket != null) {
-			try {
-				socket.close();
-			} catch (IOException e) {
-				System.out.println("ROVER_12 problem closing socket");
 			}
 		}
-	}
 
 	}
 
 	// Thanks to Febi's awesome contribution!
-	private void roverMotionLogic1_ewsn(MapTile[][] scanMapTiles,
-			int centerIndex, Socket soc) {
+	private void roverMotionLogic1_ewsn(MapTile[][] scanMapTiles, int centerIndex,
+			Socket soc) {
 		boolean goingSouth = false;
 		boolean goingEast = true;
 		boolean goingNorth = false;
@@ -667,57 +251,57 @@ public class ROVER_12 {
 
 		}
 
-		// try {
-		//
-		// // **** Request Rover Location from SwarmServer ****
-		// out.println("LOC");
-		// line = in.readLine();
-		// if (line == null) {
-		// System.out.println(rovername + " check connection to server");
-		// line = "";
-		// }
-		// if (line.startsWith("LOC")) {
-		// // loc = line.substring(4);
-		// currentLoc = extractLocationFromString(line);
-		//
-		// }
-		// System.out.println(rovername + " currentLoc at start: "
-		// + currentLoc);
-		//
-		// // test for stuckness
-		// stuck = currentLoc.equals(previousLoc);
-		//
-		// // FIXME - Confusion in the terminology. help...
-		// boolean blocked = currentLoc.equals(previousLoc);
-		// System.out.println("ROVER_12 stuck test " + stuck);
-		// System.out.println("ROVER_12 blocked test " + blocked);
-		//
-		// if (blocked) {
-		// try {
-		// // FIXME - must determine the right amount
-		// for (int i = 0; i < 4; i++) {
-		// doThisWhenStuck_aStepTowardOpenDir(currentLoc, scanMapTiles);
-		// }
-		//
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
-		//
-		// // this is the Rovers HeartBeat, it regulates how fast the Rover
-		// // cycles through the control loop
-		// try {
-		// Thread.sleep(sleepTime);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
-		// } catch (IOException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+//		try {
+//
+//			// **** Request Rover Location from SwarmServer ****
+//			out.println("LOC");
+//			line = in.readLine();
+//			if (line == null) {
+//				System.out.println(rovername + " check connection to server");
+//				line = "";
+//			}
+//			if (line.startsWith("LOC")) {
+//				// loc = line.substring(4);
+//				currentLoc = extractLocationFromString(line);
+//
+//			}
+//			System.out.println(rovername + " currentLoc at start: "
+//					+ currentLoc);
+//
+//			// test for stuckness
+//			stuck = currentLoc.equals(previousLoc);
+//
+//			// FIXME - Confusion in the terminology. help...
+//			boolean blocked = currentLoc.equals(previousLoc);
+//			System.out.println("ROVER_12 stuck test " + stuck);
+//			System.out.println("ROVER_12 blocked test " + blocked);
+//
+//			if (blocked) {
+//				try {
+//					// FIXME - must determine the right amount
+//					for (int i = 0; i < 4; i++) {
+//						doThisWhenStuck_aStepTowardOpenDir(currentLoc, scanMapTiles);	
+//					}
+//					
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//
+//			// this is the Rovers HeartBeat, it regulates how fast the Rover
+//			// cycles through the control loop
+//			try {
+//				Thread.sleep(sleepTime);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 	private void stepNorth(MapTile[][] scanMapTiles, int centerIndex) {
@@ -1400,37 +984,74 @@ public class ROVER_12 {
 		}
 	}
 
-	// FIXME - there are better ways.
-	private void doThisWhenStuck_aStepTowardOpenDir_old(Coord currentLoc,
-			MapTile[][] maptiles) throws InterruptedException, IOException {
-
-		String currentDir;
-		Coord newPos = currentLoc.clone();
-		Set<String> openDirs = findOpenDirs(currentLoc);
-		currentDir = openDirs.toArray(new String[1])[0];
-
-		while (currentLoc.equals(newPos)) {
-
-			requestMove(currentDir, maptiles);
-			Thread.sleep(2000);// KSTD - adjust wait length
-
-			// **** Request Rover Location from SwarmServer ****
-			out.println("LOC");
-			line = in.readLine();
-			if (line == null) {
-				System.out.println(rovername + " check connection to server");
-				line = "";
-			}
-			if (line.startsWith("LOC")) {
-				// loc = line.substring(4);
-				newPos = extractLocationFromString(line);
-			}
+	private boolean hasMoved(String dir, Coord oldPos, Coord newPos) {
+		if (dir.equals("E") || dir.equals("W")) {
+			return Math.abs(oldPos.getXpos() - newPos.getXpos()) > 0;
+		} else {
+			return Math.abs(oldPos.getYpos() - newPos.getYpos()) > 0;
 		}
 	}
 
 	// FIXME - there are better ways.
-	private void roverMotionLogic2_enws(int centerIndex, MapTile[][] maptiles)
-			throws InterruptedException, IOException {
+		private void doThisWhenStuck_aStepTowardOpenDir_old(Coord currentLoc,
+				MapTile[][] maptiles) throws InterruptedException, IOException {
+
+			String currentDir;
+			Coord newPos=currentLoc.clone();
+			Set<String> openDirs = findOpenDirs(currentLoc);
+			currentDir = openDirs.toArray(new String[1])[0];	
+			
+			while (!hasMoved(currentDir, currentLoc,newPos)) {
+				
+					requestMove(currentDir, maptiles);
+					Thread.sleep(2000);//KSTD - adjust wait length
+					
+				// **** Request Rover Location from SwarmServer ****
+				out.println("LOC");
+				line = in.readLine();
+				if (line == null) {
+					System.out.println(rovername
+							+ " check connection to server");
+					line = "";
+				}
+				if (line.startsWith("LOC")) {
+					// loc = line.substring(4);
+					newPos = extractLocationFromString(line);
+				}			
+			}
+		}
+	
+		private void firmStep(Coord direction,
+				MapTile[][] maptiles) throws InterruptedException, IOException {
+
+			String currentDir;
+			Coord newPos=direction.clone();
+			Set<String> openDirs = findOpenDirs(direction);
+			currentDir = openDirs.toArray(new String[1])[0];	
+			
+			while (!hasMoved(currentDir, direction,newPos)) {
+				
+					requestMove(currentDir, maptiles);
+					Thread.sleep(2000);//KSTD - adjust wait length
+					
+				// **** Request Rover Location from SwarmServer ****
+				out.println("LOC");
+				line = in.readLine();
+				if (line == null) {
+					System.out.println(rovername
+							+ " check connection to server");
+					line = "";
+				}
+				if (line.startsWith("LOC")) {
+					// loc = line.substring(4);
+					newPos = extractLocationFromString(line);
+				}			
+			}
+		}
+		
+	// FIXME - there are better ways.
+	private void roverMotionLogic2_enws(int centerIndex,
+			MapTile[][] maptiles) throws InterruptedException, IOException {
 
 		boolean goingSouth = false;
 		boolean goingEast = true;
@@ -1458,8 +1079,7 @@ public class ROVER_12 {
 		}
 	}
 
-	private void requestMove(String dir, MapTile[][] maptile)
-			throws IOException {
+	private void requestMove(String dir, MapTile[][] maptile) throws IOException {
 
 		// **** Request Rover Location from SwarmServer ****
 		out.println("LOC");
@@ -1506,7 +1126,7 @@ public class ROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12 client = new ROVER_12();
+		ROVER_12_A client = new ROVER_12_A();
 		client.run();
 	}
 }
