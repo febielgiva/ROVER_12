@@ -166,8 +166,7 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 			}
 		}
 
-	}
-
+		}
 	private int incrementPedometer(int pedometer, Coord previousLoc) {
 		// increment pedometer
 		return pedometer += Math.abs(currentLoc.getXpos()
