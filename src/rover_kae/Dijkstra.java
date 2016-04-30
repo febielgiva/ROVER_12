@@ -3,6 +3,11 @@ package rover_kae;
 import java.io.*;
 import java.util.*;
  
+/** Major thanks to RosettaCode.org
+ * @(http://rosettacode.org/wiki/Dijkstra%27s_algorithm#Java), 
+ * and our awesome team-mates who will be helping each other understand the theory better by attempting to 
+ * incorporating the ideas behind the theory into our project...*/
+
 public class Dijkstra {
    private static final Graph.Edge[] GRAPH = {
       new Graph.Edge("a", "b", 7),
