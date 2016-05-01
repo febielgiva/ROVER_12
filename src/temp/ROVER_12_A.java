@@ -197,7 +197,6 @@ public class ROVER_12_A {
 						}
 						
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
