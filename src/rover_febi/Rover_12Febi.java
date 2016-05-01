@@ -93,7 +93,7 @@ public class Rover_12Febi {
 			equipment = getEquipment();
 			System.out.println(rovername + " equipment list results " + equipment + "\n");
 
-
+			//G12 - Febi, this does not pull the locations correctly, so I suggest that you remove it. -ks
 			// **** Request START_LOC Location from SwarmServer ****
 			out.println("START_LOC");
 			line = in.readLine();
@@ -107,6 +107,7 @@ public class Rover_12Febi {
 			System.out.println(rovername + " START_LOC " + rovergroupStartPosition);
 
 
+			//G12 - Febi, this does not pull the location correctly, so I suggest that you remove it. -ks
 			// **** Request TARGET_LOC Location from SwarmServer ****
 			out.println("TARGET_LOC");
 			line = in.readLine();
