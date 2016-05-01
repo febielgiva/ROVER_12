@@ -978,7 +978,6 @@ public class ROVER_12 {
 
 	}
 
-	// KSTD - very ugly. Does anyone know how to make this better?
 	public boolean checkSand(String direction) {
 
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
