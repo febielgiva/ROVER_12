@@ -1355,7 +1355,7 @@ public class ROVER_12_ks {
 			// loc = line.substring(4);
 			copy = extractCurrLOC(line);
 		}
-		// debug
+		// debug - print out 
 		System.out.println("copied curr loc: " + copy);
 		return copy;
 	}
