@@ -305,7 +305,7 @@ public class ROVER_98 {
 	
 
 	// sends a SCAN request to the server and puts the result in the scanMap array
-	public void doScan() throws IOException {
+	private void doScan() throws IOException {
 		//System.out.println("ROVER_98 method doScan()");
 		Gson gson = new GsonBuilder()
     			.setPrettyPrinting()

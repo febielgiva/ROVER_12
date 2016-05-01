@@ -54,6 +54,16 @@ public class MapTile {
 		return rTile;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		MapTile other = (MapTile) o;
+		if (other.terrain.equals(terrain) && other.science.equals(science)
+				&& other.elevation == elevation && other.hasRover == hasRover) {
+			return true;
+		}
+		return false;
+	}
+
 	// No setters in this class to make it thread safe
 
 	public Terrain getTerrain() {
@@ -72,8 +82,8 @@ public class MapTile {
 		return this.hasRover;
 	}
 
+	//G12 - Does anyone know what this means?
 	// well, broke the thread safe rule
-
 	public void setHasRoverTrue() {
 		this.hasRover = true;
 	}
@@ -82,7 +92,9 @@ public class MapTile {
 		this.science = sci;
 	}
 
+	@Override
 	public String toString() {
-		return null;
+		return "MapTile [terrain=" + terrain + ", elevation=" + elevation
+				+ ", science=" + science + ", hasRover=" + hasRover + "]";
 	}
 }
