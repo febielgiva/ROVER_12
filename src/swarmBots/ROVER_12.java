@@ -140,38 +140,11 @@ public class ROVER_12 {
 			while (true) {
 
 				setCurrentLoc();
-				/*
-				 * 0. check to see if rover 12 has moved (the server has
-				 * responded to move-request) a) moved - go to 1. b) not moved,
-				 * Thread.sleep(800), continue to the next iteration of the loop
-				 */
-
-				/* 1. scan map tile (forget about mapLog b/c of JsonCopy) */
-
-				/*
-				 * 2. check for stuckness (can be checked by observing 11 x 11
-				 * map tile)
-				 */
-
-				/* 3. check 3 steps ahead (sands or rock?) */
-
-				/* 4-a. move if next 3 tiles in current direction is clear */
-
-				/* 4-b. switch direction if next 3 tiles contains sand or rock */
-
-				/* end the controller process loop */
-
-				// after getting location set previous equal current to be able
-				// to check for stuckness and blocked later
 				previousLoc = currentLoc;
 
 				// ***** do a SCAN ******
-
-				// gets the scanMap from the server based on the Rover current
-				// location
 				loadScanMapFromSwarmServer();
-				// prints the scanMap to the Console output for debug purposes
-				scanMap.debugPrintMap();
+				scanMap.debugPrintMap();// debug
 
 				// ***** MOVING *****
 
@@ -183,8 +156,7 @@ public class ROVER_12 {
 
 				List<NextMoveModel> nextMoveNotifier = new ArrayList<NextMoveModel>();
 
-				// #################################*************Febi's Logic
-				// For motion**********
+				// ************* G12 - Febi's Smart Logic For motion**********
 				// int tempRowArray;
 				// int tempColumnArray;
 
@@ -687,24 +659,10 @@ public class ROVER_12 {
 		// System.out.println("ROVER_12 convert from json back to ScanMap class");
 		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
+		// G12 - Beautiful, Wael!
 		myJSONStringBackupofMap = jsonScanMapString;
-	}
-
-	// this takes the server response string, parses out the x and x values and
-	// returns a Coord object
-	public static Coord extractLocationFromString(String sStr) {
-		int indexOf;
-		indexOf = sStr.indexOf(" ");
-		sStr = sStr.substring(indexOf + 1);
-		if (sStr.lastIndexOf(" ") != -1) {
-			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
-			// System.out.println("extracted xStr " + xStr);
-
-			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
-			// System.out.println("extracted yStr " + yStr);
-			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
-		}
-		return null;
+		
+		loadMapTileOntoGlobal(scanMap.getScanMap());
 	}
 
 	private Coord requestStartLoc(Socket soc) throws IOException {
@@ -807,6 +765,23 @@ public class ROVER_12 {
 
 			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
 			System.out.println("extracted yStr " + yStr);
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+		}
+		return null;
+	}
+
+	// this takes the server response string, parses out the x and x values and
+	// returns a Coord object
+	public static Coord extractLocationFromString(String sStr) {
+		int indexOf;
+		indexOf = sStr.indexOf(" ");
+		sStr = sStr.substring(indexOf + 1);
+		if (sStr.lastIndexOf(" ") != -1) {
+			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			// System.out.println("extracted xStr " + xStr);
+
+			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+			// System.out.println("extracted yStr " + yStr);
 			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
@@ -978,6 +953,7 @@ public class ROVER_12 {
 
 	}
 
+	// G12 - Nice and neat, Nive!
 	public boolean checkSand(String direction) {
 
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -1000,7 +976,8 @@ public class ROVER_12 {
 
 		return false;
 	}
-
+	
+	// a check function to prevent IndexOutOfBounds exception
 	public boolean withinTheGrid(int i, int j, int arrayLength) {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
