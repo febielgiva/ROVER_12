@@ -368,7 +368,7 @@ public class ROVER_00 {
 		//System.out.println("ROVER_00 finished scan while");
 
 		String jsonScanMapString = jsonScanMap.toString();
-		// debug print json object to a file
+		// debug - print json object to a file
 		//new MyWriter( jsonScanMapString, 0);  //gives a strange result - prints the \n instead of newline character in the file
 
 		//System.out.println("ROVER_00 convert from json back to ScanMap class");

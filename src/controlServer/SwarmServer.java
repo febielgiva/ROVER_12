@@ -247,7 +247,7 @@ public class SwarmServer {//
                     	socket.close();
                     }
                     
-                    // debug checking
+                    // debug - checking
                     //System.out.println("SWARM_SERVER_"+roverNameString+ "_thread: recieved command " + input);
                     
                       
