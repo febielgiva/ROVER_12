@@ -12,11 +12,14 @@ import java.net.UnknownHostException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import swarmBots.NextMoveModel;
 import temp.ROVER_12_ks;
 
 import com.google.gson.Gson;
@@ -37,28 +40,48 @@ import enums.Terrain;
  * allowed # request to the server per sec = 500 2 req / sec
  */
 
-public class RV_12_ks_wk5_current extends ROVER_12_ks {
+public class RV_12_ks_wk5_current {
+	
+	BufferedReader in;
+	PrintWriter out;
+	String rovername, line, currDir;
+	ScanMap scanMap;
+	int sleepTime;
+	String SERVER_ADDRESS = "localhost";
+	static final int PORT_ADDRESS = 9537;	
+	
+	Socket socket;
 	Random rd = new Random();
-	Coord currentLoc, previousLoc;
+	Coord currentLoc, previousLoc, rovergroupStartPosition = null, targetLocation = null;
 	String currentDir = "";
-	int hzDir = 1; // 0 = R to L, 1 = L to R,
 	Set<String> blockedDirs = new HashSet<String>();
 	Set<String> openDirs = new HashSet<String>();
-	String[] cardinals = new String[4];
+	String[] cardinals = new String[4];	
+	static String myJSONStringBackupofMap;
+	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
+	Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
 
-	MapTile[][] mapTileLog = new MapTile[100][100], tempMapTiles;
-	boolean[][] footPrints = new boolean[100][100];
-	Socket socket;
 
 	public RV_12_ks_wk5_current() {
-		super();
+		// constructor
+				System.out.println("ROVER_12 rover object constructed");
+				rovername = "ROVER_12";
+				SERVER_ADDRESS = "localhost";
+				// this should be a safe but slow timer value
+				sleepTime = 300; // in milliseconds - smaller is faster, but the server
+									// will cut connection if it is too small
 	}
 
 	public RV_12_ks_wk5_current(String serverAddress) {
-		super(serverAddress);
+		// constructor
+				System.out.println("ROVER_12 rover object constructed");
+				rovername = "ROVER_12";
+				SERVER_ADDRESS = serverAddress;
+				sleepTime = 300; // in milliseconds - smaller is faster, but the server
+									// will cut connection if it is too small
 	}
 
-	public void run() throws IOException, InterruptedException {
+	private void run() throws IOException, InterruptedException {
 
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
@@ -69,9 +92,11 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 			in = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
+			
 
 			// ********* Start a communication to the server *********
 			submiteRoverName();
+			
 
 			// ********* Rover logic setup *********
 			/**
@@ -80,12 +105,14 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 			String line = "";
 			ArrayList<String> equipment = new ArrayList<String>();
 			equipment = getEquipment();
+			
 
 			// **** Request START_LOC Location from SwarmServer ****
 			rovergroupStartPosition = requestStartLoc(socket);
 			System.out.println(rovername + " START_LOC "
 					+ rovergroupStartPosition);
 			// Thread.sleep(10000);
+			
 
 			// **** Request TARGET_LOC Location from SwarmServer ****
 			targetLocation = requestTargetLoc(socket);
@@ -100,7 +127,7 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 
 			Coord previousLoc;
 			int i = 0;
-			switchDir_ESWS();
+		//	switchDir_ESWS();
 			// **** get equipment listing ****
 			equipment = getEquipment();
 			System.out.println(rovername + " equipment list results "
@@ -327,51 +354,52 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 		}
 	}
 
+	// KSTD - implement it
 	private void findBlockedDirs(Coord currentLoc) {
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-
-		System.out.println("scan map size ( findBlockedDirs() ): "
-				+ scanMap.getEdgeSize());
-
-		tempMapTiles = scanMap.getScanMap();
-
-		// debugPrintDirs(scanMapTiles, centerIndex);
-		System.out.println("scanMapTiles: " + scanMap.getScanMap());
-		if (withinTheGrid(centerIndex, centerIndex - 1, tempMapTiles.length)
-				&& tempMapTiles[centerIndex][centerIndex - 1].getHasRover()
-				|| tempMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
-				|| tempMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
-				|| tempMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
-			System.out.println("north blocked");
-			blockedDirs.add("N");
-		}
-
-		if (withinTheGrid(centerIndex, centerIndex + 1, tempMapTiles.length)
-				&& tempMapTiles[centerIndex][centerIndex + 1].getHasRover()
-				|| tempMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
-				|| tempMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
-				|| tempMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
-			System.out.println("south blocked");
-			blockedDirs.add("S");
-		}
-
-		if (withinTheGrid(centerIndex + 1, centerIndex, tempMapTiles.length)
-				&& tempMapTiles[centerIndex + 1][centerIndex].getHasRover()
-				|| tempMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
-				|| tempMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
-				|| tempMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
-			System.out.println("east blocked");
-			blockedDirs.add("E");
-		}
-
-		if (withinTheGrid(centerIndex - 1, centerIndex, tempMapTiles.length)
-				&& tempMapTiles[centerIndex - 1][centerIndex].getHasRover()
-				|| tempMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
-				|| tempMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
-				|| tempMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
-			System.out.println("west blocked");
-			blockedDirs.add("W");
-		}
+//		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+//
+//		System.out.println("scan map size ( findBlockedDirs() ): "
+//				+ scanMap.getEdgeSize());
+//
+//		tempMapTiles = scanMap.getScanMap();
+//
+//		// debugPrintDirs(scanMapTiles, centerIndex);
+//		System.out.println("scanMapTiles: " + scanMap.getScanMap());
+//		if (withinTheGrid(centerIndex, centerIndex - 1, tempMapTiles.length)
+//				&& tempMapTiles[centerIndex][centerIndex - 1].getHasRover()
+//				|| tempMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
+//				|| tempMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
+//				|| tempMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
+//			System.out.println("north blocked");
+//			blockedDirs.add("N");
+//		}
+//
+//		if (withinTheGrid(centerIndex, centerIndex + 1, tempMapTiles.length)
+//				&& tempMapTiles[centerIndex][centerIndex + 1].getHasRover()
+//				|| tempMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
+//				|| tempMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
+//				|| tempMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
+//			System.out.println("south blocked");
+//			blockedDirs.add("S");
+//		}
+//
+//		if (withinTheGrid(centerIndex + 1, centerIndex, tempMapTiles.length)
+//				&& tempMapTiles[centerIndex + 1][centerIndex].getHasRover()
+//				|| tempMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
+//				|| tempMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
+//				|| tempMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
+//			System.out.println("east blocked");
+//			blockedDirs.add("E");
+//		}
+//
+//		if (withinTheGrid(centerIndex - 1, centerIndex, tempMapTiles.length)
+//				&& tempMapTiles[centerIndex - 1][centerIndex].getHasRover()
+//				|| tempMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
+//				|| tempMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
+//				|| tempMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
+//			System.out.println("west blocked");
+//			blockedDirs.add("W");
+//		}
 
 	}
 
@@ -447,14 +475,13 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 	private void harvestScience() {
 	}
 
-	private void debugCompareScanMapAndMapTileLog() {
+	private void debugCompareScanMapAndMapTileLog(int x, int y, int size) {
 
 		int scanRange = 11;
 
 		try {
 			doScan();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -469,40 +496,7 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 		}
 		System.out.println("************ current location " + currentLoc
 				+ "******************************");
-		for (int i = 0; i < 25; i++) {
-			for (int j = 0; j < 25; j++) {
-
-				System.out.print("i,j = " + i + ", " + j + "\t");
-				if (mapTileLog[i][j] == null) {
-					System.out.println("null");
-				} else {
-					System.out.print("terr: " + mapTileLog[i][j].getTerrain()
-							+ "\t");
-					System.out.print("sci: " + mapTileLog[i][j].getScience()
-							+ "\n");
-				}
-			}
-		}
-
-	}
-
-	private Coord setCurrentLoc(Coord currentLoc) throws IOException {
-
-		String line;
-		// **** Request Rover Location from SwarmServer ****
-		out.println("LOC");
-		line = in.readLine();
-		if (line == null) {
-			System.out.println(rovername + " check connection to server");
-			line = "";
-		}
-		if (line.startsWith("LOC")) {
-			// loc = line.substring(4);
-			currentLoc = extractLocationFromString(line);
-
-		}
-		System.out.println(rovername + " currentLoc at start: " + currentLoc);
-		return currentLoc;
+		
 	}
 
 	private void sinusoidal(String[] cardinals) throws InterruptedException,
@@ -533,232 +527,11 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 		return curr.equals(prev);
 	}
 
-	private void move(String dir) throws IOException {
-		System.out.println("current location in move(): " + currentLoc);
-
-		System.out.println(dir.equals("E"));
-		System.out.println(dir.equals("W"));
-		System.out.println(dir.equals("S"));
-		System.out.println(dir.equals("N"));
-
-		switch (dir) {
-
-		case "E":
-			if (!isSand("E")) {
-				System.out.println("request move -> E");
-				moveEast();
-			}
-			break;
-		case "W":
-			if (!isSand("W")) {
-				System.out.println("request move -> W");
-				moveWest();
-			}
-			break;
-		case "N":
-			if (!isSand("N")) {
-				System.out.println("request move -> N");
-				moveNorth();
-			}
-			break;
-		case "S":
-			if (!isSand("S")) {
-				System.out.println("request move -> S");
-				moveSouth();
-			}
-			break;
-		default:
-			break;
-		}
-	}
-
-	private void moveEast() throws IOException {
-
-		out.println("MOVE E");
-		System.out.print(currentLoc + " - E -> ");
-		System.out.print(currentLoc + "\n");
-	}
-
-	private void moveWest() throws IOException {
-		out.println("MOVE W");
-		System.out.print(currentLoc + " - W -> ");
-		System.out.print(currentLoc + "\n");
-	}
-
-	private void moveNorth() throws IOException {
-		out.println("MOVE N");
-		System.out.print(currentLoc + " - N -> ");
-		System.out.print(currentLoc + "\n");
-
-	}
-
-	private void moveSouth() throws IOException {
-		out.println("MOVE S");
-		System.out.print(currentLoc + " - S -> ");
-		System.out.print(currentLoc + "\n");
-
-	}
-
-	private void sinusoidal_LR(String[] cardinals, int waveLength,
-			int waveHeight) throws InterruptedException, IOException {
-
-		Coord startPos;
-		int numSteps = waveLength;
-		String currentDir;
-		cardinals[0] = "E";
-		cardinals[1] = "S";
-		cardinals[2] = "E";
-		cardinals[3] = "N";
-
-		for (int i = 0; i < cardinals.length; i++) {
-
-			currentDir = cardinals[i];
-			if (currentDir.equals("E")) {
-				numSteps = waveLength;
-			} else {
-				numSteps = waveHeight;
-			}
-			startPos = currentLoc.clone();
-			while ((currentLoc.getXpos() - startPos.getXpos()) < numSteps) {
-				if (!isSand(currentDir)) {
-					move(currentDir);
-					if (currentLoc.getXpos() > 45) // should not be hard coded
-					{
-						break;
-					}
-					Thread.sleep(300);
-				}
-				setCurrentLoc(currentLoc);
-			}
-		}
-	}
-
-	private void sinusoidal_RL(String[] cardinals, int waveLength,
-			int waveHeight) throws InterruptedException, IOException {
-		Coord startPos;
-		int numSteps = waveLength;
-		String currentDir;
-		cardinals[0] = "W";
-		cardinals[1] = "S";
-		cardinals[2] = "W";
-		cardinals[3] = "N";
-
-		for (int i = 0; i < cardinals.length; i++) {
-
-			currentDir = cardinals[i];
-			if (currentDir.equals("W")) {
-				numSteps = waveLength;
-			} else {
-				numSteps = waveHeight;
-			}
-			startPos = currentLoc.clone();
-			while ((currentLoc.getXpos() - startPos.getXpos()) < numSteps) {
-				if (!isSand(currentDir)) {
-					move(currentDir);
-					Thread.sleep(300);
-				}
-				setCurrentLoc(currentLoc);
-			}
-		}
-	}
-
-	private void moveTowardsSandForDebug() throws IOException {
-		for (int i = 0; i < 17; i++) {
-			move("E");
-		}
-		System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5");
-
-		for (int i = 0; i < 5; i++) {
-			move("S");
-		}
-
-		System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5");
-		previousLoc = currentLoc;
-
-	}
-
-	private void random(String[] cardinals) throws InterruptedException,
-			IOException {
-		int rdNum;
-		String currentDir;
-		for (int i = 0; i < 5; i++) {
-			rdNum = randomNum(0, 3);
-			currentDir = cardinals[rdNum];
-
-			for (int j = 0; j < 3; j++) {
-				move(currentDir);
-				Thread.sleep(300);
-			}
-		}
-	}
-
-	private void moveRover12ToAClearArea() throws InterruptedException,
-			IOException {
-		for (int i = 0; i < 5; i++) {
-			move("E");
-			Thread.sleep(700);
-		}
-		for (int i = 0; i < 5; i++) {
-			// get out of the crowd of rovers
-			move("S");
-			Thread.sleep(300);
-		}
-	}
-
-	// ################ Support Methods ###########################
-
-	private void clearReadLineBuffer() throws IOException {
-		while (in.ready()) {
-			// System.out.println("ROVER_12 clearing readLine()");
-			String garbage = in.readLine();
-		}
-	}
-
-	// method to retrieve a list of the rover's equipment from the server
-	private ArrayList<String> getEquipment() throws IOException {
-		System.out.println("ROVER_12 method getEquipment()");
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		out.println("EQUIPMENT");
-
-		String jsonEqListIn = in.readLine(); // grabs the string that was
-												// returned first
-		if (jsonEqListIn == null) {
-			jsonEqListIn = "";
-		}
-		StringBuilder jsonEqList = new StringBuilder();
-		System.out
-				.println("ROVER_12 incomming EQUIPMENT result - first readline: "
-						+ jsonEqListIn);
-
-		if (jsonEqListIn.startsWith("EQUIPMENT")) {
-			while (!(jsonEqListIn = in.readLine()).equals("EQUIPMENT_END")) {
-				if (jsonEqListIn == null) {
-					break;
-				}
-				// System.out.println("ROVER_12 incomming EQUIPMENT result: " +
-				// jsonEqListIn);
-				jsonEqList.append(jsonEqListIn);
-				jsonEqList.append("\n");
-			}
-		} else {
-			// in case the server call gives unexpected results
-			clearReadLineBuffer();
-			return null; // server response did not start with "EQUIPMENT"
-		}
-
-		String jsonEqListString = jsonEqList.toString();
-		ArrayList<String> returnList;
-		returnList = gson.fromJson(jsonEqListString,
-				new TypeToken<ArrayList<String>>() {
-				}.getType());
-		// System.out.println("ROVER_12 returnList " + returnList);
-
-		return returnList;
-	}
+// ################ Support Methods ###########################
 
 	// sends a SCAN request to the server and puts the result in the scanMap
 	// array
-	public void doScan() throws IOException {
+	private void doScan() throws IOException {
 		System.out.println("ROVER_12 method doScan()");
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -799,43 +572,12 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 
 		int scanMapHalfSize = (int) Math.floor(ptrScanMap.length / 2.);
 
-		// debug
+		// debug - print out 
 		// System.out.println("scanMap: ");
 		// debugPrintMapTileArray(ptrScanMap);
-
-		logGeoInfo(ptrScanMap);
 	}
 
-	private void logGeoInfo(MapTile[][] ptrScanMap) {
-		Terrain ter;
-		Science sci;
-		int elev;
-		boolean hasR;
-		// FIXME - there's a problem with the map copy
-		for (int i = 0; i < ptrScanMap.length; i++) {
-			for (int j = 0; j < ptrScanMap.length; j++) {
-
-				if (withinTheGrid(currentLoc.getYpos() - 5 + i,
-						currentLoc.getXpos() - 5 + j, mapTileLog.length)) {
-					ter = ptrScanMap[i][j].getTerrain();
-					sci = ptrScanMap[i][j].getScience();
-					elev = ptrScanMap[i][j].getElevation();
-					hasR = ptrScanMap[i][j].getHasRover();
-
-					if (mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc
-							.getXpos() - 5 + j] == null) {
-						mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc
-								.getXpos() - 5 + j] = new MapTile(ter, sci,
-								elev, hasR);
-					}
-				}
-			}
-		}
-
-		debugPrintMapTileArray(mapTileLog);
-	}
-
-	public void doScanOriginal() throws IOException {
+	private void doScanOriginal() throws IOException {
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
 		out.println("SCAN");
@@ -863,13 +605,9 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 
 	}
 
-	public boolean withinTheGrid(int i, int j, int arrayLength) {
-		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
-	}
-
 	// this takes the LOC response string, parses out the x and y values and
 	// returns a Coord object
-	public static Coord extractLOC(String sStr) {
+	private static Coord extractLOC(String sStr) {
 		sStr = sStr.substring(4);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -882,26 +620,12 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 		return null;
 	}
 
-	public int randomNum(int min, int max) {
+	private int randomNum(int min, int max) {
 		return rd.nextInt(max + 1) + min;
 	}
 
-	/**
-	 * Runs the client
-	 */
-	public static void main(String[] args) throws Exception {
-		RV_12_ks_wk5_current client = new RV_12_ks_wk5_current();
-		client.run();
-	}
 
-	// TODO - incomplete
-	private void debugPrint4Dirs(Coord currLoc) {
-		// System.out.println("center: "+
-		// getScanMap().[currLoc.getYpos()][currLoc.getXpos()]);
-		scanMap.debugPrintMap();
-	}
-
-	public void debugPrintMapTileArray(MapTile[][] mapTileArray) {
+	private void debugPrintMapTileArray(MapTile[][] mapTileArray) {
 
 		int edgeSize = mapTileArray.length;
 		System.out.println("edge size: " + edgeSize);
@@ -966,75 +690,392 @@ public class RV_12_ks_wk5_current extends ROVER_12_ks {
 		System.out.print("\n");
 	}
 
-	public void myNotes() {
+	private Coord setCurrentLoc(Coord currentLoc) throws IOException {
 
-		/*
-		 * - must coordinate with other scanner rovers which area to cover
-		 * first. Even though we all need to cover as much area as we can, we
-		 * still have to build a map to the target location as quickly as we
-		 * can.
-		 * 
-		 * - print out maptile 2d array in the different way so that it is easy
-		 * to compare scanMap v.s. mapJournal
-		 * 
-		 * -
-		 */
+		String line;
+		// **** Request Rover Location from SwarmServer ****
+		out.println("LOC");
+		line = in.readLine();
+		if (line == null) {
+			System.out.println(rovername + " check connection to server");
+			line = "";
+		}
+		if (line.startsWith("LOC")) {
+			// loc = line.substring(4);
+			currentLoc = extractLocationFromString(line);
+
+		}
+		System.out.println(rovername + " currentLoc at start: " + currentLoc);
+		return currentLoc;
 	}
 
-	public void switchDir_ESWS() {
-		// towards south
-		cardinals[0] = "E";
-		cardinals[1] = "S";
-		cardinals[2] = "W";
-		cardinals[3] = "S";
-	}
-
-	public void switchDir_ENWN() {
-		// towards north
-		cardinals[0] = "E";
-		cardinals[1] = "N";
-		cardinals[2] = "W";
-		cardinals[3] = "N";
-	}
-
-	public void switchDir_ESWN() {
-		// clock wise
-		cardinals[0] = "N";
-		cardinals[1] = "E";
-		cardinals[2] = "S";
-		cardinals[3] = "W";
-	}
-
-	public void switchDir_ESEN() {
-		// towards east
-		cardinals[0] = "N";
-		cardinals[1] = "E";
-		cardinals[2] = "S";
-		cardinals[3] = "W";
-	}
-
-	public void switchDir_WSWN() {
-		// towards west
-		cardinals[0] = "N";
-		cardinals[1] = "E";
-		cardinals[2] = "S";
-		cardinals[3] = "W";
-	}
-
-	public void switchDir_ENWS() {
-		// counter-clock wise
-		cardinals[0] = "N";
-		cardinals[1] = "E";
-		cardinals[2] = "S";
-		cardinals[3] = "W";
-	}
-
-	public void initMapTileLog() {
-		for (int i = 0; i < mapTileLog.length; i++) {
-			for (int j = 0; j < mapTileLog.length; j++) {
-				System.out.println("what's wrong with it");
-				mapTileLog[i][j] = new MapTile("m");
+	// to get the position of the rover--Febi added
+	private List<NextMoveModel> getTheCrystalLocation(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		List<NextMoveModel> element = new ArrayList<NextMoveModel>();
+		element = null;
+		for (int i = 0; i < scanMapTiles.length; i++) {
+			for (int j = 0; j < scanMapTiles.length; j++) {
+				if (scanMapTiles[centerIndex][centerIndex].getScience()
+						.getSciString().equals("C")) {
+					System.out.println("crystal found");
+					element.add(new NextMoveModel(j, i, true));
+				}
 			}
 		}
+		return element;
+	}
+
+	// ####################### Support Methods #############################
+
+	private void clearReadLineBuffer() throws IOException {
+		while (in.ready()) {
+			// System.out.println("ROVER_12 clearing readLine()");
+			in.readLine();
+		}
+	}
+
+	// method to retrieve a list of the rover's EQUIPMENT from the server
+	private ArrayList<String> getEquipment() throws IOException {
+		// System.out.println("ROVER_12 method getEquipment()");
+		Gson gson = new GsonBuilder().setPrettyPrinting()
+				.enableComplexMapKeySerialization().create();
+		out.println("EQUIPMENT");
+
+		String jsonEqListIn = in.readLine(); // grabs the string that was
+												// returned first
+		if (jsonEqListIn == null) {
+			jsonEqListIn = "";
+		}
+		StringBuilder jsonEqList = new StringBuilder();
+		// System.out.println("ROVER_12 incomming EQUIPMENT result - first readline: "
+		// + jsonEqListIn);
+
+		if (jsonEqListIn.startsWith("EQUIPMENT")) {
+			while (!(jsonEqListIn = in.readLine()).equals("EQUIPMENT_END")) {
+				if (jsonEqListIn == null) {
+					break;
+				}
+				// System.out.println("ROVER_12 incomming EQUIPMENT result: " +
+				// jsonEqListIn);
+				jsonEqList.append(jsonEqListIn);
+				jsonEqList.append("\n");
+				// System.out.println("ROVER_12 doScan() bottom of while");
+			}
+		} else {
+			// in case the server call gives unexpected results
+			clearReadLineBuffer();
+			return null; // server response did not start with "EQUIPMENT"
+		}
+
+		String jsonEqListString = jsonEqList.toString();
+		ArrayList<String> returnList;
+		returnList = gson.fromJson(jsonEqListString,
+				new TypeToken<ArrayList<String>>() {
+				}.getType());
+		// System.out.println("ROVER_12 returnList " + returnList);
+
+		return returnList;
+	}
+
+	// sends a SCAN request to the server and puts the result in the scanMap
+	// array G12 - this raw JsonData should be used for our maptileLog?
+	public void loadScanMapFromSwarmServer() throws IOException {
+		// System.out.println("ROVER_12 method doScan()");
+		Gson gson = new GsonBuilder().setPrettyPrinting()
+				.enableComplexMapKeySerialization().create();
+		out.println("SCAN");
+
+		String jsonScanMapIn = in.readLine(); // grabs the string that was
+												// returned first
+		if (jsonScanMapIn == null) {
+			System.out.println("ROVER_12 check connection to server");
+			jsonScanMapIn = "";
+		}
+		StringBuilder jsonScanMap = new StringBuilder();
+		System.out.println("ROVER_12 incomming SCAN result - first readline: "
+				+ jsonScanMapIn);
+
+		if (jsonScanMapIn.startsWith("SCAN")) {
+			while (!(jsonScanMapIn = in.readLine()).equals("SCAN_END")) {
+				// System.out.println("ROVER_12 incomming SCAN result: " +
+				// jsonScanMapIn);
+				jsonScanMap.append(jsonScanMapIn);
+				jsonScanMap.append("\n");
+				// System.out.println("ROVER_12 doScan() bottom of while");
+			}
+		} else {
+			// in case the server call gives unexpected results
+			clearReadLineBuffer();
+			return; // server response did not start with "SCAN"
+		}
+		// System.out.println("ROVER_12 finished scan while");
+
+		String jsonScanMapString = jsonScanMap.toString();
+		// debug print json object to a file
+		// new MyWriter( jsonScanMapString, 0); //gives a strange result -
+		// prints the \n instead of newline character in the file
+
+		// System.out.println("ROVER_12 convert from json back to ScanMap class");
+		// convert from the json string back to a ScanMap object
+		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
+		myJSONStringBackupofMap = jsonScanMapString;
+	}
+
+	// this takes the server response string, parses out the x and x values and
+	// returns a Coord object
+	public static Coord extractLocationFromString(String sStr) {
+		int indexOf;
+		indexOf = sStr.indexOf(" ");
+		sStr = sStr.substring(indexOf + 1);
+		if (sStr.lastIndexOf(" ") != -1) {
+			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			// System.out.println("extracted xStr " + xStr);
+
+			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+			// System.out.println("extracted yStr " + yStr);
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+		}
+		return null;
+	}
+
+	public Coord requestStartLoc(Socket soc) throws IOException {
+
+		// **** Request Rover Location from SwarmServer ****
+		out.println("LOC");
+		line = in.readLine();
+		if (line == null) {
+			System.out.println(rovername + " check connection to server");
+			line = "";
+		}
+		if (line.startsWith("LOC")) {
+			// loc = line.substring(4);
+			currentLoc = extractLocationFromString(line);
+
+		}
+		System.out.println(rovername + " currentLoc at start: " + currentLoc);
+
+		out.println("START_LOC " + currentLoc.getXpos() + " "
+				+ currentLoc.getYpos());
+		line = in.readLine();
+
+		if (line == null || line == "") {
+			System.out.println("ROVER_12 check connection to server");
+			line = "";
+		}
+
+		//
+		System.out.println();
+		if (line.startsWith("START")) {
+			rovergroupStartPosition = extractStartLOC(line);
+		}
+		return rovergroupStartPosition;
+	}
+
+	private Coord requestTargetLoc(Socket soc) throws IOException {
+
+		// **** Request Rover Location from SwarmServer ****
+		out.println("LOC");
+		line = in.readLine();
+		if (line == null) {
+			System.out.println(rovername + " check connection to server");
+			line = "";
+		}
+		if (line.startsWith("LOC")) {
+			// loc = line.substring(4);
+			currentLoc = extractLocationFromString(line);
+
+		}
+		System.out.println(rovername + " currentLoc at start: " + currentLoc);
+
+		out.println("TARGET_LOC " + currentLoc.getXpos() + " "
+				+ currentLoc.getYpos());
+		line = in.readLine();
+
+		if (line == null || line == "") {
+			// System.out.println("ROVER_12 check connection to server");
+			line = "";
+		}
+
+		if (line.startsWith("TARGET")) {
+			targetLocation = extractTargetLOC(line);
+		}
+		return targetLocation;
+	}
+
+	public static Coord extractCurrLOC(String sStr) {
+		sStr = sStr.substring(4);
+		if (sStr.lastIndexOf(" ") != -1) {
+			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			// System.out.println("extracted xStr " + xStr);
+
+			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+			// System.out.println("extracted yStr " + yStr);
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+		}
+		return null;
+	}
+
+	public static Coord extractStartLOC(String sStr) {
+
+		sStr = sStr.substring(10);
+
+		if (sStr.lastIndexOf(" ") != -1) {
+			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			// System.out.println("extracted xStr " + xStr);
+
+			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+			// System.out.println("extracted yStr " + yStr);
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+		}
+		return null;
+	}
+
+	public static Coord extractTargetLOC(String sStr) {
+		sStr = sStr.substring(11);
+		if (sStr.lastIndexOf(" ") != -1) {
+			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			System.out.println("extracted xStr " + xStr);
+
+			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+			System.out.println("extracted yStr " + yStr);
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+		}
+		return null;
+	}
+
+	// G12 - the 3rd argument's name "size" may be too confusing. Is this okay with you guys?
+	public void debugPrintMapTileArray(Map<Coord, MapTile> tiles, int xStart, int yStart ,int size) {
+		for (int y = 0; y < size; y++) {
+			for (int x = 0; x < size; x++) {
+				System.out.println(tiles.get(new Coord(x,y)));
+			}			
+		}	
+	}
+
+	private void loadMapTileIntoGlobal(MapTile[][] ptrScanMap) {
+		// use a hash map
+		Terrain ter;
+		Science sci;
+		int elev;
+		boolean hasR;
+
+		for (int i = 0; i < ptrScanMap.length; i++) {
+			for (int j = 0; j < ptrScanMap.length; j++) {
+
+				if (withinTheGrid(currentLoc.getYpos() - 5 + i,
+						currentLoc.getXpos() - 5 + j, mapTileLog.size())) {
+					ter = ptrScanMap[i][j].getTerrain();
+					sci = ptrScanMap[i][j].getScience();
+					elev = ptrScanMap[i][j].getElevation();
+					hasR = ptrScanMap[i][j].getHasRover();
+
+					mapTileLog.put(new Coord(currentLoc.getYpos() - 5 + i,
+							currentLoc.getXpos() - 5 + j), new MapTile(ter,
+							sci, elev, hasR));
+				}
+			}
+		}
+		// debug - print out 
+		debugPrintMapTileArray(mapTileLog,0,0,10);
+	}
+
+	private void move(String dir) throws IOException {
+		System.out.println("current location in move(): " + currentLoc);
+		setCurrentLoc(currentLoc);
+		// doScanOriginal();
+
+		switch (dir) {
+
+		case "E":
+			if (!checkSand("E")) {
+				System.out.println("request move -> E");
+				moveEast();
+			}
+			break;
+		case "W":
+			if (!checkSand("W")) {
+				System.out.println("request move -> W");
+				moveWest();
+			}
+			break;
+		case "N":
+			if (!checkSand("N")) {
+				System.out.println("request move -> N");
+				moveNorth();
+			}
+			break;
+		case "S":
+			if (!checkSand("S")) {
+				System.out.println("request move -> S");
+				moveSouth();
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	private void moveEast() throws IOException {
+
+		out.println("MOVE E");
+		System.out.print(currentLoc + " - E -> ");
+		System.out.print(currentLoc + "\n");
+	}
+
+	private void moveWest() throws IOException {
+		out.println("MOVE W");
+		System.out.print(currentLoc + " - W -> ");
+		System.out.print(currentLoc + "\n");
+	}
+
+	private void moveNorth() throws IOException {
+		out.println("MOVE N");
+		System.out.print(currentLoc + " - N -> ");
+		System.out.print(currentLoc + "\n");
+
+	}
+
+	private void moveSouth() throws IOException {
+		out.println("MOVE S");
+		System.out.print(currentLoc + " - S -> ");
+		System.out.print(currentLoc + "\n");
+
+	}
+
+	// KSTD - very ugly. Does anyone know how to make this better?
+	public boolean checkSand(String direction) {
+
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex, scanRange = 2;
+
+		for (int i = 1; i < scanRange; i++) {
+			if (direction == "S")
+				x = centerIndex + i;
+			else if (direction == "N")
+				x = centerIndex - i;
+			else if (direction == "E")
+				y = centerIndex + i;
+			else
+				y = centerIndex - i;
+
+			// Checks whether there is sand in the next tile
+			if (scanMap.getScanMap()[x][y].getTerrain() == Terrain.SAND)
+				return true;
+		}
+
+		return false;
+	}
+
+	public boolean withinTheGrid(int i, int j, int arrayLength) {
+		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
+	}
+
+	/**
+	 * Runs the client
+	 */
+	public static void main(String[] args) throws Exception {
+		RV_12_ks_wk5_current client = new RV_12_ks_wk5_current();
+		client.run();
 	}
 }

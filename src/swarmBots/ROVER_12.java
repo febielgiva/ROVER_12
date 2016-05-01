@@ -628,7 +628,7 @@ public class ROVER_12 {
 
 	// sends a SCAN request to the server and puts the result in the scanMap
 	// array
-	public void loadScanMapFromSwarmServer() throws IOException {
+	private void loadScanMapFromSwarmServer() throws IOException {
 		// System.out.println("ROVER_12 method doScan()");
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
@@ -672,7 +672,7 @@ public class ROVER_12 {
 
 	// this takes the server response string, parses out the x and x values and
 	// returns a Coord object
-	public static Coord extractLocationFromString(String sStr) {
+	private static Coord extractLocationFromString(String sStr) {
 		int indexOf;
 		indexOf = sStr.indexOf(" ");
 		sStr = sStr.substring(indexOf + 1);
@@ -751,7 +751,7 @@ public class ROVER_12 {
 		return targetLocation;
 	}
 
-	public static Coord extractCurrLOC(String sStr) {
+	private static Coord extractCurrLOC(String sStr) {
 		sStr = sStr.substring(4);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -764,7 +764,7 @@ public class ROVER_12 {
 		return null;
 	}
 
-	public static Coord extractStartLOC(String sStr) {
+	private static Coord extractStartLOC(String sStr) {
 
 		sStr = sStr.substring(10);
 
@@ -779,7 +779,7 @@ public class ROVER_12 {
 		return null;
 	}
 
-	public static Coord extractTargetLOC(String sStr) {
+	private static Coord extractTargetLOC(String sStr) {
 		sStr = sStr.substring(11);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -792,7 +792,7 @@ public class ROVER_12 {
 		return null;
 	}
 
-	public void debugPrintMapTileArray(MapTile[][] mapTileArray) {
+	private void debugPrintMapTileArray(MapTile[][] mapTileArray) {
 
 		int edgeSize = mapTileArray.length;
 		System.out.println("edge size: " + edgeSize);
@@ -887,14 +887,14 @@ public class ROVER_12 {
 		debugPrintMapTileArray(mapTileLog);
 	}
 
-	public boolean withinTheGrid(int i, int j, int arrayLength) {
+	private boolean withinTheGrid(int i, int j, int arrayLength) {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
 
 	/**
 	 * Runs the client
 	 */
-	public static void main(String[] args) throws Exception {
+	private static void main(String[] args) throws Exception {
 		ROVER_12 client = new ROVER_12();
 		client.run();
 	}

@@ -13,9 +13,9 @@ import common.ScanMap;
 public class test_ks {
 
 	@Test
-	public void testMapTile() {
+	public void testHashMap() {
 		MapTile mt = new MapTile(0);
-
+		MapTile mt1 = new MapTile(0);
 	}
 
 	// @Test
