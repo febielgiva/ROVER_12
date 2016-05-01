@@ -658,7 +658,7 @@ public class RV_12_ks_wk5_current {
 			currentLoc = extractLocationFromString(line);
 
 		}
-		// System.out.println(rovername + " currentLoc at start: " +
+		// System.out.println(rovername + " currentLoc: " +
 		// currentLoc);
 	}
 
@@ -792,7 +792,7 @@ public class RV_12_ks_wk5_current {
 		return null;
 	}
 
-	public Coord requestStartLoc(Socket soc) throws IOException {
+	private Coord requestStartLoc(Socket soc) throws IOException {
 
 		// **** Request Rover Location from SwarmServer ****
 		out.println("LOC");
