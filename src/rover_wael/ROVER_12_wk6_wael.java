@@ -2,6 +2,7 @@ package rover_wael;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
@@ -9,6 +10,14 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.protocol.HTTP;
 import org.json.simple.JSONObject;
 
 import swarmBots.NextMoveModel;
@@ -907,35 +916,70 @@ public class ROVER_12_wk6_wael {
 		for (int i = 0; i < ptrScanMap.length; i++) {
 			for (int j = 0; j < ptrScanMap.length; j++) {
 
-				if (withinTheGrid(currentLoc.getYpos() - 5 + i,
-						currentLoc.getXpos() - 5 + j, mapTileLog.length)) {
+				if (withinTheGrid(currentLoc.getYpos() - 5 + i,currentLoc.getXpos() - 5 + j, mapTileLog.length)) {
 					ter = ptrScanMap[i][j].getTerrain();
 					sci = ptrScanMap[i][j].getScience();
 					elev = ptrScanMap[i][j].getElevation();
 					hasR = ptrScanMap[i][j].getHasRover();
 
-					if (mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc
-							.getXpos() - 5 + j] == null) {
+					if (mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc.getXpos() - 5 + j] == null) {
+						mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc.getXpos() - 5 + j] = new MapTile(ter, sci, elev, hasR);
 						
-						// Create Json object to send info to Shared Server
+						//TODO Implementation need testing
+						
+						// Create JSON object
 						JSONObject obj = new JSONObject();
 						obj.put("x:", new Integer(currentLoc.getXpos() - 5 + j));
 						obj.put("y:", new Integer(currentLoc.getYpos() - 5 + j));
-						obj.put("terrain:", new String(ter.getTerString()));
-						obj.put("science:", new String("Tools test"));
-						obj.put("stillExists:", new Boolean(false));
 						
-						
-						
-						mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc
-								.getXpos() - 5 + j] = new MapTile(ter, sci,
-								elev, hasR);
+						// Check if terrain exist
+						if (!ter.getTerString().isEmpty()) {
+							obj.put("terrain:", new String(ter.getTerString()));
+						}
+						else {
+							obj.put("terrain:", new String(""));
+						}
+						// Check if science exist 
+						if (!sci.getSciString().isEmpty()) {
+							obj.put("science:", new String(sci.getSciString()));
+							obj.put("stillExists:", new Boolean(true));
+						}
+						else {
+							obj.put("science:", new String(""));
+							obj.put("stillExists:", new Boolean(false));
+						}
+					
+						// Send JSON object to server using HTTP POST method
+						SendJsonToServer(obj);
 					}
 				}
 			}
 		}
 
 		debugPrintMapTileArray(mapTileLog);
+	}
+
+	private void SendJsonToServer(JSONObject obj) {
+		HttpClient client = new DefaultHttpClient();
+		HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); //Timeout Limit
+		HttpResponse response;
+
+		try {
+			//TODO Update with correct server URL
+		    HttpPost post = new HttpPost("OUR SERVER URL");
+		    StringEntity se = new StringEntity(obj.toString());  
+		    se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+		    post.setEntity(se);
+		    response = client.execute(post);
+
+		    /*Checking response */
+		    if(response!=null){
+		        InputStream in = response.getEntity().getContent(); //Get the data in the entity
+		    }
+
+		} catch(Exception e) {
+		    e.printStackTrace();
+		}
 	}
 
 	private void move(String dir) throws IOException {
