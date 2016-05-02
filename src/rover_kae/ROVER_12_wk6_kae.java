@@ -537,6 +537,7 @@ public class ROVER_12_wk6_kae {
 						.getYpos()));
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
+				loadScanMapFromSwarmServer();
 				Thread.sleep(sleepTime);
 
 				System.out
