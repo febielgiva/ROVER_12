@@ -43,6 +43,13 @@ git branch --set-upstream my_branch origin/my_branch // first time only
 git push // second time or after
 ```
 
+* Modification in .gitignore must be followed by these commands
+```
+ git rm -r --cached . 
+ git add .
+ git commit –m “updating gitignore”    
+```
+
 ###Members:
 * Nivethitha Subas
 * Febi Elgiva
