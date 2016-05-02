@@ -4,14 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.lang.reflect.Type;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.json.simple.JSONObject;
 
 import swarmBots.NextMoveModel;
 
@@ -53,7 +50,7 @@ public class ROVER_12 {
 		rovername = "ROVER_12";
 		SERVER_ADDRESS = "localhost";
 		// this should be a safe but slow timer value
-		sleepTime = 300; // in milliseconds - smaller is faster, but the server
+		sleepTime = 100; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
 
