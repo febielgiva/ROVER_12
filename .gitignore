@@ -1,4 +1,3 @@
-
 # Ignore everything
 *
 
@@ -10,6 +9,8 @@
 !src/*
 !src/*/
 !src/*/*
+!src/*/*/*
+!src/*/*/*/*
 
 !libs
 !libs/
