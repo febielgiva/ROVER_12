@@ -1,4 +1,4 @@
-package swarmBots;
+package rover_kae;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class ROVER_12 {
+public class ROVER_12_wk6_kae {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -43,11 +43,10 @@ public class ROVER_12 {
 	static String myJSONStringBackupofMap;
 	Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
-	 Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-//	MapTile[][] mapTileLog = new MapTile[100][100];
+	Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 
-	public ROVER_12() {
+	public ROVER_12_wk6_kae() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -57,7 +56,7 @@ public class ROVER_12 {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12(String serverAddress) {
+	public ROVER_12_wk6_kae(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -141,12 +140,38 @@ public class ROVER_12 {
 			while (true) {
 
 				setCurrentLoc();
+				/*
+				 * 0. check to see if rover 12 has moved (the server has
+				 * responded to move-request) a) moved - go to 1. b) not moved,
+				 * Thread.sleep(800), continue to the next iteration of the loop
+				 */
+
+				/* 1. scan map tile (forget about mapLog b/c of JsonCopy) */
+
+				/*
+				 * 2. check for stuckness (can be checked by observing 11 x 11
+				 * map tile)
+				 */
+
+				/* 3. check 3 steps ahead (sands or rock?) */
+
+				/* 4-a. move if next 3 tiles in current direction is clear */
+
+				/* 4-b. switch direction if next 3 tiles contains sand or rock */
+
+				/* end the controller process loop */
+
+				// after getting location set previous equal current to be able
+				// to check for stuckness and blocked later
 				previousLoc = currentLoc;
 
 				// ***** do a SCAN ******
+
+				// gets the scanMap from the server based on the Rover current
+				// location
 				loadScanMapFromSwarmServer();
-				scanMap.debugPrintMap();// debug
-				debugPrintMapTileArray(mapTileLog);
+				// prints the scanMap to the Console output for debug purposes
+				scanMap.debugPrintMap();
 
 				// ***** MOVING *****
 
@@ -158,7 +183,8 @@ public class ROVER_12 {
 
 				List<NextMoveModel> nextMoveNotifier = new ArrayList<NextMoveModel>();
 
-				// ************* G12 - Febi's Smart Logic For motion**********
+				// #################################*************Febi's Logic
+				// For motion**********
 				// int tempRowArray;
 				// int tempColumnArray;
 
@@ -511,6 +537,7 @@ public class ROVER_12 {
 						.getYpos()));
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
+				loadScanMapFromSwarmServer();
 				Thread.sleep(sleepTime);
 
 				System.out
@@ -661,9 +688,24 @@ public class ROVER_12 {
 		// System.out.println("ROVER_12 convert from json back to ScanMap class");
 		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
-		
 		myJSONStringBackupofMap = jsonScanMapString;
-		loadMapTileOntoGlobal(scanMap.getScanMap());
+	}
+
+	// this takes the server response string, parses out the x and x values and
+	// returns a Coord object
+	public static Coord extractLocationFromString(String sStr) {
+		int indexOf;
+		indexOf = sStr.indexOf(" ");
+		sStr = sStr.substring(indexOf + 1);
+		if (sStr.lastIndexOf(" ") != -1) {
+			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			// System.out.println("extracted xStr " + xStr);
+
+			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+			// System.out.println("extracted yStr " + yStr);
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+		}
+		return null;
 	}
 
 	private Coord requestStartLoc(Socket soc) throws IOException {
@@ -771,23 +813,6 @@ public class ROVER_12 {
 		return null;
 	}
 
-	// this takes the server response string, parses out the x and x values and
-	// returns a Coord object
-	public static Coord extractLocationFromString(String sStr) {
-		int indexOf;
-		indexOf = sStr.indexOf(" ");
-		sStr = sStr.substring(indexOf + 1);
-		if (sStr.lastIndexOf(" ") != -1) {
-			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
-			// System.out.println("extracted xStr " + xStr);
-
-			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
-			// System.out.println("extracted yStr " + yStr);
-			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
-		}
-		return null;
-	}
-
 	public void debugPrintMapTileArray(MapTile[][] mapTileArray) {
 
 		int edgeSize = mapTileArray.length;
@@ -853,74 +878,6 @@ public class ROVER_12 {
 		System.out.print("\n");
 	}
 
-	public void debugPrintMapTileArray(Map<Coord, MapTile> globalMapCopy) {
-
-		// FIXME
-		int edgeSize = 100;
-		System.out.println("edge size: " + edgeSize);
-		for (int k = 0; k < edgeSize + 2; k++) {
-			System.out.print("--");
-		}
-
-		System.out.print("\n");
-
-		for (int j = 0; j < edgeSize; j++) {
-
-			// System.out.print("j=" + j + "\t");
-
-			System.out.print("| ");
-			for (int i = 0; i < edgeSize; i++) {
-				if (mapTileLog.get(new Coord(i, j)) == null) {
-					System.out.print("nn");
-				}
-				// check and print edge of map has first priority
-				else if (mapTileLog.get(new Coord(i, j)).getTerrain()
-						.toString().equals("NONE")) {
-					System.out.print("XX");
-
-					// next most important - print terrain and/or science
-					// locations
-					// terrain and science
-				} else if (!(mapTileLog.get(new Coord(i, j)).getTerrain()
-						.toString().equals("SOIL"))
-						&& !(mapTileLog.get(new Coord(i, j)).getScience()
-								.toString().equals("NONE"))) {
-					// both terrain and science
-
-					System.out.print(mapTileLog.get(new Coord(i, j))
-							.getTerrain().toString().substring(0, 1)
-							+ mapTileLog.get(new Coord(i, j)).getScience()
-									.getSciString());
-					// just terrain
-				} else if (!(mapTileLog.get(new Coord(i, j)).getTerrain()
-						.toString().equals("SOIL"))) {
-					System.out.print(mapTileLog.get(new Coord(i, j))
-							.getTerrain().toString().substring(0, 1)
-							+ " ");
-					// just science
-				} else if (!(mapTileLog.get(new Coord(i, j)).getScience()
-						.toString().equals("NONE"))) {
-					System.out.print(" "
-							+ mapTileLog.get(new Coord(i, j)).getScience()
-									.getSciString());
-
-					// if still empty check for rovers and print them
-				} else if (mapTileLog.get(new Coord(i, j)).getHasRover()) {
-					System.out.print("[]");
-
-					// nothing here so print nothing
-				} else {
-					System.out.print("  ");
-				}
-			}
-			System.out.print(" |\n");
-		}
-		for (int k = 0; k < edgeSize + 2; k++) {
-			System.out.print("--");
-		}
-		System.out.print("\n");
-	}
-
 	private void loadMapTileOntoGlobal(MapTile[][] ptrScanMap) {
 
 		MapTile tempTile;
@@ -934,26 +891,29 @@ public class ROVER_12 {
 		// debug - print out
 		System.out.println("inside of loadMapTileIntoGlobal():");
 
-		for (int y = 0; y < ptrScanMap.length; y++) {
-			for (int x = 0; x < ptrScanMap.length; x++) {
+		for (int i = 0; i < ptrScanMap.length; i++) {
+			for (int j = 0; j < ptrScanMap.length; j++) {
 
-					ter = ptrScanMap[y][x].getTerrain();
-					sci = ptrScanMap[y][x].getScience();
-					elev = ptrScanMap[y][x].getElevation();
-					hasR = ptrScanMap[y][x].getHasRover();
+				if (withinTheGrid(currentLoc.getYpos() - centerIndex + i,
+						currentLoc.getXpos() - centerIndex + j,
+						mapTileLog.size())) {
+					ter = ptrScanMap[i][j].getTerrain();
+					sci = ptrScanMap[i][j].getScience();
+					elev = ptrScanMap[i][j].getElevation();
+					hasR = ptrScanMap[i][j].getHasRover();
 
 					tempTile = new MapTile(ter, sci, elev, hasR);
-					tempCoord = new Coord(currentLoc.getXpos() - centerIndex
-							+ x, currentLoc.getYpos() - centerIndex + y);
+					tempCoord = new Coord(currentLoc.getYpos() - centerIndex
+							+ i, currentLoc.getXpos() - centerIndex + j);
 
-					// debug
-					System.out.println("(i,j)=(" + y + "," + x + ")\t"
-							+ tempCoord + tempTile);
 					mapTileLog.put(tempCoord, tempTile);
 
 					System.out.println(tempCoord + " *** " + tempTile);
+
+				}
 			}
 		}
+		// debug - print out
 	}
 
 	private void move(String dir) throws IOException {
@@ -1019,7 +979,7 @@ public class ROVER_12 {
 
 	}
 
-	
+	// KSTD - very ugly. Does anyone know how to make this better?
 	public boolean checkSand(String direction) {
 
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -1043,7 +1003,6 @@ public class ROVER_12 {
 		return false;
 	}
 
-	// a check function to prevent IndexOutOfBounds exception
 	public boolean withinTheGrid(int i, int j, int arrayLength) {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
@@ -1052,7 +1011,7 @@ public class ROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12 client = new ROVER_12();
+		ROVER_12_wk6_kae client = new ROVER_12_wk6_kae();
 		client.run();
 	}
 }
