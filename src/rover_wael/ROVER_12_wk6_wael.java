@@ -2,7 +2,6 @@ package rover_wael;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
@@ -14,17 +13,17 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.protocol.HTTP;
-import org.json.simple.JSONObject;
+import org.apache.http.impl.client.HttpClientBuilder;
 
+
+import org.json.simple.JSONObject;
 import swarmBots.NextMoveModel;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+
 
 import common.Coord;
 import common.MapTile;
@@ -558,20 +557,17 @@ public class ROVER_12_wk6_wael {
 				// System.out.println("ROVER_12 stuck test " + stuck);
 				System.out.println("ROVER_12 blocked test " + blocked);
 
-				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
-						.getYpos()));
+				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc.getYpos()));
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
 				Thread.sleep(sleepTime);
 
-				System.out
-						.println("ROVER_12 ------------ bottom process control --------------");
+				System.out.println("ROVER_12 ------------ bottom process control --------------");
 
 				// This catch block closes the open socket connection to the
 				// server
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			if (socket != null) {
@@ -950,7 +946,8 @@ public class ROVER_12_wk6_wael {
 						}
 					
 						// Send JSON object to server using HTTP POST method
-						SendJsonToServer(obj);
+						sendJSONToServer(obj,"http://localhost:8080/sensor");
+
 					}
 				}
 			}
@@ -959,27 +956,26 @@ public class ROVER_12_wk6_wael {
 		debugPrintMapTileArray(mapTileLog);
 	}
 
-	private void SendJsonToServer(JSONObject obj) {
-		HttpClient client = new DefaultHttpClient();
-		HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000); //Timeout Limit
-		HttpResponse response;
-
+	private void sendJSONToServer(JSONObject obj, String URL) {
+		// TODO need testing
 		try {
-			//TODO Update with correct server URL
-		    HttpPost post = new HttpPost("OUR SERVER URL");
-		    StringEntity se = new StringEntity(obj.toString());  
-		    se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-		    post.setEntity(se);
-		    response = client.execute(post);
+			HttpClient client = HttpClientBuilder.create().build();
+			HttpPost post = new HttpPost(URL);
+			
+			StringEntity se = new StringEntity(obj.toString());
+			post.setHeader("content-type", "application/json");
+			post.setEntity(se);
 
-		    /*Checking response */
-		    if(response!=null){
-		        InputStream in = response.getEntity().getContent(); //Get the data in the entity
-		    }
-
-		} catch(Exception e) {
-		    e.printStackTrace();
+			HttpResponse response = client.execute(post);
+			
+			// Check response
+			
+			System.out.println("Response Code : " + response.getStatusLine().getStatusCode());
+			
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		
 	}
 
 	private void move(String dir) throws IOException {
