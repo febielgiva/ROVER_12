@@ -2,6 +2,7 @@ package rover_nive;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -27,7 +28,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class ROVER_12_wk6_nive {
+public class ROVER_12 {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -43,7 +44,7 @@ public class ROVER_12_wk6_nive {
 	// MapTile[][] mapTileLog = new MapTile[100][100];
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 
-	public ROVER_12_wk6_nive() {
+	public ROVER_12() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -53,7 +54,7 @@ public class ROVER_12_wk6_nive {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12_wk6_nive(String serverAddress) {
+	public ROVER_12(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -134,23 +135,22 @@ public class ROVER_12_wk6_nive {
 			while (true) {
 
 				setCurrentLoc();
-				previousLoc = currentLoc;
+				previousLoc = currentLoc.clone();
 
-				
-				
 				// ***** do a SCAN ******
 				/*
-				 * G12 - for now, it is set to load in 11 x 11 map from swarmserver, and copy it
-				 * onto our g12 map log, every 4 steps that rover 12 takes. Better ideas on the iteration interval, anyone?
+				 * G12 - for now, it is set to load in 11 x 11 map from
+				 * swarmserver, and copy it onto our g12 map log, every 4 steps
+				 * that rover 12 takes. Better ideas on the iteration interval,
+				 * anyone?
 				 */
 				if ((stepTrack++) % 4 == 0) {
 					loadScanMapFromSwarmServer();
 					scanMap.debugPrintMap();// debug
+					debugPrintMapTileArrayText(mapTileLog, 30);
 					debugPrintMapTileArray(mapTileLog);
 				}
-				
-				
-				
+
 				// ***** MOVING *****
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
@@ -166,16 +166,17 @@ public class ROVER_12_wk6_nive {
 				// stuck = currentLoc.equals(previousLoc);
 
 				// System.out.println("ROVER_12 stuck test " + stuck);
-				//System.out.println("ROVER_12 blocked test " + blocked);
-				//System.out.println(currentLoc);
-				
+				// System.out.println("ROVER_12 blocked test " + blocked);
+				// System.out.println(currentLoc);
+
 				// store rover 12 path for easy return
 				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
 						.getYpos()));
-				
+
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
-				Thread.sleep(sleepTime); // G12 - sleepTime has been reduced to 100. is that alright?
+				Thread.sleep(sleepTime); // G12 - sleepTime has been reduced to
+											// 100. is that alright?
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
@@ -566,6 +567,8 @@ public class ROVER_12_wk6_nive {
 	// array group12 - this raw JsonData should be used for our maptileLog?
 	public void loadScanMapFromSwarmServer() throws IOException {
 		// System.out.println("ROVER_12 method doScan()");
+		setCurrentLoc();
+		Coord scanLoc = new Coord(currentLoc.getXpos(), currentLoc.getYpos());
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
 		out.println("SCAN");
@@ -600,12 +603,22 @@ public class ROVER_12_wk6_nive {
 		// new MyWriter( jsonScanMapString, 0); //gives a strange result -
 		// prints the \n instead of newline character in the file
 
+		System.out.println("+++++++++++++++ jsonScanMapString +++++++++++++++");
+		System.out.println(jsonScanMapString.toString());
+//		try {
+//			Thread.sleep(10000);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
+		
 		// System.out.println("ROVER_12 convert from json back to ScanMap class");
 		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
 
 		myJSONStringBackupofMap = jsonScanMapString;
-		loadMapTilesOntoGlobalMapLog(scanMap.getScanMap());
+		loadMapTilesOntoGlobalMapLog(scanMap.getScanMap(), scanLoc);
 	}
 
 	private Coord requestStartLoc(Socket soc) throws IOException {
@@ -795,6 +808,73 @@ public class ROVER_12_wk6_nive {
 		System.out.print("\n");
 	}
 
+	public void debugPrintMapTileArrayText(Map<Coord, MapTile> globalMapCopy,
+			int mapSize) {
+		MapTile tile;
+
+		for (int y = 0; y < mapSize; y++) {
+			for (int x = 0; x < mapSize; x++) {
+				tile = globalMapCopy.get(new Coord(x, y));
+				System.out.print("x,y=" + x + "," + y + "\t" + tile + "\t/t");
+			}
+		}
+	}
+
+//	public void debugPrintMapTileHashMap(Map<Coord,MapTile> maptiles, int xStart, int yXtart, int edgeSize){
+//	System.out.println("edge size: " + edgeSize);
+//	for (int k = 0; k < edgeSize + 2; k++) {
+//		System.out.print("--");
+//	}
+//
+//	System.out.print("\n");
+//	for (int j = yXtart; j < edgeSize; j++) {
+//		System.out.print("| ");
+//		for (int i = yXtart; i < edgeSize; i++) {
+//			// check and print edge of map has first priority
+//			if (scanArray[i][j].getTerrain().toString().equals("NONE")) {
+//				System.out.print("XX");
+//
+//				// next most important - print terrain and/or science
+//				// locations
+//				// terrain and science
+//			} else if (!(scanArray[i][j].getTerrain().toString()
+//					.equals("SOIL"))
+//					&& !(scanArray[i][j].getScience().toString()
+//							.equals("NONE"))) {
+//				// both terrain and science
+//
+//				System.out.print(scanArray[i][j].getTerrain().toString()
+//						.substring(0, 1)
+//						+ scanArray[i][j].getScience().getSciString());
+//				// just terrain
+//			} else if (!(scanArray[i][j].getTerrain().toString()
+//					.equals("SOIL"))) {
+//				System.out.print(scanArray[i][j].getTerrain().toString()
+//						.substring(0, 1)
+//						+ " ");
+//				// just science
+//			} else if (!(scanArray[i][j].getScience().toString()
+//					.equals("NONE"))) {
+//				System.out.print(" "
+//						+ scanArray[i][j].getScience().getSciString());
+//
+//				// if still empty check for rovers and print them
+//			} else if (scanArray[i][j].getHasRover()) {
+//				System.out.print("[]");
+//
+//				// nothing here so print nothing
+//			} else {
+//				System.out.print("  ");
+//			}
+//		}
+//		System.out.print(" |\n");
+//	}
+//	for (int k = 0; k < edgeSize + 2; k++) {
+//		System.out.print("--");
+//	}
+//	System.out.print("\n");
+//	}
+
 	public void debugPrintMapTileArray(Map<Coord, MapTile> globalMapCopy) {
 
 		// FIXME
@@ -863,7 +943,8 @@ public class ROVER_12_wk6_nive {
 		System.out.print("\n");
 	}
 
-	private void loadMapTilesOntoGlobalMapLog(MapTile[][] ptrScanMap) {
+	private void loadMapTilesOntoGlobalMapLog(MapTile[][] ptrScanMap,
+			Coord scanLoc) {
 
 		MapTile tempTile;
 		Coord tempCoord;
@@ -871,26 +952,31 @@ public class ROVER_12_wk6_nive {
 		Science sci;
 		int elev;
 		boolean hasR;
-		int centerIndex = ptrScanMap.length / 2;
+		int halfTileSize = ptrScanMap.length / 2;
 
 		// debug - print out
-		System.out.println("inside of loadMapTileIntoGlobal():");
+		System.out.println("inside of loadMapTileIntoGlobal()[scanLoc="
+				+ scanLoc + "]:"+"[currLoc="
+				+ currentLoc);
+		System.out.println("ptrScanMap Size: " + ptrScanMap.length);
 
 		for (int y = 0; y < ptrScanMap.length; y++) {
 			for (int x = 0; x < ptrScanMap.length; x++) {
 
-				ter = ptrScanMap[y][x].getTerrain();
-				sci = ptrScanMap[y][x].getScience();
-				elev = ptrScanMap[y][x].getElevation();
-				hasR = ptrScanMap[y][x].getHasRover();
+				ter = ptrScanMap[x][y].getTerrain();
+				sci = ptrScanMap[x][y].getScience();
+				elev = ptrScanMap[x][y].getElevation();
+				hasR = ptrScanMap[x][y].getHasRover();
 
 				tempTile = new MapTile(ter, sci, elev, hasR);
-				tempCoord = new Coord(currentLoc.getXpos() - centerIndex + x,
-						currentLoc.getYpos() - centerIndex + y);
+				tempCoord = new Coord((scanLoc.getXpos() - halfTileSize) + x,
+						scanLoc.getYpos() - halfTileSize + y);
 
 				// debug
-				System.out.println("(i,j)=(" + y + "," + x + ")\t" + tempCoord
-						+ tempTile);
+				System.out.println("(x,y)=(" + x + "," + y + ")|" + "(X,Y)=("
+						+ (scanLoc.getXpos() - halfTileSize + x) + ","
+						+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
+						+ tempCoord + tempTile);
 				mapTileLog.put(tempCoord, tempTile);
 
 				System.out.println(tempCoord + " *** " + tempTile);
@@ -989,37 +1075,37 @@ public class ROVER_12_wk6_nive {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
 
-	private void SendJsonToServer(JSONObject obj) {
-		// HttpClient client = new DefaultHttpClient();
-		// HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000);
-		// //Timeout Limit
-		// HttpResponse response;
-		//
-		// try {
-		// //TODO Update with correct server URL
-		// HttpPost post = new HttpPost("OUR SERVER URL");
-		// StringEntity se = new StringEntity(obj.toString());
-		// se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
-		// "application/json"));
-		// post.setEntity(se);
-		// response = client.execute(post);
-		//
-		// /*Checking response */
-		// if(response!=null){
-		// InputStream in = response.getEntity().getContent(); //Get the data in
-		// the entity
-		// }
-		//
-		// } catch(Exception e) {
-		// e.printStackTrace();
-		// }
-	}
+//	private void SendJsonToServer(JSONObject obj) {
+//		HttpClient client = new DefaultHttpClient();
+//		HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000);
+//		// Timeout Limit
+//		HttpResponse response;
+//
+//		try {
+//			// TODO Update with correct server URL
+//			HttpPost post = new HttpPost("OUR SERVER URL");
+//			StringEntity se = new StringEntity(obj.toString());
+//			se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
+//					"application/json"));
+//			post.setEntity(se);
+//			response = client.execute(post);
+//
+//			/* Checking response */
+//			if (response != null) {
+//				InputStream in = response.getEntity().getContent();
+//				// Get the data in the entity
+//			}
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 	/**
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_wk6_nive client = new ROVER_12_wk6_nive();
+		ROVER_12 client = new ROVER_12();
 		client.run();
 	}
 }
