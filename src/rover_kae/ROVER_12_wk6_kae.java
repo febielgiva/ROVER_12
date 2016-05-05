@@ -155,8 +155,8 @@ public class ROVER_12_wk6_kae {
 				if ((stepTrack++) % 4 == 0) {
 					loadScanMapFromSwarmServer();
 					scanMap.debugPrintMap();// debug
-					//debugPrintMapTileArrayText(mapTileLog, 30);
-					//debugPrintMapTileArray(mapTileLog);
+					debugPrintMapTileArrayText(mapTileLog, 30);
+					debugPrintMapTileArray(mapTileLog);
 				}
 
 				// ***** MOVING *****
@@ -613,12 +613,12 @@ public class ROVER_12_wk6_kae {
 
 		System.out.println("+++++++++++++++ jsonScanMapString +++++++++++++++");
 		System.out.println(jsonScanMapString.toString());
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			Thread.sleep(10000);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 		
 		// System.out.println("ROVER_12 convert from json back to ScanMap class");
@@ -971,10 +971,10 @@ public class ROVER_12_wk6_kae {
 		for (int y = 0; y < ptrScanMap.length; y++) {
 			for (int x = 0; x < ptrScanMap.length; x++) {
 
-				ter = ptrScanMap[y][x].getTerrain();
-				sci = ptrScanMap[y][x].getScience();
-				elev = ptrScanMap[y][x].getElevation();
-				hasR = ptrScanMap[y][x].getHasRover();
+				ter = ptrScanMap[x][y].getTerrain();
+				sci = ptrScanMap[x][y].getScience();
+				elev = ptrScanMap[x][y].getElevation();
+				hasR = ptrScanMap[x][y].getHasRover();
 
 				tempTile = new MapTile(ter, sci, elev, hasR);
 				tempCoord = new Coord((scanLoc.getXpos() - halfTileSize) + x,

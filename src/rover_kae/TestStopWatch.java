@@ -8,7 +8,7 @@ import org.junit.Test;
 
 public class TestStopWatch {
 
-	@Test
+	//@Test
 	public void testarray() {
 
 		int[][] array = { { 1, 2, 3 }, { 4, 5, 6 }, { 7, 8, 9 } };
@@ -23,7 +23,7 @@ public class TestStopWatch {
 		System.out.println(array[1][0]);
 	}
 
-	// @Test
+	 @Test
 	public void test() {
 		long start, end;
 		start = System.currentTimeMillis();
