@@ -889,11 +889,11 @@ public class ROVER_12_wk6_nive {
 						currentLoc.getYpos() - centerIndex + y);
 
 				// debug
-				System.out.println("(i,j)=(" + y + "," + x + ")\t" + tempCoord
+				System.out.println("\noriginal(i,j)=(" + y + "," + x + ")\n" + tempCoord
 						+ tempTile);
 				mapTileLog.put(tempCoord, tempTile);
 
-				System.out.println(tempCoord + " *** " + tempTile);
+				System.out.println(tempCoord + " ** copied ** " + tempTile);
 			}
 		}
 	}
@@ -961,6 +961,11 @@ public class ROVER_12_wk6_nive {
 
 	}
 
+	public double stopWatch(){
+		
+		
+		return 0;
+	}
 	public boolean checkSand(String direction) {
 
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;

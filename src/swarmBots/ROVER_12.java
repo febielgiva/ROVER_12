@@ -2,6 +2,7 @@ package swarmBots;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -9,6 +10,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.protocol.HTTP;
 import org.json.simple.JSONObject;
 
 import com.google.gson.Gson;
@@ -990,29 +999,29 @@ public class ROVER_12 {
 	}
 
 	private void SendJsonToServer(JSONObject obj) {
-		// HttpClient client = new DefaultHttpClient();
-		// HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000);
-		// //Timeout Limit
-		// HttpResponse response;
-		//
-		// try {
-		// //TODO Update with correct server URL
-		// HttpPost post = new HttpPost("OUR SERVER URL");
-		// StringEntity se = new StringEntity(obj.toString());
-		// se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
-		// "application/json"));
-		// post.setEntity(se);
-		// response = client.execute(post);
-		//
-		// /*Checking response */
-		// if(response!=null){
-		// InputStream in = response.getEntity().getContent(); //Get the data in
-		// the entity
-		// }
-		//
-		// } catch(Exception e) {
-		// e.printStackTrace();
-		// }
+		 HttpClient client = new DefaultHttpClient();
+		 HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000);
+		 //Timeout Limit
+		 HttpResponse response;
+		
+		 try {
+		 //TODO Update with correct server URL
+		 HttpPost post = new HttpPost("OUR SERVER URL");
+		 StringEntity se = new StringEntity(obj.toString());
+		 se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
+		 "application/json"));
+		 post.setEntity(se);
+		 response = client.execute(post);
+		
+		 /*Checking response */
+		 if(response!=null){
+		 InputStream in = response.getEntity().getContent(); 
+		 //Get the data in the entity
+		 }
+		
+		 } catch(Exception e) {
+		 e.printStackTrace();
+		 }
 	}
 
 	/**
