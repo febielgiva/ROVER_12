@@ -1,5 +1,7 @@
 package rover_nive;
 
+
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -26,7 +28,7 @@ import enums.Terrain;
  * ROVER_12 --- > Walker , Radiation , Chemical
  */
 
-public class ROVER_12_wk6_nive {
+public class Rover_12 {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -35,9 +37,8 @@ public class ROVER_12_wk6_nive {
 	int sleepTime;
 	String SERVER_ADDRESS = "localhost";
 	static final int PORT_ADDRESS = 9537;
-	private ArrayList<String> roverPath;
 
-	public ROVER_12_wk6_nive() {
+	public Rover_12() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -47,7 +48,7 @@ public class ROVER_12_wk6_nive {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12_wk6_nive(String serverAddress) {
+	public Rover_12(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -160,26 +161,25 @@ public class ROVER_12_wk6_nive {
 					if(!checkSand(scanMapTiles, "S"))	
 					{
 					out.println("MOVE S");
-					// System.out.println("ROVER_00 request move E");
+					
 					Thread.sleep(1100);
 					}
 					
 					else if(!checkSand(scanMapTiles, "E"))	
 						{
 						out.println("MOVE E");
-						// System.out.println("ROVER_00 request move E");
+						
 						Thread.sleep(1100);
 						}
 					else if(!checkSand(scanMapTiles, "W"))	
 					{
 					out.println("MOVE W");
-					// System.out.println("ROVER_00 request move E");
-					Thread.sleep(1100);
+										Thread.sleep(1100);
 					}
 					else if(!checkSand(scanMapTiles, "N"))	
 					{
 					out.println("MOVE N");
-					// System.out.println("ROVER_00 request move E");
+					
 					Thread.sleep(1100);
 					}
 				}
@@ -378,41 +378,51 @@ public class ROVER_12_wk6_nive {
 		
 		return false;
 	}
-	/* **********************************
-	 * The time the rover takes in getting to a point to another point */
-	 
-	 @SuppressWarnings("unused")
-	private long startWatch() {
-		return System.currentTimeMillis();
-	}
-
-	@SuppressWarnings("unused")
-	private long stopWatch(long start) {
-		return System.currentTimeMillis() - start;
-	}
-
-	@SuppressWarnings("unused")
-	private boolean isStack() {
-
-		roverPath = null;
-		if (roverPath.get(roverPath.size()).equals(
-				roverPath.get(roverPath.size() - 1))) {
-			return true;
+	
+	// -----> To be done 
+	// TODO - incomplete
+		@SuppressWarnings("unused")
+		private void debugPrint4Dirs(Coord currLoc) {
+			// System.out.println("center: "+
+			// getScanMap().[currLoc.getYpos()][currLoc.getXpos()]);
+			scanMap.debugPrintMap();
 		}
-		// if there's a repeqted patterns in rover's position, it is likely that the rover is start stuck 
-		return false;
-	}
+		
+		public void doScanOriginal() throws IOException {
+			Gson gson = new GsonBuilder().setPrettyPrinting()
+					.enableComplexMapKeySerialization().create();
+			out.println("SCAN");
 
+			String jsonScanMapIn = in.readLine();
+			if (jsonScanMapIn == null) {
+				System.out.println("ROVER_12 check connection to server");
+				jsonScanMapIn = "";
+			}
+			StringBuilder jsonScanMap = new StringBuilder();
 
-	
-	
+			if (jsonScanMapIn.startsWith("SCAN")) {
+				while (!(jsonScanMapIn = in.readLine()).equals("SCAN_END")) {
+					jsonScanMap.append(jsonScanMapIn);
+					jsonScanMap.append("\n");
+				}
+			} else {
+				// in case the server call gives unexpected results
+				clearReadLineBuffer();
+				return; // server response did not start with "SCAN"
+			}
+
+			String jsonScanMapString = jsonScanMap.toString();
+			scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
+
+		}
+
 	
 	
 	/**
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_wk6_nive client = new ROVER_12_wk6_nive();
+		Rover_12 client = new Rover_12();
 		client.run();
 	}
 }

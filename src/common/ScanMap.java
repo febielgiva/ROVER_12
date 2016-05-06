@@ -32,35 +32,35 @@ public class ScanMap {
 			System.out.print("| ");
 			for (int i = 0; i < edgeSize; i++) {
 				// check and print edge of map has first priority
-				if (scanArray[i][j].getTerrain().toString().equals("NONE")) {
+				if (scanArray[j][i].getTerrain().toString().equals("NONE")) {
 					System.out.print("XX");
 
 					// next most important - print terrain and/or science
 					// locations
 					// terrain and science
-				} else if (!(scanArray[i][j].getTerrain().toString()
+				} else if (!(scanArray[j][i].getTerrain().toString()
 						.equals("SOIL"))
 						&& !(scanArray[i][j].getScience().toString()
 								.equals("NONE"))) {
 					// both terrain and science
 
-					System.out.print(scanArray[i][j].getTerrain().toString()
+					System.out.print(scanArray[j][i].getTerrain().toString()
 							.substring(0, 1)
-							+ scanArray[i][j].getScience().getSciString());
+							+ scanArray[j][i].getScience().getSciString());
 					// just terrain
-				} else if (!(scanArray[i][j].getTerrain().toString()
+				} else if (!(scanArray[j][i].getTerrain().toString()
 						.equals("SOIL"))) {
-					System.out.print(scanArray[i][j].getTerrain().toString()
+					System.out.print(scanArray[j][i].getTerrain().toString()
 							.substring(0, 1)
 							+ " ");
 					// just science
-				} else if (!(scanArray[i][j].getScience().toString()
+				} else if (!(scanArray[j][i].getScience().toString()
 						.equals("NONE"))) {
 					System.out.print(" "
-							+ scanArray[i][j].getScience().getSciString());
+							+ scanArray[j][i].getScience().getSciString());
 
 					// if still empty check for rovers and print them
-				} else if (scanArray[i][j].getHasRover()) {
+				} else if (scanArray[j][i].getHasRover()) {
 					System.out.print("[]");
 
 					// nothing here so print nothing
