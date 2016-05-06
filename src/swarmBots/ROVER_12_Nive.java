@@ -35,6 +35,7 @@ public class ROVER_12_Nive {
 	int sleepTime;
 	String SERVER_ADDRESS = "localhost";
 	static final int PORT_ADDRESS = 9537;
+	private ArrayList<String> roverPath;
 
 	public ROVER_12_Nive() {
 		// constructor
@@ -377,6 +378,33 @@ public class ROVER_12_Nive {
 		
 		return false;
 	}
+	/* **********************************
+	 * The time the rover takes in getting to a point to another point */
+	 
+	 @SuppressWarnings("unused")
+	private long startWatch() {
+		return System.currentTimeMillis();
+	}
+
+	@SuppressWarnings("unused")
+	private long stopWatch(long start) {
+		return System.currentTimeMillis() - start;
+	}
+
+	@SuppressWarnings("unused")
+	private boolean isStack() {
+
+		roverPath = null;
+		if (roverPath.get(roverPath.size()).equals(
+				roverPath.get(roverPath.size() - 1))) {
+			return true;
+		}
+		// if there's a repeqted patterns in rover's position, it is likely that the rover is start stuck 
+		return false;
+	}
+
+
+	
 	
 	
 	
