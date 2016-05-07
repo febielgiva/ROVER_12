@@ -28,7 +28,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class ROVER_12 {
+public class Rover_12_Old_Febi_Running  {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -44,7 +44,7 @@ public class ROVER_12 {
 	// MapTile[][] mapTileLog = new MapTile[100][100];
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 
-	public ROVER_12() {
+	public Rover_12_Old_Febi_Running () {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -54,7 +54,7 @@ public class ROVER_12 {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12(String serverAddress) {
+	public Rover_12_Old_Febi_Running (String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -157,13 +157,8 @@ public class ROVER_12 {
 
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
-				
-				// store rover 12 path for easy return
-				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
-						.getYpos()));
 
-				roverMotionLogic(cardinals, scanMapTiles, centerIndex,currentLoc.getXpos(),currentLoc
-						.getYpos());
+				roverMotionLogic(cardinals, scanMapTiles, centerIndex);
 				setCurrentLoc();
 
 				// test for stuckness
@@ -174,7 +169,9 @@ public class ROVER_12 {
 				// System.out.println("ROVER_12 blocked test " + blocked);
 				// System.out.println(currentLoc);
 
-				
+				// store rover 12 path for easy return
+				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
+						.getYpos()));
 
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
@@ -202,7 +199,7 @@ public class ROVER_12 {
 	}// END of Rover main control loop
 
 	private void roverMotionLogic(boolean[] cardinals,
-			MapTile[][] scanMapTiles, int centerIndex,int currentXPos, int currentYPos) throws InterruptedException {
+			MapTile[][] scanMapTiles, int centerIndex) {
 		// ************* Febi's rover motion logic **********
 		// int tempRowArray;
 		// int tempColumnArray;
@@ -231,19 +228,13 @@ public class ROVER_12 {
 				cardinals=moveNorth(cardinals);
 			} else {
 				// if next move to east is an obstacle
-				if ((isTowardsEastIsObsatacle(scanMapTiles,centerIndex)) || (isAlreadyTraveledPathTowardsEast(currentXPos,currentYPos))) {
+				if (isTowardsEastIsObsatacle(scanMapTiles,centerIndex)) {
 					// check whether south is obstacle
-					if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))  || (isAlreadyTraveledPathTowardsSouth(currentXPos,currentYPos))){
+					if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 						// check whether north is obstacle
-						if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) || (isAlreadyTraveledPathTowardsNorth(currentXPos,currentYPos))) {
-							//move west if no obstacle or else east
-							if(isTowardsWestIsObsatacle(scanMapTiles, centerIndex)){
-								cardinals=moveEast(cardinals);
-							}
-							else{
-								cardinals = moveUsingPastPath(cardinals,currentXPos,currentYPos);
-							}
-							
+						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+							//move west
+							cardinals=moveWest(cardinals);
 						} else {
 							// move north
 							cardinals=moveNorth(cardinals);
@@ -261,19 +252,13 @@ public class ROVER_12 {
 			}
 		} else if (cardinals[3]) {
 			// if next move to west is an obstacle
-			if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) ||(isAlreadyTraveledPathTowardsWest(currentXPos,currentYPos))){
+			if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
 				// check whether south is obstacle
-				if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))  || (isAlreadyTraveledPathTowardsSouth(currentXPos,currentYPos))) {
+				if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether north is obstacle
-					if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) || (isAlreadyTraveledPathTowardsNorth(currentXPos,currentYPos))) {
-						// move east if no obstacle or else move to west	
-						if(isTowardsEastIsObsatacle(scanMapTiles, centerIndex)){
-							cardinals=moveWest(cardinals);
-						}
-						else{
-							cardinals = moveUsingPastPath(cardinals,currentXPos,currentYPos);
-						}
-					
+					if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+						// move east
+						cardinals=moveEast(cardinals);
 					} else {
 						// move north
 						cardinals=moveNorth(cardinals);
@@ -291,18 +276,13 @@ public class ROVER_12 {
 		} else if (cardinals[0]) {
 
 			// check whether south is obstacle
-			if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))  || (isAlreadyTraveledPathTowardsSouth(currentXPos,currentYPos))) {
+			if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 				// if next move to west is an obstacle
-				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) ||(isAlreadyTraveledPathTowardsWest(currentXPos,currentYPos))) {
+				if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether east is obstacle
-					if ((isTowardsEastIsObsatacle(scanMapTiles,centerIndex)) || (isAlreadyTraveledPathTowardsEast(currentXPos,currentYPos))) {
-						// move north if no obstacle or else move in south
-						if(isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)){
-							cardinals=moveSouth(cardinals);
-						}
-						else{
-							cardinals = moveUsingPastPath(cardinals,currentXPos,currentYPos);
-						}
+					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+						// move north
+						cardinals=moveNorth(cardinals);
 					} else {
 						// move east
 						cardinals=moveEast(cardinals);
@@ -320,18 +300,13 @@ public class ROVER_12 {
 		} else if (cardinals[2]) {
 
 			// check whether north is obstacle
-			if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) || (isAlreadyTraveledPathTowardsNorth(currentXPos,currentYPos))) {
+			if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
 				// if next move to west is an obstacle
-				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) ||(isAlreadyTraveledPathTowardsWest(currentXPos,currentYPos))) {
+				if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether east is obstacle
-					if ((isTowardsEastIsObsatacle(scanMapTiles,centerIndex)) || (isAlreadyTraveledPathTowardsEast(currentXPos,currentYPos))) {
-						// move south if no obstacle or else go back to north
-						if(isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)){
-							cardinals=moveNorth(cardinals);
-						}
-						else{
-							cardinals = moveUsingPastPath(cardinals,currentXPos,currentYPos);
-						}
+					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+						// move south
+						cardinals=moveSouth(cardinals);
 					} else {
 						// move east
 						cardinals=moveEast(cardinals);
@@ -347,117 +322,6 @@ public class ROVER_12 {
 				cardinals=moveNorth(cardinals);
 			}
 		}
-	}
-
-	private boolean[] moveUsingPastPath(boolean[] cardinals, int currentXPos, int currentYPos) throws InterruptedException {
-		for(int j = 0 ; (j<10) && (j<pathMap.size());j++){
-			for (int i = pathMap.size() ; i > 0 ; i++) {
-				System.out.println("hello");
-				Thread.sleep(500);
-				cardinals = assignTheMove(cardinals,pathMap.get(i),currentXPos,currentYPos);
-			}
-		}		
-		return cardinals;
-	}
-
-	private boolean[] assignTheMove(boolean[] cardinals, Coord eachCoord, int currentXPos, int currentYPos) {
-		if(isPastPositonIsEast(cardinals,eachCoord,currentXPos,currentYPos)){
-			cardinals=moveEast(cardinals);
-			
-		}
-		else if(isPastPositonIsWest(cardinals,eachCoord,currentXPos,currentYPos)){
-			cardinals=moveWest(cardinals);
-			
-		}
-		else if(isPastPositonIsNorth(cardinals,eachCoord,currentXPos,currentYPos)){
-			cardinals=moveNorth(cardinals);
-			
-		}
-		else if(isPastPositonIsSouth(cardinals,eachCoord,currentXPos,currentYPos)){
-			cardinals=moveSouth(cardinals);
-			
-		}
-		return cardinals;
-	}
-
-	private boolean isPastPositonIsSouth(boolean[] cardinals, Coord eachCoord, int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
-		if((previousXPos == currentXPos) && (previousYPos == currentYPos+1)){
-			return true;
-		}
-		return false;
-	}
-
-	private boolean isPastPositonIsNorth(boolean[] cardinals, Coord eachCoord, int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
-		if((previousXPos == currentXPos) && (previousYPos == currentYPos-1)){
-			return true;
-		}
-		return false;
-	}
-
-	private boolean isPastPositonIsWest(boolean[] cardinals, Coord eachCoord, int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
-		if((previousXPos == currentXPos-1) && (previousYPos == currentYPos)){
-			return true;
-		}
-		return false;
-	}
-
-	private boolean isPastPositonIsEast(boolean[] cardinals, Coord eachCoord, int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
-		if((previousXPos == currentXPos+1) && (previousYPos == currentYPos)){
-			return true;
-		}
-		return false;
-	}
-
-	private boolean isAlreadyTraveledPathTowardsWest(int currentXPos, int currentYPos) {
-		int nextXPosition = currentXPos-1;
-		int nextYPosition = currentYPos;
-		for (Coord coord : pathMap) {
-			if((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean isAlreadyTraveledPathTowardsNorth(int currentXPos, int currentYPos) {
-		int nextXPosition = currentXPos;
-		int nextYPosition = currentYPos-1;
-		for (Coord coord : pathMap) {
-			if((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean isAlreadyTraveledPathTowardsSouth(int currentXPos, int currentYPos) {
-		int nextXPosition = currentXPos;
-		int nextYPosition = currentYPos+1;
-		for (Coord coord : pathMap) {
-			if((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean isAlreadyTraveledPathTowardsEast(int currentXPos, int currentYPos) {
-		int nextXPosition = currentXPos +1;
-		int nextYPosition = currentYPos;
-		for (Coord coord : pathMap) {
-			if((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)){
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private boolean[] moveWest(boolean[] cardinals) {
@@ -1172,7 +1036,7 @@ public class ROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12 client = new ROVER_12();
+		Rover_12_Old_Febi_Running  client = new Rover_12_Old_Febi_Running ();
 		client.run();
 	}
 }
