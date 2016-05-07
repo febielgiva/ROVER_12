@@ -891,11 +891,19 @@ public class ROVER_12_wk6_kae {
 		for (int k = 0; k < edgeSize + 2; k++) {
 			System.out.print("--");
 		}
+<<<<<<< HEAD
 
 		System.out.print("\n");
 
 		for (int j = 0; j < edgeSize; j++) {
 
+=======
+
+		System.out.print("\n");
+
+		for (int j = 0; j < edgeSize; j++) {
+
+>>>>>>> master
 			// System.out.print("j=" + j + "\t");
 
 			System.out.print("| ");
@@ -944,10 +952,17 @@ public class ROVER_12_wk6_kae {
 				}
 			}
 			System.out.print(" |\n");
+<<<<<<< HEAD
 		}
 		for (int k = 0; k < edgeSize + 2; k++) {
 			System.out.print("--");
 		}
+=======
+		}
+		for (int k = 0; k < edgeSize + 2; k++) {
+			System.out.print("--");
+		}
+>>>>>>> master
 		System.out.print("\n");
 	}
 
@@ -1083,6 +1098,33 @@ public class ROVER_12_wk6_kae {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
 
+<<<<<<< HEAD
+//	private void SendJsonToServer(JSONObject obj) {
+//		HttpClient client = new DefaultHttpClient();
+//		HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000);
+//		// Timeout Limit
+//		HttpResponse response;
+//
+//		try {
+//			// TODO Update with correct server URL
+//			HttpPost post = new HttpPost("OUR SERVER URL");
+//			StringEntity se = new StringEntity(obj.toString());
+//			se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
+//					"application/json"));
+//			post.setEntity(se);
+//			response = client.execute(post);
+//
+//			/* Checking response */
+//			if (response != null) {
+//				InputStream in = response.getEntity().getContent();
+//				// Get the data in the entity
+//			}
+//
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
+=======
 	private void SendJsonToServer(JSONObject obj) {
 		HttpClient client = new DefaultHttpClient();
 		HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000);
@@ -1108,6 +1150,7 @@ public class ROVER_12_wk6_kae {
 			e.printStackTrace();
 		}
 	}
+>>>>>>> master
 
 	/**
 	 * Runs the client
