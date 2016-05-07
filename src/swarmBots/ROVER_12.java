@@ -154,9 +154,9 @@ public class ROVER_12 {
 				 */
 				if ((stepTrack++) % 4 == 0) {
 					loadScanMapFromSwarmServer();
-					scanMap.debugPrintMap();// debug
-					debugPrintMapTileArrayText(mapTileLog, 30);
-					debugPrintMapTileArray(mapTileLog);
+					//scanMap.debugPrintMap();// debug
+					//debugPrintMapTileArrayText(mapTileLog, 30);
+					//debugPrintMapTileArray(mapTileLog);
 				}
 
 				// ***** MOVING *****

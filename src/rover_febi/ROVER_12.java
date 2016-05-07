@@ -157,13 +157,13 @@ public class ROVER_12 {
 
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
-				
+
 				// store rover 12 path for easy return
 				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
 						.getYpos()));
 
-				roverMotionLogic(cardinals, scanMapTiles, centerIndex,currentLoc.getXpos(),currentLoc
-						.getYpos());
+				roverMotionLogic(cardinals, scanMapTiles, centerIndex,
+						currentLoc.getXpos(), currentLoc.getYpos());
 				setCurrentLoc();
 
 				// test for stuckness
@@ -173,8 +173,6 @@ public class ROVER_12 {
 				// System.out.println("ROVER_12 stuck test " + stuck);
 				// System.out.println("ROVER_12 blocked test " + blocked);
 				// System.out.println(currentLoc);
-
-				
 
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
@@ -202,7 +200,8 @@ public class ROVER_12 {
 	}// END of Rover main control loop
 
 	private void roverMotionLogic(boolean[] cardinals,
-			MapTile[][] scanMapTiles, int centerIndex,int currentXPos, int currentYPos) throws InterruptedException {
+			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
+			int currentYPos) throws InterruptedException {
 		// ************* Febi's rover motion logic **********
 		// int tempRowArray;
 		// int tempColumnArray;
@@ -218,242 +217,291 @@ public class ROVER_12 {
 			if (scanMapTiles[centerIndex + 1][centerIndex].getScience().equals(
 					"C")) {
 				// move east
-				cardinals=moveEast(cardinals);
+				cardinals = moveEast(cardinals);
 
 			} else if (scanMapTiles[centerIndex][centerIndex + 1].getScience()
 					.equals("C")) {
 				// move south
-				cardinals=moveSouth(cardinals);
+				cardinals = moveSouth(cardinals);
 
 			} else if (scanMapTiles[centerIndex][centerIndex - 1].getScience()
 					.equals("C")) {
 				// move north
-				cardinals=moveNorth(cardinals);
+				cardinals = moveNorth(cardinals);
 			} else {
 				// if next move to east is an obstacle
-				if ((isTowardsEastIsObsatacle(scanMapTiles,centerIndex)) || (isAlreadyTraveledPathTowardsEast(currentXPos,currentYPos))) {
+				if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsEast(currentXPos,
+								currentYPos))) {
 					// check whether south is obstacle
-					if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))  || (isAlreadyTraveledPathTowardsSouth(currentXPos,currentYPos))){
+					if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
+									currentYPos))) {
 						// check whether north is obstacle
-						if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) || (isAlreadyTraveledPathTowardsNorth(currentXPos,currentYPos))) {
-							//move west if no obstacle or else east
-							if(isTowardsWestIsObsatacle(scanMapTiles, centerIndex)){
-								cardinals=moveEast(cardinals);
+						if ((isTowardsNorthIsObsatacle(scanMapTiles,
+								centerIndex))
+								|| (isAlreadyTraveledPathTowardsNorth(
+										currentXPos, currentYPos))) {
+							// move west if no obstacle or else east
+							if (isTowardsWestIsObsatacle(scanMapTiles,
+									centerIndex)) {
+								cardinals = moveEast(cardinals);
+							} else {
+								cardinals = moveUsingPastPath(cardinals,
+										currentXPos, currentYPos);
 							}
-							else{
-								cardinals = moveUsingPastPath(cardinals,currentXPos,currentYPos);
-							}
-							
+
 						} else {
 							// move north
-							cardinals=moveNorth(cardinals);
+							cardinals = moveNorth(cardinals);
 						}
 					} else {
 						// move south
-						cardinals=moveSouth(cardinals);
+						cardinals = moveSouth(cardinals);
 					}
 				}
 				// when no obstacle is in next move to east
 				else {
 					// move east
-					cardinals=moveEast(cardinals);
+					cardinals = moveEast(cardinals);
 				}
 			}
 		} else if (cardinals[3]) {
 			// if next move to west is an obstacle
-			if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) ||(isAlreadyTraveledPathTowardsWest(currentXPos,currentYPos))){
+			if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
+					|| (isAlreadyTraveledPathTowardsWest(currentXPos,
+							currentYPos))) {
 				// check whether south is obstacle
-				if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))  || (isAlreadyTraveledPathTowardsSouth(currentXPos,currentYPos))) {
+				if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
+								currentYPos))) {
 					// check whether north is obstacle
-					if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) || (isAlreadyTraveledPathTowardsNorth(currentXPos,currentYPos))) {
-						// move east if no obstacle or else move to west	
-						if(isTowardsEastIsObsatacle(scanMapTiles, centerIndex)){
-							cardinals=moveWest(cardinals);
+					if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsNorth(currentXPos,
+									currentYPos))) {
+						// move east if no obstacle or else move to west
+						if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+							cardinals = moveWest(cardinals);
+						} else {
+							cardinals = moveUsingPastPath(cardinals,
+									currentXPos, currentYPos);
 						}
-						else{
-							cardinals = moveUsingPastPath(cardinals,currentXPos,currentYPos);
-						}
-					
+
 					} else {
 						// move north
-						cardinals=moveNorth(cardinals);
+						cardinals = moveNorth(cardinals);
 					}
 				} else {
 					// move south
-					cardinals=moveSouth(cardinals);
+					cardinals = moveSouth(cardinals);
 				}
 			}
 			// when no obstacle is in next move to west
 			else {
 				// move west
-				cardinals=moveWest(cardinals);
+				cardinals = moveWest(cardinals);
 			}
 		} else if (cardinals[0]) {
 
 			// check whether south is obstacle
-			if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))  || (isAlreadyTraveledPathTowardsSouth(currentXPos,currentYPos))) {
+			if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
+					|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
+							currentYPos))) {
 				// if next move to west is an obstacle
-				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) ||(isAlreadyTraveledPathTowardsWest(currentXPos,currentYPos))) {
+				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsWest(currentXPos,
+								currentYPos))) {
 					// check whether east is obstacle
-					if ((isTowardsEastIsObsatacle(scanMapTiles,centerIndex)) || (isAlreadyTraveledPathTowardsEast(currentXPos,currentYPos))) {
+					if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsEast(currentXPos,
+									currentYPos))) {
 						// move north if no obstacle or else move in south
-						if(isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)){
-							cardinals=moveSouth(cardinals);
-						}
-						else{
-							cardinals = moveUsingPastPath(cardinals,currentXPos,currentYPos);
+						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+							cardinals = moveSouth(cardinals);
+						} else {
+							cardinals = moveUsingPastPath(cardinals,
+									currentXPos, currentYPos);
 						}
 					} else {
 						// move east
-						cardinals=moveEast(cardinals);
+						cardinals = moveEast(cardinals);
 					}
 				} else {
 					// move west
-					cardinals=moveWest(cardinals);
+					cardinals = moveWest(cardinals);
 				}
 			}
 			// when no obstacle is in next move to south
 			else {
 				// move south
-				cardinals=moveSouth(cardinals);
+				cardinals = moveSouth(cardinals);
 			}
 		} else if (cardinals[2]) {
 
 			// check whether north is obstacle
-			if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) || (isAlreadyTraveledPathTowardsNorth(currentXPos,currentYPos))) {
+			if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex))
+					|| (isAlreadyTraveledPathTowardsNorth(currentXPos,
+							currentYPos))) {
 				// if next move to west is an obstacle
-				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) ||(isAlreadyTraveledPathTowardsWest(currentXPos,currentYPos))) {
+				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsWest(currentXPos,
+								currentYPos))) {
 					// check whether east is obstacle
-					if ((isTowardsEastIsObsatacle(scanMapTiles,centerIndex)) || (isAlreadyTraveledPathTowardsEast(currentXPos,currentYPos))) {
+					if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsEast(currentXPos,
+									currentYPos))) {
 						// move south if no obstacle or else go back to north
-						if(isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)){
-							cardinals=moveNorth(cardinals);
-						}
-						else{
-							cardinals = moveUsingPastPath(cardinals,currentXPos,currentYPos);
+						if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
+							cardinals = moveNorth(cardinals);
+						} else {
+							cardinals = moveUsingPastPath(cardinals,
+									currentXPos, currentYPos);
 						}
 					} else {
 						// move east
-						cardinals=moveEast(cardinals);
+						cardinals = moveEast(cardinals);
 					}
 				} else {
 					// move west
-					cardinals=moveWest(cardinals);
+					cardinals = moveWest(cardinals);
 				}
 			}
 			// when no obstacle is in next move to north
 			else {
 				// move north
-				cardinals=moveNorth(cardinals);
+				cardinals = moveNorth(cardinals);
 			}
 		}
 	}
 
-	private boolean[] moveUsingPastPath(boolean[] cardinals, int currentXPos, int currentYPos) throws InterruptedException {
-		for(int j = 0 ; (j<10) && (j<pathMap.size());j++){
-			for (int i = pathMap.size() ; i > 0 ; i++) {
-				System.out.println("hello");
-				Thread.sleep(500);
-				cardinals = assignTheMove(cardinals,pathMap.get(i),currentXPos,currentYPos);
-			}
-		}		
-		return cardinals;
-	}
+	private boolean[] moveUsingPastPath(boolean[] cardinals, int currentXPos,
+			int currentYPos) throws InterruptedException {
+		try {
+			Coord current = returnCurrentLoc(), prev = current.clone();
 
-	private boolean[] assignTheMove(boolean[] cardinals, Coord eachCoord, int currentXPos, int currentYPos) {
-		if(isPastPositonIsEast(cardinals,eachCoord,currentXPos,currentYPos)){
-			cardinals=moveEast(cardinals);
+			for (int j = 0; (j < 10) && (j < pathMap.size()); j++) {
+				for (int i = pathMap.size(); i > 0; i++) {
 			
-		}
-		else if(isPastPositonIsWest(cardinals,eachCoord,currentXPos,currentYPos)){
-			cardinals=moveWest(cardinals);
-			
-		}
-		else if(isPastPositonIsNorth(cardinals,eachCoord,currentXPos,currentYPos)){
-			cardinals=moveNorth(cardinals);
-			
-		}
-		else if(isPastPositonIsSouth(cardinals,eachCoord,currentXPos,currentYPos)){
-			cardinals=moveSouth(cardinals);
-			
+					while (current.equals(prev)) {
+						Thread.sleep(300);
+						current=returnCurrentLoc();
+					}
+
+					cardinals = assignTheMove(cardinals, pathMap.get(i),
+							currentXPos, currentYPos);
+					prev = current.clone();
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return cardinals;
 	}
 
-	private boolean isPastPositonIsSouth(boolean[] cardinals, Coord eachCoord, int currentXPos, int currentYPos) {
+	private boolean[] assignTheMove(boolean[] cardinals, Coord eachCoord,
+			int currentXPos, int currentYPos) {
+		if (isPastPositonIsEast(cardinals, eachCoord, currentXPos, currentYPos)) {
+			cardinals = moveEast(cardinals);
+
+		} else if (isPastPositonIsWest(cardinals, eachCoord, currentXPos,
+				currentYPos)) {
+			cardinals = moveWest(cardinals);
+
+		} else if (isPastPositonIsNorth(cardinals, eachCoord, currentXPos,
+				currentYPos)) {
+			cardinals = moveNorth(cardinals);
+
+		} else if (isPastPositonIsSouth(cardinals, eachCoord, currentXPos,
+				currentYPos)) {
+			cardinals = moveSouth(cardinals);
+
+		}
+		return cardinals;
+	}
+
+	private boolean isPastPositonIsSouth(boolean[] cardinals, Coord eachCoord,
+			int currentXPos, int currentYPos) {
 		int previousXPos = eachCoord.getXpos();
 		int previousYPos = eachCoord.getYpos();
-		if((previousXPos == currentXPos) && (previousYPos == currentYPos+1)){
+		if ((previousXPos == currentXPos) && (previousYPos == currentYPos + 1)) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isPastPositonIsNorth(boolean[] cardinals, Coord eachCoord, int currentXPos, int currentYPos) {
+	private boolean isPastPositonIsNorth(boolean[] cardinals, Coord eachCoord,
+			int currentXPos, int currentYPos) {
 		int previousXPos = eachCoord.getXpos();
 		int previousYPos = eachCoord.getYpos();
-		if((previousXPos == currentXPos) && (previousYPos == currentYPos-1)){
+		if ((previousXPos == currentXPos) && (previousYPos == currentYPos - 1)) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isPastPositonIsWest(boolean[] cardinals, Coord eachCoord, int currentXPos, int currentYPos) {
+	private boolean isPastPositonIsWest(boolean[] cardinals, Coord eachCoord,
+			int currentXPos, int currentYPos) {
 		int previousXPos = eachCoord.getXpos();
 		int previousYPos = eachCoord.getYpos();
-		if((previousXPos == currentXPos-1) && (previousYPos == currentYPos)){
+		if ((previousXPos == currentXPos - 1) && (previousYPos == currentYPos)) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isPastPositonIsEast(boolean[] cardinals, Coord eachCoord, int currentXPos, int currentYPos) {
+	private boolean isPastPositonIsEast(boolean[] cardinals, Coord eachCoord,
+			int currentXPos, int currentYPos) {
 		int previousXPos = eachCoord.getXpos();
 		int previousYPos = eachCoord.getYpos();
-		if((previousXPos == currentXPos+1) && (previousYPos == currentYPos)){
+		if ((previousXPos == currentXPos + 1) && (previousYPos == currentYPos)) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isAlreadyTraveledPathTowardsWest(int currentXPos, int currentYPos) {
-		int nextXPosition = currentXPos-1;
+	private boolean isAlreadyTraveledPathTowardsWest(int currentXPos,
+			int currentYPos) {
+		int nextXPosition = currentXPos - 1;
 		int nextYPosition = currentYPos;
 		for (Coord coord : pathMap) {
-			if((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)){
+			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	private boolean isAlreadyTraveledPathTowardsNorth(int currentXPos, int currentYPos) {
+	private boolean isAlreadyTraveledPathTowardsNorth(int currentXPos,
+			int currentYPos) {
 		int nextXPosition = currentXPos;
-		int nextYPosition = currentYPos-1;
+		int nextYPosition = currentYPos - 1;
 		for (Coord coord : pathMap) {
-			if((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)){
+			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	private boolean isAlreadyTraveledPathTowardsSouth(int currentXPos, int currentYPos) {
+	private boolean isAlreadyTraveledPathTowardsSouth(int currentXPos,
+			int currentYPos) {
 		int nextXPosition = currentXPos;
-		int nextYPosition = currentYPos+1;
+		int nextYPosition = currentYPos + 1;
 		for (Coord coord : pathMap) {
-			if((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)){
+			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	private boolean isAlreadyTraveledPathTowardsEast(int currentXPos, int currentYPos) {
-		int nextXPosition = currentXPos +1;
+	private boolean isAlreadyTraveledPathTowardsEast(int currentXPos,
+			int currentYPos) {
+		int nextXPosition = currentXPos + 1;
 		int nextYPosition = currentYPos;
 		for (Coord coord : pathMap) {
-			if((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)){
+			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
 				return true;
 			}
 		}
@@ -502,61 +550,51 @@ public class ROVER_12 {
 		return cardinals;
 	}
 
-	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if(scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.FLUID
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND){
+	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if(scanMapTiles[centerIndex][centerIndex - 1]
-								.getHasRover()
-								|| scanMapTiles[centerIndex][centerIndex - 1]
-										.getTerrain() == Terrain.ROCK
-								|| scanMapTiles[centerIndex][centerIndex - 1]
-										.getTerrain() == Terrain.NONE
-								|| scanMapTiles[centerIndex][centerIndex - 1]
-										.getTerrain() == Terrain.FLUID
-								|| scanMapTiles[centerIndex][centerIndex - 1]
-										.getTerrain() == Terrain.SAND){
+	private boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex][centerIndex - 1].getHasRover()
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if(scanMapTiles[centerIndex][centerIndex + 1]
-							.getHasRover()
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.ROCK
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.NONE
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.FLUID
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.SAND){
+	private boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if(scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
-						|| scanMapTiles[centerIndex + 1][centerIndex]
-								.getTerrain() == Terrain.ROCK
-						|| scanMapTiles[centerIndex + 1][centerIndex]
-								.getTerrain() == Terrain.NONE
-						|| scanMapTiles[centerIndex + 1][centerIndex]
-								.getTerrain() == Terrain.FLUID
-						|| scanMapTiles[centerIndex + 1][centerIndex]
-								.getTerrain() == Terrain.SAND){
-									return true;
-								}
+	private boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
+			return true;
+		}
 
 		return false;
 	}
@@ -576,6 +614,24 @@ public class ROVER_12 {
 			currentLoc = extractLocationFromString(line);
 
 		}
+	}
+
+	private Coord returnCurrentLoc() throws IOException {
+		Coord clone = new Coord(currentLoc.getXpos(), currentLoc.getYpos());
+		String line;
+		// **** Request Rover Location from SwarmServer ****
+		out.println("LOC");
+		line = in.readLine();
+		if (line == null) {
+			System.out.println(rovername + " check connection to server");
+			line = "";
+		}
+		if (line.startsWith("LOC")) {
+			// loc = line.substring(4);
+			clone = extractLocationFromString(line);
+
+		}
+		return clone;
 	}
 
 	// ####################### Support Methods #############################
@@ -672,14 +728,13 @@ public class ROVER_12 {
 
 		System.out.println("+++++++++++++++ jsonScanMapString +++++++++++++++");
 		System.out.println(jsonScanMapString.toString());
-//		try {
-//			Thread.sleep(10000);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
-		
+		// try {
+		// Thread.sleep(10000);
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+
 		// System.out.println("ROVER_12 convert from json back to ScanMap class");
 		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
@@ -887,60 +942,61 @@ public class ROVER_12 {
 		}
 	}
 
-//	public void debugPrintMapTileHashMap(Map<Coord,MapTile> maptiles, int xStart, int yXtart, int edgeSize){
-//	System.out.println("edge size: " + edgeSize);
-//	for (int k = 0; k < edgeSize + 2; k++) {
-//		System.out.print("--");
-//	}
-//
-//	System.out.print("\n");
-//	for (int j = yXtart; j < edgeSize; j++) {
-//		System.out.print("| ");
-//		for (int i = yXtart; i < edgeSize; i++) {
-//			// check and print edge of map has first priority
-//			if (scanArray[i][j].getTerrain().toString().equals("NONE")) {
-//				System.out.print("XX");
-//
-//				// next most important - print terrain and/or science
-//				// locations
-//				// terrain and science
-//			} else if (!(scanArray[i][j].getTerrain().toString()
-//					.equals("SOIL"))
-//					&& !(scanArray[i][j].getScience().toString()
-//							.equals("NONE"))) {
-//				// both terrain and science
-//
-//				System.out.print(scanArray[i][j].getTerrain().toString()
-//						.substring(0, 1)
-//						+ scanArray[i][j].getScience().getSciString());
-//				// just terrain
-//			} else if (!(scanArray[i][j].getTerrain().toString()
-//					.equals("SOIL"))) {
-//				System.out.print(scanArray[i][j].getTerrain().toString()
-//						.substring(0, 1)
-//						+ " ");
-//				// just science
-//			} else if (!(scanArray[i][j].getScience().toString()
-//					.equals("NONE"))) {
-//				System.out.print(" "
-//						+ scanArray[i][j].getScience().getSciString());
-//
-//				// if still empty check for rovers and print them
-//			} else if (scanArray[i][j].getHasRover()) {
-//				System.out.print("[]");
-//
-//				// nothing here so print nothing
-//			} else {
-//				System.out.print("  ");
-//			}
-//		}
-//		System.out.print(" |\n");
-//	}
-//	for (int k = 0; k < edgeSize + 2; k++) {
-//		System.out.print("--");
-//	}
-//	System.out.print("\n");
-//	}
+	// public void debugPrintMapTileHashMap(Map<Coord,MapTile> maptiles, int
+	// xStart, int yXtart, int edgeSize){
+	// System.out.println("edge size: " + edgeSize);
+	// for (int k = 0; k < edgeSize + 2; k++) {
+	// System.out.print("--");
+	// }
+	//
+	// System.out.print("\n");
+	// for (int j = yXtart; j < edgeSize; j++) {
+	// System.out.print("| ");
+	// for (int i = yXtart; i < edgeSize; i++) {
+	// // check and print edge of map has first priority
+	// if (scanArray[i][j].getTerrain().toString().equals("NONE")) {
+	// System.out.print("XX");
+	//
+	// // next most important - print terrain and/or science
+	// // locations
+	// // terrain and science
+	// } else if (!(scanArray[i][j].getTerrain().toString()
+	// .equals("SOIL"))
+	// && !(scanArray[i][j].getScience().toString()
+	// .equals("NONE"))) {
+	// // both terrain and science
+	//
+	// System.out.print(scanArray[i][j].getTerrain().toString()
+	// .substring(0, 1)
+	// + scanArray[i][j].getScience().getSciString());
+	// // just terrain
+	// } else if (!(scanArray[i][j].getTerrain().toString()
+	// .equals("SOIL"))) {
+	// System.out.print(scanArray[i][j].getTerrain().toString()
+	// .substring(0, 1)
+	// + " ");
+	// // just science
+	// } else if (!(scanArray[i][j].getScience().toString()
+	// .equals("NONE"))) {
+	// System.out.print(" "
+	// + scanArray[i][j].getScience().getSciString());
+	//
+	// // if still empty check for rovers and print them
+	// } else if (scanArray[i][j].getHasRover()) {
+	// System.out.print("[]");
+	//
+	// // nothing here so print nothing
+	// } else {
+	// System.out.print("  ");
+	// }
+	// }
+	// System.out.print(" |\n");
+	// }
+	// for (int k = 0; k < edgeSize + 2; k++) {
+	// System.out.print("--");
+	// }
+	// System.out.print("\n");
+	// }
 
 	public void debugPrintMapTileArray(Map<Coord, MapTile> globalMapCopy) {
 
@@ -1023,8 +1079,7 @@ public class ROVER_12 {
 
 		// debug - print out
 		System.out.println("inside of loadMapTileIntoGlobal()[scanLoc="
-				+ scanLoc + "]:"+"[currLoc="
-				+ currentLoc);
+				+ scanLoc + "]:" + "[currLoc=" + currentLoc);
 		System.out.println("ptrScanMap Size: " + ptrScanMap.length);
 
 		for (int y = 0; y < ptrScanMap.length; y++) {
@@ -1142,31 +1197,31 @@ public class ROVER_12 {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
 
-//	private void SendJsonToServer(JSONObject obj) {
-//		HttpClient client = new DefaultHttpClient();
-//		HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000);
-//		// Timeout Limit
-//		HttpResponse response;
-//
-//		try {
-//			// TODO Update with correct server URL
-//			HttpPost post = new HttpPost("OUR SERVER URL");
-//			StringEntity se = new StringEntity(obj.toString());
-//			se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
-//					"application/json"));
-//			post.setEntity(se);
-//			response = client.execute(post);
-//
-//			/* Checking response */
-//			if (response != null) {
-//				InputStream in = response.getEntity().getContent();
-//				// Get the data in the entity
-//			}
-//
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
+	// private void SendJsonToServer(JSONObject obj) {
+	// HttpClient client = new DefaultHttpClient();
+	// HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000);
+	// // Timeout Limit
+	// HttpResponse response;
+	//
+	// try {
+	// // TODO Update with correct server URL
+	// HttpPost post = new HttpPost("OUR SERVER URL");
+	// StringEntity se = new StringEntity(obj.toString());
+	// se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
+	// "application/json"));
+	// post.setEntity(se);
+	// response = client.execute(post);
+	//
+	// /* Checking response */
+	// if (response != null) {
+	// InputStream in = response.getEntity().getContent();
+	// // Get the data in the entity
+	// }
+	//
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// }
 
 	/**
 	 * Runs the client
