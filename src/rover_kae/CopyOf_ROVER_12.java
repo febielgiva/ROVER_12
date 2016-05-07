@@ -1,6 +1,5 @@
 package rover_kae;
-
-
+// must fix 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -49,7 +48,7 @@ public class CopyOf_ROVER_12 {
 			targetLocation = null;
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
 	// MapTile[][] mapTileLog = new MapTile[100][100];
-	private List<Coord> pathMap = new ArrayList<Coord>();
+	private List<Coord> roverPath = new ArrayList<Coord>();
 	//private Deque<String> directionStack = new ArrayDeque<String>();
 	private List<Coord> directionStack = new LinkedList<Coord>();
 	
@@ -179,7 +178,7 @@ public class CopyOf_ROVER_12 {
 				// System.out.println(currentLoc);
 
 				// store rover 12 path for easy return
-				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
+				roverPath.add(new Coord(currentLoc.getXpos(), currentLoc
 						.getYpos()));
 
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
@@ -386,7 +385,7 @@ public class CopyOf_ROVER_12 {
 			int currentYPos) {
 		int nextXPosition = currentXPos - 1;
 		int nextYPosition = currentYPos;
-		for (Coord coord : pathMap) {
+		for (Coord coord : roverPath) {
 			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
 				return true;
 			}
@@ -399,15 +398,15 @@ public class CopyOf_ROVER_12 {
 		try {
 			Coord current = returnCurrentLoc(), prev = current.clone();
 
-			for (int j = 0; (j < 10) && (j < pathMap.size()); j++) {
-				for (int i = pathMap.size(); i > 0; i++) {
+			for (int j = 0; (j < 10) && (j < roverPath.size()); j++) {
+				for (int i = roverPath.size(); i > 0; i++) {
 
 					while (current.equals(prev)) {
 						Thread.sleep(300);
 						current = returnCurrentLoc();
 					}
 
-					cardinals = assignTheMove(cardinals, pathMap.get(i),
+					cardinals = assignTheMove(cardinals, roverPath.get(i),
 							currentXPos, currentYPos);
 					prev = current.clone();
 				}
@@ -496,7 +495,7 @@ public class CopyOf_ROVER_12 {
 			int currentYPos) {
 		int nextXPosition = currentXPos;
 		int nextYPosition = currentYPos - 1;
-		for (Coord coord : pathMap) {
+		for (Coord coord : roverPath) {
 			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
 				return true;
 			}
@@ -520,7 +519,7 @@ public class CopyOf_ROVER_12 {
 			int currentYPos) {
 		int nextXPosition = currentXPos;
 		int nextYPosition = currentYPos + 1;
-		for (Coord coord : pathMap) {
+		for (Coord coord : roverPath) {
 			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
 				return true;
 			}
@@ -544,7 +543,7 @@ public class CopyOf_ROVER_12 {
 			int currentYPos) {
 		int nextXPosition = currentXPos + 1;
 		int nextYPosition = currentYPos;
-		for (Coord coord : pathMap) {
+		for (Coord coord : roverPath) {
 			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
 				return true;
 			}
@@ -1048,6 +1047,31 @@ public class CopyOf_ROVER_12 {
 			}
 		}
 
+	}
+	/* **********************************
+	 * The time the rover takes in getting to a point to another point
+	 */
+
+	@SuppressWarnings("unused")
+	private long startWatch() {
+		return System.currentTimeMillis();
+	}
+
+	@SuppressWarnings("unused")
+	private long stopWatch(long start) {
+		return System.currentTimeMillis() - start;
+	}
+
+	@SuppressWarnings("unused")
+	private boolean isStack() {
+
+		if (roverPath.get(roverPath.size()).equals(
+				roverPath.get(roverPath.size() - 1))) {
+			return true;
+		}
+		// if there's a repeated patterns in rover's position, it is likely that
+		// the rover is start stuck
+		return false;
 	}
 
 	private void move(String dir) throws IOException {
