@@ -1011,31 +1011,28 @@ public class ROVER_12 {
 				// ----G12 Thanks Wael! Please review and see if it fits
 				// -------------------------------
 				if (mapTileLog.get(tempCoord) == null) {
-					mapTileLog
-							.put(tempCoord, new MapTile(ter, sci, elev, hasR));
+					mapTileLog.put(tempCoord, new MapTile(ter, sci, elev, hasR));
 
 					// TODO Implementation need testing
 
 					// Create JSON object
 					JSONObject obj = new JSONObject();
-					obj.put("x:", new Integer(scanLoc.getXpos() - halfTileSize
-							+ x));
-					obj.put("y:", new Integer(scanLoc.getYpos() - halfTileSize
-							+ y));
+					obj.put("x", new Integer(tempCoord.getXpos()));
+					obj.put("y", new Integer(tempCoord.getYpos()));
 
 					// Check if terrain exist
 					if (!ter.getTerString().isEmpty()) {
-						obj.put("terrain:", new String(ter.getTerString()));
+						obj.put("terrain", new String(ter.getTerString()));
 					} else {
-						obj.put("terrain:", new String(""));
+						obj.put("terrain", new String(""));
 					}
 					// Check if science exist
 					if (!sci.getSciString().isEmpty()) {
-						obj.put("science:", new String(sci.getSciString()));
-						obj.put("stillExists:", new Boolean(true));
+						obj.put("science", new String(sci.getSciString()));
+						obj.put("stillExists", new Boolean(true));
 					} else {
-						obj.put("science:", new String(""));
-						obj.put("stillExists:", new Boolean(false));
+						obj.put("science", new String(""));
+						obj.put("stillExists", new Boolean(false));
 					}
 
 					// Send JSON object to server using HTTP POST method
