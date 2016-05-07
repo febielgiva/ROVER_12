@@ -1004,40 +1004,34 @@ public class ROVER_12_wk7_kae {
 						+ (scanLoc.getXpos() - halfTileSize + x) + ","
 						+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
 						+ tempCoord + tempTile);
+				
+				// OUR COPY OF THE SCANNED MAP
 				mapTileLog.put(tempCoord, tempTile);
 
 				System.out.println(tempCoord + " *** " + tempTile);
 
-				// ----G12 Thanks Wael! Please review and see if it fits
-				// -------------------------------
-				if (mapTileLog.get(tempCoord) == null) {
-					mapTileLog
-							.put(tempCoord, new MapTile(ter, sci, elev, hasR));
-
-					// TODO Implementation need testing
-
 					// Create JSON object
 					JSONObject obj = new JSONObject();
-					obj.put("x:", new Integer(scanLoc.getXpos() - halfTileSize
-							+ x));
-					obj.put("y:", new Integer(scanLoc.getYpos() - halfTileSize
-							+ y));
+					obj.put("x", new Integer(tempCoord.getXpos()));
+					obj.put("y", new Integer(tempCoord.getYpos()));
 
 					// Check if terrain exist
 					if (!ter.getTerString().isEmpty()) {
-						obj.put("terrain:", new String(ter.getTerString()));
+						obj.put("terrain", new String(ter.getTerString()));
 					} else {
-						obj.put("terrain:", new String(""));
+						obj.put("terrain", new String(""));
 					}
 					// Check if science exist
 					if (!sci.getSciString().isEmpty()) {
-						obj.put("science:", new String(sci.getSciString()));
-						obj.put("stillExists:", new Boolean(true));
+						obj.put("science", new String(sci.getSciString()));
+						obj.put("stillExists", new Boolean(true));
 					} else {
-						obj.put("science:", new String(""));
-						obj.put("stillExists:", new Boolean(false));
+						obj.put("science", new String(""));
+						obj.put("stillExists", new Boolean(false));
 					}
 
+					System.out.println(obj.toString());
+					
 					// Send JSON object to server using HTTP POST method
 					sendJSONToServer(obj, "http://localhost:8080/sensor");
 
@@ -1046,8 +1040,6 @@ public class ROVER_12_wk7_kae {
 				}
 			}
 		}
-
-	}
 
 	private void move(String dir) throws IOException {
 		System.out.println("current location in move(): " + currentLoc);
@@ -1154,8 +1146,7 @@ public class ROVER_12_wk7_kae {
 
 			// Check response
 
-			System.out.println("Response Code : "
-					+ response.getStatusLine().getStatusCode());
+			System.out.println("Response Code : " + response.getStatusLine().getStatusCode());
 
 		} catch (Exception e) {
 			e.printStackTrace();
