@@ -1,29 +1,33 @@
 package rover_wael;
 
+// must fix 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-
-
 import org.json.simple.JSONObject;
-import swarmBots.NextMoveModel;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
-
 
 import common.Coord;
 import common.MapTile;
@@ -39,18 +43,23 @@ import enums.Terrain;
 
 public class ROVER_12_wk6_wael {
 
-	BufferedReader in;
-	PrintWriter out;
-	String rovername;
-	ScanMap scanMap;
-	int sleepTime;
-	String SERVER_ADDRESS = "localhost", line;
+	private BufferedReader in;
+	private PrintWriter out;
+	private String rovername;
+	private ScanMap scanMap;
+	private int sleepTime;
+	private String SERVER_ADDRESS = "localhost", line;
 	static final int PORT_ADDRESS = 9537;
 	static String myJSONStringBackupofMap;
-	Coord currentLoc, rovergroupStartPosition = null, targetLocation = null;
-	MapTile[][] mapTileLog = new MapTile[100][100];
-	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
-	
+	private Coord currentLoc, previousLoc, rovergroupStartPosition = null,
+			targetLocation = null;
+	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
+	// MapTile[][] mapTileLog = new MapTile[100][100];
+	private List<Coord> pathMap = new ArrayList<Coord>();
+	// private Deque<String> directionStack = new ArrayDeque<String>();
+	private List<Coord> directionStack = new LinkedList<Coord>();
+
+	private boolean[] cardinals = new boolean[4];
 
 	public ROVER_12_wk6_wael() {
 		// constructor
@@ -58,7 +67,7 @@ public class ROVER_12_wk6_wael {
 		rovername = "ROVER_12";
 		SERVER_ADDRESS = "localhost";
 		// this should be a safe but slow timer value
-		sleepTime = 300; // in milliseconds - smaller is faster, but the server
+		sleepTime = 100; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
 
@@ -101,8 +110,6 @@ public class ROVER_12_wk6_wael {
 
 			// ********* Rover logic setup *********
 
-			String line = "";
-
 			/**
 			 * Get initial values that won't change
 			 */
@@ -112,457 +119,82 @@ public class ROVER_12_wk6_wael {
 			System.out.println(rovername + " equipment list results "
 					+ equipment + "\n");
 
-			
-			
 			// **** Request START_LOC Location from SwarmServer ****
 			rovergroupStartPosition = requestStartLoc(socket);
 			System.out.println(rovername + " START_LOC "
 					+ rovergroupStartPosition);
 			// Thread.sleep(10000);
-			
-			
-			
+
 			// **** Request TARGET_LOC Location from SwarmServer ****
 			targetLocation = requestTargetLoc(socket);
 			System.out.println(rovername + " TARGET_LOC " + targetLocation);
+
+			// debug
 			// Thread.sleep(10000);
-		
-			
-			
-			boolean goingSouth = false;
-			boolean goingEast = true;
-			boolean goingNorth = false;
-			boolean goingWest = true;
+
 			boolean stuck = false; // just means it did not change locations
 									// between requests,
-			// could be velocity limit or obstruction etc. group12 - anyone knows what this means?
+			// could be velocity limit or obstruction etc. group12 - anyone
+			// knows what this means?
 			boolean blocked = false;
 
-			String[] cardinals = new String[4];
-			cardinals[0] = "N";
-			cardinals[1] = "E";
-			cardinals[2] = "S";
-			cardinals[3] = "W";
+			cardinals[0] = false; // S: goingSouth
+			cardinals[1] = true; // E: goingEast
+			cardinals[2] = false; // N: goingNorth
+			cardinals[3] = false; // W: goingWest
 
-			String currentDir = cardinals[0];
-			Coord currentLoc = null;
-			Coord previousLoc = null;
+			int stepTrack = 0;
 
 			/**
 			 * #### Rover controller process loop ####
 			 */
 			while (true) {
 
-				currentLoc = setCurrentLoc(currentLoc);
-				/* 0. check to see if rover 12 has moved (the server has responded to move-request) 
-				 * 		a) moved - go to 1. 
-				 * 		b) not moved, Thread.sleep(800), continue to the next iteration of the loop*/
-				
-				/* 1. scan map tile (forget about mapLog b/c of JsonCopy) */
-
-				/* 2. check for stuckness (can be checked by observing 11 x 11 map tile) */
-				
-				/* 3. check 3 steps ahead (sands or rock?) */
-				
-				/* 4-a. move if next 3 tiles in current direction is clear */
-				
-				/* 4-b. switch direction if next 3 tiles contains sand or rock */
-				
-				/* end the controller process loop */
-				
-
-
-				
-				
-				
-				
-				// after getting location set previous equal current to be able
-				// to check for stuckness and blocked later
-				previousLoc = currentLoc;
+				setCurrentLoc();
+				previousLoc = currentLoc.clone();
 
 				// ***** do a SCAN ******
-
-				// gets the scanMap from the server based on the Rover current
-				// location
-				loadScanMapFromSwarmServer();
-				// prints the scanMap to the Console output for debug purposes
-				scanMap.debugPrintMap();
-				
-				
+				/*
+				 * G12 - for now, it is set to load in 11 x 11 map from
+				 * swarmserver, and copy it onto our g12 map log, every 4 steps
+				 * that rover 12 takes. Better ideas on the iteration interval,
+				 * anyone?
+				 */
+				if ((stepTrack++) % 4 == 0) {
+					loadScanMapFromSwarmServer();
+					scanMap.debugPrintMap();// debug
+					debugPrintMapTileArrayText(mapTileLog, 30);
+					debugPrintMapTileArray(mapTileLog);
+				}
 
 				// ***** MOVING *****
-				// try moving east 5 block if blocked
-
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
-
+				//request(scanMapTiles);
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
-				// *************Febi's Logic For motion**********
-				List<NextMoveModel> nextMoveNotifier = new ArrayList<NextMoveModel>();
-				// int tempRowArray;
-				// int tempColumnArray;
-
-				// logic if going in east
-				if (goingEast) {
-					// Checks to see if there is science on current tile, if not
-					// it moves East
-					System.out
-							.println("ROVER_12: scanMapTiles[centerIndex][centerIndex].getScience().getSciString() "
-									+ scanMapTiles[centerIndex][centerIndex]
-											.getScience().getSciString());
-					if (scanMapTiles[centerIndex + 1][centerIndex].getScience()
-							.equals("C")) {
-						// move east
-						out.println("MOVE E");
-						System.out.println("ROVER_12 request move E");
-						goingSouth = false;
-						goingEast = true;
-						goingNorth = false;
-						goingWest = false;
-					} else if (scanMapTiles[centerIndex][centerIndex + 1]
-							.getScience().equals("C")) {
-						// move south
-						out.println("MOVE S");
-						System.out.println("ROVER_12 request move S");
-						goingSouth = true;
-						goingEast = false;
-						goingNorth = false;
-						goingWest = false;
-					} else if (scanMapTiles[centerIndex][centerIndex - 1]
-							.getScience().equals("C")) {
-						// move north
-						out.println("MOVE N");
-						System.out.println("ROVER_12 request move N");
-						goingSouth = false;
-						goingEast = false;
-						goingNorth = true;
-						goingWest = false;
-					} else {
-						// if next move to east is an obstacle
-						if (scanMapTiles[centerIndex + 1][centerIndex]
-								.getHasRover()
-								|| scanMapTiles[centerIndex + 1][centerIndex]
-										.getTerrain() == Terrain.ROCK
-								|| scanMapTiles[centerIndex + 1][centerIndex]
-										.getTerrain() == Terrain.NONE
-								|| scanMapTiles[centerIndex + 1][centerIndex]
-										.getTerrain() == Terrain.FLUID
-								|| scanMapTiles[centerIndex + 1][centerIndex]
-										.getTerrain() == Terrain.SAND) {
-							// check whether south is obstacle
-							if (scanMapTiles[centerIndex][centerIndex + 1]
-									.getHasRover()
-									|| scanMapTiles[centerIndex][centerIndex + 1]
-											.getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex][centerIndex + 1]
-											.getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex][centerIndex + 1]
-											.getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex][centerIndex + 1]
-											.getTerrain() == Terrain.SAND) {
-								// check whether north is obstacle
-								if (scanMapTiles[centerIndex][centerIndex - 1]
-										.getHasRover()
-										|| scanMapTiles[centerIndex][centerIndex - 1]
-												.getTerrain() == Terrain.ROCK
-										|| scanMapTiles[centerIndex][centerIndex - 1]
-												.getTerrain() == Terrain.NONE
-										|| scanMapTiles[centerIndex][centerIndex - 1]
-												.getTerrain() == Terrain.FLUID
-										|| scanMapTiles[centerIndex][centerIndex - 1]
-												.getTerrain() == Terrain.SAND) {
-									out.println("MOVE W");
-									System.out
-											.println("ROVER_12 request move W");
-									goingSouth = false;
-									goingEast = false;
-									goingNorth = false;
-									goingWest = true;
-								} else {
-									out.println("MOVE N");
-									System.out
-											.println("ROVER_12 request move N");
-									goingSouth = false;
-									goingEast = false;
-									goingNorth = true;
-									goingWest = false;
-
-								}
-
-							} else {
-								out.println("MOVE S");
-								System.out.println("ROVER_12 request move S");
-								goingSouth = true;
-								goingEast = false;
-								goingNorth = false;
-								goingWest = false;
-
-							}
-
-						}
-						// when no obstacle is in next move to east
-						else {
-							out.println("MOVE E");
-							System.out.println("ROVER_12 request move E");
-							goingSouth = false;
-							goingEast = true;
-							goingNorth = false;
-							goingWest = false;
-
-						}
-
-					}
-				}
-
-				else if (goingWest) {
-					// if next move to west is an obstacle
-					if (scanMapTiles[centerIndex - 1][centerIndex]
-							.getHasRover()
-							|| scanMapTiles[centerIndex - 1][centerIndex]
-									.getTerrain() == Terrain.ROCK
-							|| scanMapTiles[centerIndex - 1][centerIndex]
-									.getTerrain() == Terrain.NONE
-							|| scanMapTiles[centerIndex - 1][centerIndex]
-									.getTerrain() == Terrain.FLUID
-							|| scanMapTiles[centerIndex - 1][centerIndex]
-									.getTerrain() == Terrain.SAND) {
-						// check whether south is obstacle
-						if (scanMapTiles[centerIndex][centerIndex + 1]
-								.getHasRover()
-								|| scanMapTiles[centerIndex][centerIndex + 1]
-										.getTerrain() == Terrain.ROCK
-								|| scanMapTiles[centerIndex][centerIndex + 1]
-										.getTerrain() == Terrain.NONE
-								|| scanMapTiles[centerIndex][centerIndex + 1]
-										.getTerrain() == Terrain.FLUID
-								|| scanMapTiles[centerIndex][centerIndex + 1]
-										.getTerrain() == Terrain.SAND) {
-							// check whether north is obstacle
-							if (scanMapTiles[centerIndex][centerIndex - 1]
-									.getHasRover()
-									|| scanMapTiles[centerIndex][centerIndex - 1]
-											.getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex][centerIndex - 1]
-											.getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex][centerIndex - 1]
-											.getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex][centerIndex - 1]
-											.getTerrain() == Terrain.SAND) {
-								out.println("E");
-								System.out.println("ROVER_12 request move E");
-								goingSouth = false;
-								goingEast = true;
-								goingNorth = false;
-								goingWest = false;
-							} else {
-								out.println("MOVE N");
-								System.out.println("ROVER_12 request move N");
-								goingSouth = false;
-								goingEast = false;
-								goingNorth = true;
-								goingWest = false;
-
-							}
-
-						} else {
-							out.println("MOVE S");
-							System.out.println("ROVER_12 request move S");
-							goingSouth = true;
-							goingEast = false;
-							goingNorth = false;
-							goingWest = false;
-
-						}
-
-					}
-					// when no obstacle is in next move to west
-					else {
-						out.println("MOVE W");
-						System.out.println("ROVER_12 request move W");
-						goingSouth = false;
-						goingEast = false;
-						goingNorth = false;
-						goingWest = true;
-
-					}
-
-				} else if (goingSouth) {
-
-					// check whether south is obstacle
-					if (scanMapTiles[centerIndex][centerIndex + 1]
-							.getHasRover()
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.ROCK
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.NONE
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.FLUID
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.SAND) {
-						// if next move to west is an obstacle
-
-						if (scanMapTiles[centerIndex - 1][centerIndex]
-								.getHasRover()
-								|| scanMapTiles[centerIndex - 1][centerIndex]
-										.getTerrain() == Terrain.ROCK
-								|| scanMapTiles[centerIndex - 1][centerIndex]
-										.getTerrain() == Terrain.NONE
-								|| scanMapTiles[centerIndex - 1][centerIndex]
-										.getTerrain() == Terrain.FLUID
-								|| scanMapTiles[centerIndex - 1][centerIndex]
-										.getTerrain() == Terrain.SAND) {
-							// check whether east is obstacle
-							if (scanMapTiles[centerIndex + 1][centerIndex]
-									.getHasRover()
-									|| scanMapTiles[centerIndex + 1][centerIndex]
-											.getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex + 1][centerIndex]
-											.getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex + 1][centerIndex]
-											.getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex + 1][centerIndex]
-											.getTerrain() == Terrain.SAND) {
-								out.println("MOVE N");
-								System.out.println("ROVER_12 request move N");
-								goingSouth = false;
-								goingEast = false;
-								goingNorth = true;
-								goingWest = false;
-							} else {
-								out.println("MOVE E");
-								System.out.println("ROVER_12 request move E");
-								goingSouth = false;
-								goingEast = true;
-								goingNorth = false;
-								goingWest = false;
-
-							}
-
-						} else {
-							out.println("MOVE W");
-							System.out.println("ROVER_12 request move W");
-							goingSouth = false;
-							goingEast = false;
-							goingNorth = false;
-							goingWest = true;
-
-						}
-
-					}
-					// when no obstacle is in next move to south
-					else {
-						out.println("MOVE S");
-						System.out.println("ROVER_12 request move S");
-						goingSouth = true;
-						goingEast = false;
-						goingNorth = false;
-						goingWest = false;
-
-					}
-
-				}
-
-				else if (goingNorth) {
-
-					// check whether north is obstacle
-					if (scanMapTiles[centerIndex][centerIndex - 1]
-							.getHasRover()
-							|| scanMapTiles[centerIndex][centerIndex - 1]
-									.getTerrain() == Terrain.ROCK
-							|| scanMapTiles[centerIndex][centerIndex - 1]
-									.getTerrain() == Terrain.NONE
-							|| scanMapTiles[centerIndex][centerIndex - 1]
-									.getTerrain() == Terrain.FLUID
-							|| scanMapTiles[centerIndex][centerIndex - 1]
-									.getTerrain() == Terrain.SAND) {
-						// if next move to west is an obstacle
-
-						if (scanMapTiles[centerIndex - 1][centerIndex]
-								.getHasRover()
-								|| scanMapTiles[centerIndex - 1][centerIndex]
-										.getTerrain() == Terrain.ROCK
-								|| scanMapTiles[centerIndex - 1][centerIndex]
-										.getTerrain() == Terrain.NONE
-								|| scanMapTiles[centerIndex - 1][centerIndex]
-										.getTerrain() == Terrain.FLUID
-								|| scanMapTiles[centerIndex - 1][centerIndex]
-										.getTerrain() == Terrain.SAND) {
-							// check whether east is obstacle
-							if (scanMapTiles[centerIndex + 1][centerIndex]
-									.getHasRover()
-									|| scanMapTiles[centerIndex + 1][centerIndex]
-											.getTerrain() == Terrain.ROCK
-									|| scanMapTiles[centerIndex + 1][centerIndex]
-											.getTerrain() == Terrain.NONE
-									|| scanMapTiles[centerIndex + 1][centerIndex]
-											.getTerrain() == Terrain.FLUID
-									|| scanMapTiles[centerIndex + 1][centerIndex]
-											.getTerrain() == Terrain.SAND) {
-								out.println("MOVE S");
-								System.out.println("ROVER_12 request move S");
-								goingSouth = true;
-								goingEast = false;
-								goingNorth = false;
-								goingWest = false;
-							} else {
-								out.println("MOVE E");
-								System.out.println("ROVER_12 request move E");
-								goingSouth = false;
-								goingEast = true;
-								goingNorth = false;
-								goingWest = false;
-
-							}
-
-						} else {
-							out.println("MOVE W");
-							System.out.println("ROVER_12 request move W");
-							goingSouth = false;
-							goingEast = false;
-							goingNorth = false;
-							goingWest = true;
-
-						}
-
-					}
-					// when no obstacle is in next move to north
-					else {
-						out.println("MOVE N");
-						System.out.println("ROVER_12 request move N");
-						goingSouth = false;
-						goingEast = false;
-						goingNorth = true;
-						goingWest = false;
-
-					}
-
-				}
-
-				out.println("LOC");
-				line = in.readLine();
-				if (line == null) {
-					System.out.println("ROVER_12 check connection to server");
-					line = "";
-				}
-				if (line.startsWith("LOC")) {
-					currentLoc = extractLocationFromString(line);
-
-				}
-
+				roverMotionLogic(cardinals, scanMapTiles, centerIndex,
+						currentLoc.getXpos(), currentLoc.getYpos());
 				// test for stuckness
-				stuck = currentLoc.equals(previousLoc);
+				// KS - below line causes a crash, must be modified
+				// stuck = currentLoc.equals(previousLoc);
 
 				// System.out.println("ROVER_12 stuck test " + stuck);
-				System.out.println("ROVER_12 blocked test " + blocked);
+				// System.out.println("ROVER_12 blocked test " + blocked);
+				// System.out.println(currentLoc);
 
-				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc.getYpos()));
+				// store rover 12 path for easy return
+				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
+						.getYpos()));
+
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
-				Thread.sleep(sleepTime);
+				//Thread.sleep(sleepTime); // G12 - sleepTime has been reduced to
+											// 100. is that alright?
 
-				System.out.println("ROVER_12 ------------ bottom process control --------------");
+				System.out
+						.println("ROVER_12 ------------ bottom process control --------------");
 
 				// This catch block closes the open socket connection to the
 				// server
@@ -579,17 +211,374 @@ public class ROVER_12_wk6_wael {
 			}
 		}
 
-	} // END of Rover main control loop
+	}// END of Rover main control loop
 
-	private Coord setCurrentLoc(Coord currentLoc) throws IOException {
-		
+	private void roverMotionLogic(boolean[] cardinals,
+			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
+			int currentYPos) throws InterruptedException, IOException {
+		// ************* Febi's rover motion logic **********
+		// int tempRowArray;
+		// int tempColumnArray;
+
+		// logic if going in east
+		if (cardinals[1]) {
+			// Checks to see if there is science on current tile, if not
+			// it moves East
+			System.out
+					.println("ROVER_12: scanMapTiles[centerIndex][centerIndex].getScience().getSciString() "
+							+ scanMapTiles[centerIndex][centerIndex]
+									.getScience().getSciString());
+			if (scanMapTiles[centerIndex + 1][centerIndex].getScience().equals(
+					"C")) {
+				// move east
+				moveEast();
+
+			} else if (scanMapTiles[centerIndex][centerIndex + 1].getScience()
+					.equals("C")) {
+				// move south
+				moveSouth();
+
+			} else if (scanMapTiles[centerIndex][centerIndex - 1].getScience()
+					.equals("C")) {
+				// move north
+				moveNorth();
+			} else {
+				// if next move to east is an obstacle
+				if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsEast(currentXPos,
+								currentYPos))) {
+					// check whether south is obstacle
+					if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
+									currentYPos))) {
+						// check whether north is obstacle
+						if ((isTowardsNorthIsObsatacle(scanMapTiles,
+								centerIndex))
+								|| (isAlreadyTraveledPathTowardsNorth(
+										currentXPos, currentYPos))) {
+							// move west if no obstacle or else east
+							if (isTowardsWestIsObsatacle(scanMapTiles,
+									centerIndex)) {
+								moveEast();
+							} else {
+								cardinals = moveUsingPastPath(cardinals,
+										currentXPos, currentYPos);
+							}
+
+						} else {
+							// move north
+							moveNorth();
+						}
+					} else {
+						// move south
+						moveSouth();
+					}
+				}
+				// when no obstacle is in next move to east
+				else {
+					// move east
+					moveEast();
+				}
+			}
+		} else if (cardinals[3]) {
+			// if next move to west is an obstacle
+			if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
+					|| (isAlreadyTraveledPathTowardsWest(currentXPos,
+							currentYPos))) {
+				// check whether south is obstacle
+				if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
+								currentYPos))) {
+					// check whether north is obstacle
+					if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsNorth(currentXPos,
+									currentYPos))) {
+						// move east if no obstacle or else move to west
+						if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+							moveWest();
+						} else {
+							cardinals = moveUsingPastPath(cardinals,
+									currentXPos, currentYPos);
+						}
+
+					} else {
+						// move north
+						moveNorth();
+					}
+				} else {
+					// move south
+					moveSouth();
+				}
+			}
+			// when no obstacle is in next move to west
+			else {
+				// move west
+				moveWest();
+			}
+		} else if (cardinals[0]) {
+
+			// check whether south is obstacle
+			if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
+					|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
+							currentYPos))) {
+				// if next move to west is an obstacle
+				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsWest(currentXPos,
+								currentYPos))) {
+					// check whether east is obstacle
+					if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsEast(currentXPos,
+									currentYPos))) {
+						// move north if no obstacle or else move in south
+						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+							moveSouth();
+						} else {
+							cardinals = moveUsingPastPath(cardinals,
+									currentXPos, currentYPos);
+						}
+					} else {
+						// move east
+						moveEast();
+					}
+				} else {
+					// move west
+					moveWest();
+				}
+			}
+			// when no obstacle is in next move to south
+			else {
+				// move south
+				moveSouth();
+			}
+		} else if (cardinals[2]) {
+
+			// check whether north is obstacle
+			if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex))
+					|| (isAlreadyTraveledPathTowardsNorth(currentXPos,
+							currentYPos))) {
+				// if next move to west is an obstacle
+				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsWest(currentXPos,
+								currentYPos))) {
+					// check whether east is obstacle
+					if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsEast(currentXPos,
+									currentYPos))) {
+						// move south if no obstacle or else go back to north
+						if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
+							moveNorth();
+						} else {
+							cardinals = moveUsingPastPath(cardinals,
+									currentXPos, currentYPos);
+						}
+					} else {
+						// move east
+						moveEast();
+					}
+				} else {
+					// move west
+					moveWest();
+				}
+			}
+			// when no obstacle is in next move to north
+			else {
+				// move north
+				moveNorth();
+			}
+		}
+	}
+
+	private boolean isAlreadyTraveledPathTowardsWest(int currentXPos,
+			int currentYPos) {
+		int nextXPosition = currentXPos - 1;
+		int nextYPosition = currentYPos;
+		for (Coord coord : pathMap) {
+			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean[] moveUsingPastPath(boolean[] cardinals, int currentXPos,
+			int currentYPos) throws InterruptedException {
+		try {
+			Coord current = returnCurrentLoc(), prev = current.clone();
+
+			for (int j = 0; (j < 10) && (j < pathMap.size()); j++) {
+				for (int i = pathMap.size(); i > 0; i++) {
+
+					while (current.equals(prev)) {
+						Thread.sleep(300);
+						current = returnCurrentLoc();
+					}
+
+					cardinals = assignTheMove(cardinals, pathMap.get(i),
+							currentXPos, currentYPos);
+					prev = current.clone();
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return cardinals;
+	}
+
+	private boolean[] assignTheMove(boolean[] cardinals, Coord eachCoord,
+			int currentXPos, int currentYPos) throws IOException {
+		if (isPastPositonIsEast(cardinals, eachCoord, currentXPos, currentYPos)) {
+			moveEast();
+
+		} else if (isPastPositonIsWest(cardinals, eachCoord, currentXPos,
+				currentYPos)) {
+			moveWest();
+
+		} else if (isPastPositonIsNorth(cardinals, eachCoord, currentXPos,
+				currentYPos)) {
+			moveNorth();
+
+		} else if (isPastPositonIsSouth(cardinals, eachCoord, currentXPos,
+				currentYPos)) {
+			moveSouth();
+
+		}
+		return cardinals;
+	}
+
+	private boolean isPastPositonIsNorth(boolean[] cardinals, Coord eachCoord,
+			int currentXPos, int currentYPos) {
+		int previousXPos = eachCoord.getXpos();
+		int previousYPos = eachCoord.getYpos();
+		if ((previousXPos == currentXPos) && (previousYPos == currentYPos - 1)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isPastPositonIsWest(boolean[] cardinals, Coord eachCoord,
+			int currentXPos, int currentYPos) {
+		int previousXPos = eachCoord.getXpos();
+		int previousYPos = eachCoord.getYpos();
+		if ((previousXPos == currentXPos - 1) && (previousYPos == currentYPos)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isPastPositonIsSouth(boolean[] cardinals, Coord eachCoord,
+			int currentXPos, int currentYPos) {
+		int previousXPos = eachCoord.getXpos();
+		int previousYPos = eachCoord.getYpos();
+		if ((previousXPos == currentXPos) && (previousYPos == currentYPos + 1)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isPastPositonIsEast(boolean[] cardinals, Coord eachCoord,
+			int currentXPos, int currentYPos) {
+		int previousXPos = eachCoord.getXpos();
+		int previousYPos = eachCoord.getYpos();
+		if ((previousXPos == currentXPos + 1) && (previousYPos == currentYPos)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isAlreadyTraveledPathTowardsNorth(int currentXPos,
+			int currentYPos) {
+		int nextXPosition = currentXPos;
+		int nextYPosition = currentYPos - 1;
+		for (Coord coord : pathMap) {
+			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex][centerIndex - 1].getHasRover()
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isAlreadyTraveledPathTowardsSouth(int currentXPos,
+			int currentYPos) {
+		int nextXPosition = currentXPos;
+		int nextYPosition = currentYPos + 1;
+		for (Coord coord : pathMap) {
+			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isAlreadyTraveledPathTowardsEast(int currentXPos,
+			int currentYPos) {
+		int nextXPosition = currentXPos + 1;
+		int nextYPosition = currentYPos;
+		for (Coord coord : pathMap) {
+			if ((coord.xpos == nextXPosition) && (coord.ypos == nextYPosition)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private void setCurrentLoc() throws IOException {
+
 		String line;
 		// **** Request Rover Location from SwarmServer ****
 		out.println("LOC");
 		line = in.readLine();
 		if (line == null) {
-			System.out.println(rovername
-					+ " check connection to server");
+			System.out.println(rovername + " check connection to server");
 			line = "";
 		}
 		if (line.startsWith("LOC")) {
@@ -597,26 +586,24 @@ public class ROVER_12_wk6_wael {
 			currentLoc = extractLocationFromString(line);
 
 		}
-		System.out.println(rovername + " currentLoc at start: "
-				+ currentLoc);
-		return currentLoc;
 	}
 
-	// to get the position of the rover--Febi added
-	private List<NextMoveModel> getTheCrystalLocation(MapTile[][] scanMapTiles,
-			int centerIndex) {
-		List<NextMoveModel> element = new ArrayList<NextMoveModel>();
-		element = null;
-		for (int i = 0; i < scanMapTiles.length; i++) {
-			for (int j = 0; j < scanMapTiles.length; j++) {
-				if (scanMapTiles[centerIndex][centerIndex].getScience()
-						.getSciString().equals("C")) {
-					System.out.println("crystal found");
-					element.add(new NextMoveModel(j, i, true));
-				}
-			}
+	private Coord returnCurrentLoc() throws IOException {
+
+		String line;
+		Coord clone = new Coord(-1, -1);
+		// **** Request Rover Location from SwarmServer ****
+		out.println("LOC");
+		line = in.readLine();
+		if (line == null) {
+			System.out.println(rovername + " check connection to server");
+			line = "";
 		}
-		return element;
+		if (line.startsWith("LOC")) {
+			// loc = line.substring(4);
+			clone = extractLocationFromString(line);
+		}
+		return clone;
 	}
 
 	// ####################### Support Methods #############################
@@ -675,6 +662,8 @@ public class ROVER_12_wk6_wael {
 	// array group12 - this raw JsonData should be used for our maptileLog?
 	public void loadScanMapFromSwarmServer() throws IOException {
 		// System.out.println("ROVER_12 method doScan()");
+		setCurrentLoc();
+		Coord scanLoc = new Coord(currentLoc.getXpos(), currentLoc.getYpos());
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
 		out.println("SCAN");
@@ -688,7 +677,6 @@ public class ROVER_12_wk6_wael {
 		StringBuilder jsonScanMap = new StringBuilder();
 		System.out.println("ROVER_12 incomming SCAN result - first readline: "
 				+ jsonScanMapIn);
-	
 
 		if (jsonScanMapIn.startsWith("SCAN")) {
 			while (!(jsonScanMapIn = in.readLine()).equals("SCAN_END")) {
@@ -710,27 +698,15 @@ public class ROVER_12_wk6_wael {
 		// new MyWriter( jsonScanMapString, 0); //gives a strange result -
 		// prints the \n instead of newline character in the file
 
+		System.out.println("+++++++++++++++ jsonScanMapString +++++++++++++++");
+		System.out.println(jsonScanMapString.toString());
+
 		// System.out.println("ROVER_12 convert from json back to ScanMap class");
 		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
+
 		myJSONStringBackupofMap = jsonScanMapString;
-	}
-
-	// this takes the server response string, parses out the x and x values and
-	// returns a Coord object
-	public static Coord extractLocationFromString(String sStr) {
-		int indexOf;
-		indexOf = sStr.indexOf(" ");
-		sStr = sStr.substring(indexOf + 1);
-		if (sStr.lastIndexOf(" ") != -1) {
-			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
-			// System.out.println("extracted xStr " + xStr);
-
-			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
-			// System.out.println("extracted yStr " + yStr);
-			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
-		}
-		return null;
+		loadMapTilesOntoGlobalMapLog(scanMap.getScanMap(), scanLoc);
 	}
 
 	private Coord requestStartLoc(Socket soc) throws IOException {
@@ -838,6 +814,23 @@ public class ROVER_12_wk6_wael {
 		return null;
 	}
 
+	// this takes the server response string, parses out the x and x values and
+	// returns a Coord object
+	public static Coord extractLocationFromString(String sStr) {
+		int indexOf;
+		indexOf = sStr.indexOf(" ");
+		sStr = sStr.substring(indexOf + 1);
+		if (sStr.lastIndexOf(" ") != -1) {
+			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			// System.out.println("extracted xStr " + xStr);
+
+			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+			// System.out.println("extracted yStr " + yStr);
+			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+		}
+		return null;
+	}
+
 	public void debugPrintMapTileArray(MapTile[][] mapTileArray) {
 
 		int edgeSize = mapTileArray.length;
@@ -903,108 +896,273 @@ public class ROVER_12_wk6_wael {
 		System.out.print("\n");
 	}
 
-	private void logMapTileLog(MapTile[][] ptrScanMap) {
+	public void debugPrintMapTileArrayText(Map<Coord, MapTile> globalMapCopy,
+			int mapSize) {
+		MapTile tile;
+
+		for (int y = 0; y < mapSize; y++) {
+			for (int x = 0; x < mapSize; x++) {
+				tile = globalMapCopy.get(new Coord(x, y));
+				System.out.print("x,y=" + x + "," + y + "\t" + tile + "\t/t");
+			}
+		}
+	}
+
+	public void debugPrintMapTileArray(Map<Coord, MapTile> globalMapCopy) {
+
+		// FIXME
+		int edgeSize = 100;
+		System.out.println("edge size: " + edgeSize);
+		for (int k = 0; k < edgeSize + 2; k++) {
+			System.out.print("--");
+		}
+
+		System.out.print("\n");
+
+		for (int j = 0; j < edgeSize; j++) {
+
+			// System.out.print("j=" + j + "\t");
+
+			System.out.print("| ");
+			for (int i = 0; i < edgeSize; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					System.out.print("nn");
+				}
+				// check and print edge of map has first priority
+				else if (mapTileLog.get(new Coord(i, j)).getTerrain()
+						.toString().equals("NONE")) {
+					System.out.print("XX");
+
+					// next most important - print terrain and/or science
+					// locations
+					// terrain and science
+				} else if (!(mapTileLog.get(new Coord(i, j)).getTerrain()
+						.toString().equals("SOIL"))
+						&& !(mapTileLog.get(new Coord(i, j)).getScience()
+								.toString().equals("NONE"))) {
+					// both terrain and science
+
+					System.out.print(mapTileLog.get(new Coord(i, j))
+							.getTerrain().toString().substring(0, 1)
+							+ mapTileLog.get(new Coord(i, j)).getScience()
+									.getSciString());
+					// just terrain
+				} else if (!(mapTileLog.get(new Coord(i, j)).getTerrain()
+						.toString().equals("SOIL"))) {
+					System.out.print(mapTileLog.get(new Coord(i, j))
+							.getTerrain().toString().substring(0, 1)
+							+ " ");
+					// just science
+				} else if (!(mapTileLog.get(new Coord(i, j)).getScience()
+						.toString().equals("NONE"))) {
+					System.out.print(" "
+							+ mapTileLog.get(new Coord(i, j)).getScience()
+									.getSciString());
+
+					// if still empty check for rovers and print them
+				} else if (mapTileLog.get(new Coord(i, j)).getHasRover()) {
+					System.out.print("[]");
+
+					// nothing here so print nothing
+				} else {
+					System.out.print("  ");
+				}
+			}
+			System.out.print(" |\n");
+		}
+		for (int k = 0; k < edgeSize + 2; k++) {
+			System.out.print("--");
+		}
+		System.out.print("\n");
+	}
+
+	private void loadMapTilesOntoGlobalMapLog(MapTile[][] ptrScanMap,
+			Coord scanLoc) {
+
+		MapTile tempTile;
+		Coord tempCoord;
 		Terrain ter;
 		Science sci;
 		int elev;
 		boolean hasR;
-		// FIXME - there's a problem with the map copy
-		for (int i = 0; i < ptrScanMap.length; i++) {
-			for (int j = 0; j < ptrScanMap.length; j++) {
+		int halfTileSize = ptrScanMap.length / 2;
 
-				if (withinTheGrid(currentLoc.getYpos() - 5 + i,currentLoc.getXpos() - 5 + j, mapTileLog.length)) {
-					ter = ptrScanMap[i][j].getTerrain();
-					sci = ptrScanMap[i][j].getScience();
-					elev = ptrScanMap[i][j].getElevation();
-					hasR = ptrScanMap[i][j].getHasRover();
+		// debug - print out
+		System.out.println("inside of loadMapTileIntoGlobal()[scanLoc="
 
-					if (mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc.getXpos() - 5 + j] == null) {
-						mapTileLog[currentLoc.getYpos() - 5 + i][currentLoc.getXpos() - 5 + j] = new MapTile(ter, sci, elev, hasR);
-						
-						//TODO Implementation need testing
-						
-						// Create JSON object
-						JSONObject obj = new JSONObject();
-						obj.put("x:", new Integer(currentLoc.getXpos() - 5 + j));
-						obj.put("y:", new Integer(currentLoc.getYpos() - 5 + j));
-						
-						// Check if terrain exist
-						if (!ter.getTerString().isEmpty()) {
-							obj.put("terrain:", new String(ter.getTerString()));
-						}
-						else {
-							obj.put("terrain:", new String(""));
-						}
-						// Check if science exist 
-						if (!sci.getSciString().isEmpty()) {
-							obj.put("science:", new String(sci.getSciString()));
-							obj.put("stillExists:", new Boolean(true));
-						}
-						else {
-							obj.put("science:", new String(""));
-							obj.put("stillExists:", new Boolean(false));
-						}
-					
-						// Send JSON object to server using HTTP POST method
-						sendJSONToServer(obj,"http://localhost:8080/sensor");
+		+ scanLoc + "]:" + "[currLoc=" + currentLoc);
 
-					}
+		System.out.println("ptrScanMap Size: " + ptrScanMap.length);
+
+		for (int y = 0; y < ptrScanMap.length; y++) {
+			for (int x = 0; x < ptrScanMap.length; x++) {
+
+				ter = ptrScanMap[x][y].getTerrain();
+				sci = ptrScanMap[x][y].getScience();
+				elev = ptrScanMap[x][y].getElevation();
+				hasR = ptrScanMap[x][y].getHasRover();
+
+				tempTile = new MapTile(ter, sci, elev, hasR);
+				tempCoord = new Coord((scanLoc.getXpos() - halfTileSize) + x,
+						scanLoc.getYpos() - halfTileSize + y);
+
+				// debug
+				System.out.println("(x,y)=(" + x + "," + y + ")|" + "(X,Y)=("
+						+ (scanLoc.getXpos() - halfTileSize + x) + ","
+						+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
+						+ tempCoord + tempTile);
+				// our copy of the scanned map in global context
+				mapTileLog.put(tempCoord, tempTile);
+
+				// Create JSON object
+				JSONObject obj = new JSONObject();
+				obj.put("x", new Integer(tempCoord.getXpos()));
+				obj.put("y", new Integer(tempCoord.getXpos()));
+
+				// Check if terrain exist
+				if (!ter.getTerString().isEmpty()) {
+					obj.put("terrain", new String(ter.getTerString()));
+				} else {
+					obj.put("terrain", new String(""));
 				}
+				// Check if science exist
+				if (!sci.getSciString().isEmpty()) {
+					obj.put("science", new String(sci.getSciString()));
+					obj.put("stillExists", new Boolean(true));
+				} else {
+					obj.put("science", new String(""));
+					obj.put("stillExists", new Boolean(false));
+				}
+				try {
+					sendPost(obj);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				// Send JSON object to server using HTTP POST method
+				// sendJSONToServer(obj, "http://192.168.0.101:3000/globalMap");
+				// sendJSONToServer(obj,
+				// "http://192.168.0.101:3000/scout");https:
+				// sendJSONToServer(obj,
+				// "www.reddit.com/r/explainlikeimfive/comments/4ibqm3.json");
+				// -----------------------------------
+
 			}
 		}
-
-		debugPrintMapTileArray(mapTileLog);
 	}
 
-	private void sendJSONToServer(JSONObject obj, String URL) {
-		// TODO need testing
-		try {
-			HttpClient client = HttpClientBuilder.create().build();
-			HttpPost post = new HttpPost(URL);
-			
-			StringEntity se = new StringEntity(obj.toString());
-			post.setHeader("content-type", "application/json");
-			post.setEntity(se);
+	// HTTP POST request
+	private void sendPost(JSONObject jsonObj) throws Exception {
+		String url = "http://192.168.0.101:3000/scout";
+		// String url = "https://selfsolve.apple.com/wcResults.do";
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		String USER_AGENT = "ROVER 12";
+		// add reuqest header
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+		con.setDoOutput(true);
+		
+		// Send post request
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(jsonObj.toString());
+		wr.flush();
+		wr.close();
 
-			HttpResponse response = client.execute(post);
-			
-			// Check response
-			
-			System.out.println("Response Code : " + response.getStatusLine().getStatusCode());
-			
-		} catch (Exception e) {
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'POST' request to URL : " + url);
+		System.out.println("Post parameters : " + jsonObj.toString());
+		System.out.println("Response Code : " + responseCode);
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+
+		// print result
+		System.out.println(response.toString());
+
+	}
+
+	private String request(MapTile[][] scanMapTile) {
+
+		String USER_AGENT = "ROVER_11";
+		String url = "http://192.168.0.101:3000/globalMap";
+
+		URL obj = null;
+
+		String responseStr = "";
+		try {
+			obj = new URL(url);
+			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+			con.setRequestMethod("GET");
+
+			// add request header
+			con.setRequestProperty("User-Agent", USER_AGENT);
+
+			int responseCode = con.getResponseCode();
+			System.out.println("\nSending 'GET' request to URL : " + url);
+			System.out.println("Response Code : " + responseCode);
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					con.getInputStream()));
+			String inputLine;
+			StringBuffer response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
+
+			// print result
+			responseStr = response.toString();
+
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
+		// optional default is GET
+
+		return responseStr;
 	}
 
 	private void move(String dir) throws IOException {
 		System.out.println("current location in move(): " + currentLoc);
-		setCurrentLoc(currentLoc);
+		setCurrentLoc();
 		// doScanOriginal();
 
 		switch (dir) {
 
 		case "E":
-			if (!checkSand("E")) {
+			if (!isSand("E")) {
 				System.out.println("request move -> E");
 				moveEast();
 			}
 			break;
 		case "W":
-			if (!checkSand("W")) {
+			if (!isSand("W")) {
 				System.out.println("request move -> W");
 				moveWest();
 			}
 			break;
 		case "N":
-			if (!checkSand("N")) {
+			if (!isSand("N")) {
 				System.out.println("request move -> N");
 				moveNorth();
 			}
 			break;
 		case "S":
-			if (!checkSand("S")) {
+			if (!isSand("S")) {
 				System.out.println("request move -> S");
 				moveSouth();
 			}
@@ -1041,8 +1199,7 @@ public class ROVER_12_wk6_wael {
 
 	}
 
-	// KSTD - very ugly. Does anyone know how to make this better?
-	public boolean checkSand(String direction) {
+	public boolean isSand(String direction) {
 
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex, scanRange = 2;
@@ -1065,8 +1222,67 @@ public class ROVER_12_wk6_wael {
 		return false;
 	}
 
+	public Coord getG12Target() {
+		// 1. divide the map into quadrants
+		// 2. count num of null cells
+		// 3. take the quadrant with the most null cell, and repeat until the
+		// target quadrant is a single cell
+
+		return new Coord(-1, -1);
+	}
+
+	public boolean isObstacle(String direction) {
+
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex, scanRange = 2;
+
+		for (int i = 1; i < scanRange; i++) {
+			if (direction == "S")
+				x = centerIndex + i;
+			else if (direction == "N")
+				x = centerIndex - i;
+			else if (direction == "E")
+				y = centerIndex + i;
+			else
+				y = centerIndex - i;
+
+			// Checks whether there is sand or rock in the next tile
+			if (scanMap.getScanMap()[x][y].getTerrain() == Terrain.SAND
+					|| scanMap.getScanMap()[x][y].getTerrain() == Terrain.ROCK) {
+				return true;
+			}
+			return false;
+		}
+		return false;
+	}
+
+	// a check function to prevent IndexOutOfBounds exception
 	public boolean withinTheGrid(int i, int j, int arrayLength) {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
+	}
+
+	private void sendJSONToServer(JSONObject obj, String URL) {
+		// TODO need testing
+		try {
+			HttpClient client = HttpClientBuilder.create().build();
+			HttpPost post = new HttpPost(URL);
+
+			StringEntity se = new StringEntity(obj.toString());
+			post.setHeader("content-type", "application/json");
+			post.setEntity(se);
+
+			HttpResponse response = client.execute(post);
+
+			// Check response
+			System.out.println(obj.toString());
+
+			System.out.println("Response Code : "
+					+ response.getStatusLine().getStatusCode());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	/**
