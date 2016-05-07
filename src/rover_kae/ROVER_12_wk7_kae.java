@@ -1,15 +1,22 @@
 package rover_kae;
+
 // must fix 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -49,9 +56,9 @@ public class ROVER_12_wk7_kae {
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
 	// MapTile[][] mapTileLog = new MapTile[100][100];
 	private List<Coord> pathMap = new ArrayList<Coord>();
-	//private Deque<String> directionStack = new ArrayDeque<String>();
+	// private Deque<String> directionStack = new ArrayDeque<String>();
 	private List<Coord> directionStack = new LinkedList<Coord>();
-	
+
 	private boolean[] cardinals = new boolean[4];
 
 	public ROVER_12_wk7_kae() {
@@ -163,7 +170,7 @@ public class ROVER_12_wk7_kae {
 				// ***** MOVING *****
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
-
+				//request(scanMapTiles);
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
@@ -183,7 +190,7 @@ public class ROVER_12_wk7_kae {
 
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
-				Thread.sleep(sleepTime); // G12 - sleepTime has been reduced to
+				//Thread.sleep(sleepTime); // G12 - sleepTime has been reduced to
 											// 100. is that alright?
 
 				System.out
@@ -392,7 +399,7 @@ public class ROVER_12_wk7_kae {
 		}
 		return false;
 	}
-	
+
 	private boolean[] moveUsingPastPath(boolean[] cardinals, int currentXPos,
 			int currentYPos) throws InterruptedException {
 		try {
@@ -429,15 +436,16 @@ public class ROVER_12_wk7_kae {
 
 		} else if (isPastPositonIsNorth(cardinals, eachCoord, currentXPos,
 				currentYPos)) {
-			 moveNorth();
+			moveNorth();
 
 		} else if (isPastPositonIsSouth(cardinals, eachCoord, currentXPos,
 				currentYPos)) {
-			 moveSouth();
+			moveSouth();
 
 		}
 		return cardinals;
 	}
+
 	private boolean isPastPositonIsNorth(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
 		int previousXPos = eachCoord.getXpos();
@@ -457,7 +465,6 @@ public class ROVER_12_wk7_kae {
 		}
 		return false;
 	}
-
 
 	private boolean isPastPositonIsSouth(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
@@ -580,11 +587,11 @@ public class ROVER_12_wk7_kae {
 
 		}
 	}
-	
+
 	private Coord returnCurrentLoc() throws IOException {
 
 		String line;
-		Coord clone = new Coord(-1,-1);
+		Coord clone = new Coord(-1, -1);
 		// **** Request Rover Location from SwarmServer ****
 		out.println("LOC");
 		line = in.readLine();
@@ -1004,49 +1011,129 @@ public class ROVER_12_wk7_kae {
 						+ (scanLoc.getXpos() - halfTileSize + x) + ","
 						+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
 						+ tempCoord + tempTile);
+				// our copy of the scanned map in global context
 				mapTileLog.put(tempCoord, tempTile);
 
-				System.out.println(tempCoord + " *** " + tempTile);
+				// Create JSON object
+				JSONObject obj = new JSONObject();
+				obj.put("x", new Integer(tempCoord.getXpos()));
+				obj.put("y", new Integer(tempCoord.getXpos()));
 
-				// ----G12 Thanks Wael! Please review and see if it fits
-				// -------------------------------
-				if (mapTileLog.get(tempCoord) == null) {
-					mapTileLog
-							.put(tempCoord, new MapTile(ter, sci, elev, hasR));
-
-					// TODO Implementation need testing
-
-					// Create JSON object
-					JSONObject obj = new JSONObject();
-					obj.put("x:", new Integer(scanLoc.getXpos() - halfTileSize
-							+ x));
-					obj.put("y:", new Integer(scanLoc.getYpos() - halfTileSize
-							+ y));
-
-					// Check if terrain exist
-					if (!ter.getTerString().isEmpty()) {
-						obj.put("terrain:", new String(ter.getTerString()));
-					} else {
-						obj.put("terrain:", new String(""));
-					}
-					// Check if science exist
-					if (!sci.getSciString().isEmpty()) {
-						obj.put("science:", new String(sci.getSciString()));
-						obj.put("stillExists:", new Boolean(true));
-					} else {
-						obj.put("science:", new String(""));
-						obj.put("stillExists:", new Boolean(false));
-					}
-
-					// Send JSON object to server using HTTP POST method
-					sendJSONToServer(obj, "http://localhost:8080/sensor");
-
-					// -----------------------------------
-
+				// Check if terrain exist
+				if (!ter.getTerString().isEmpty()) {
+					obj.put("terrain", new String(ter.getTerString()));
+				} else {
+					obj.put("terrain", new String(""));
 				}
+				// Check if science exist
+				if (!sci.getSciString().isEmpty()) {
+					obj.put("science", new String(sci.getSciString()));
+					obj.put("stillExists", new Boolean(true));
+				} else {
+					obj.put("science", new String(""));
+					obj.put("stillExists", new Boolean(false));
+				}
+				try {
+					sendPost(obj);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				// Send JSON object to server using HTTP POST method
+				// sendJSONToServer(obj, "http://192.168.0.101:3000/globalMap");
+				// sendJSONToServer(obj,
+				// "http://192.168.0.101:3000/scout");https:
+				// sendJSONToServer(obj,
+				// "www.reddit.com/r/explainlikeimfive/comments/4ibqm3.json");
+				// -----------------------------------
+
 			}
 		}
+	}
 
+	// HTTP POST request
+	private void sendPost(JSONObject jsonObj) throws Exception {
+		String url = "http://192.168.0.101:3000/scout";
+		// String url = "https://selfsolve.apple.com/wcResults.do";
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		String USER_AGENT = "ROVER 12";
+		// add reuqest header
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+		con.setDoOutput(true);
+		
+		// Send post request
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(jsonObj.toString());
+		wr.flush();
+		wr.close();
+
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'POST' request to URL : " + url);
+		System.out.println("Post parameters : " + jsonObj.toString());
+		System.out.println("Response Code : " + responseCode);
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+
+		// print result
+		System.out.println(response.toString());
+
+	}
+
+	private String request(MapTile[][] scanMapTile) {
+
+		String USER_AGENT = "ROVER_11";
+		String url = "http://192.168.0.101:3000/globalMap";
+
+		URL obj = null;
+
+		String responseStr = "";
+		try {
+			obj = new URL(url);
+			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+			con.setRequestMethod("GET");
+
+			// add request header
+			con.setRequestProperty("User-Agent", USER_AGENT);
+
+			int responseCode = con.getResponseCode();
+			System.out.println("\nSending 'GET' request to URL : " + url);
+			System.out.println("Response Code : " + responseCode);
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					con.getInputStream()));
+			String inputLine;
+			StringBuffer response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
+
+			// print result
+			responseStr = response.toString();
+
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// optional default is GET
+
+		return responseStr;
 	}
 
 	private void move(String dir) throws IOException {
@@ -1057,25 +1144,25 @@ public class ROVER_12_wk7_kae {
 		switch (dir) {
 
 		case "E":
-			if (!checkSand("E")) {
+			if (!isSand("E")) {
 				System.out.println("request move -> E");
 				moveEast();
 			}
 			break;
 		case "W":
-			if (!checkSand("W")) {
+			if (!isSand("W")) {
 				System.out.println("request move -> W");
 				moveWest();
 			}
 			break;
 		case "N":
-			if (!checkSand("N")) {
+			if (!isSand("N")) {
 				System.out.println("request move -> N");
 				moveNorth();
 			}
 			break;
 		case "S":
-			if (!checkSand("S")) {
+			if (!isSand("S")) {
 				System.out.println("request move -> S");
 				moveSouth();
 			}
@@ -1112,7 +1199,7 @@ public class ROVER_12_wk7_kae {
 
 	}
 
-	public boolean checkSand(String direction) {
+	public boolean isSand(String direction) {
 
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 		int x = centerIndex, y = centerIndex, scanRange = 2;
@@ -1135,6 +1222,40 @@ public class ROVER_12_wk7_kae {
 		return false;
 	}
 
+	public Coord getG12Target() {
+		// 1. divide the map into quadrants
+		// 2. count num of null cells
+		// 3. take the quadrant with the most null cell, and repeat until the
+		// target quadrant is a single cell
+
+		return new Coord(-1, -1);
+	}
+
+	public boolean isObstacle(String direction) {
+
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		int x = centerIndex, y = centerIndex, scanRange = 2;
+
+		for (int i = 1; i < scanRange; i++) {
+			if (direction == "S")
+				x = centerIndex + i;
+			else if (direction == "N")
+				x = centerIndex - i;
+			else if (direction == "E")
+				y = centerIndex + i;
+			else
+				y = centerIndex - i;
+
+			// Checks whether there is sand or rock in the next tile
+			if (scanMap.getScanMap()[x][y].getTerrain() == Terrain.SAND
+					|| scanMap.getScanMap()[x][y].getTerrain() == Terrain.ROCK) {
+				return true;
+			}
+			return false;
+		}
+		return false;
+	}
+
 	// a check function to prevent IndexOutOfBounds exception
 	public boolean withinTheGrid(int i, int j, int arrayLength) {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
@@ -1153,6 +1274,7 @@ public class ROVER_12_wk7_kae {
 			HttpResponse response = client.execute(post);
 
 			// Check response
+			System.out.println(obj.toString());
 
 			System.out.println("Response Code : "
 					+ response.getStatusLine().getStatusCode());
