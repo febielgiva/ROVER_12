@@ -1,5 +1,4 @@
 package common;
-
 /*	
  * Created by: 	Jonathan Young
  * Date: 		May 14, 2015

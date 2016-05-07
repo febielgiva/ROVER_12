@@ -925,26 +925,27 @@ public class ROVER_12_wk6_wael {
 						
 						// Create JSON object
 						JSONObject obj = new JSONObject();
-						obj.put("x:", new Integer(currentLoc.getXpos() - 5 + j));
-						obj.put("y:", new Integer(currentLoc.getYpos() - 5 + j));
+						obj.put("x", new Integer(currentLoc.getXpos() - 5 + j));
+						obj.put("y", new Integer(currentLoc.getYpos() - 5 + j));
 						
 						// Check if terrain exist
 						if (!ter.getTerString().isEmpty()) {
-							obj.put("terrain:", new String(ter.getTerString()));
+							obj.put("terrain", new String(ter.getTerString()));
 						}
 						else {
-							obj.put("terrain:", new String(""));
+							obj.put("terrain", new String(""));
 						}
 						// Check if science exist 
 						if (!sci.getSciString().isEmpty()) {
-							obj.put("science:", new String(sci.getSciString()));
-							obj.put("stillExists:", new Boolean(true));
+							obj.put("science", new String(sci.getSciString()));
+							obj.put("stillExists", new Boolean(true));
 						}
 						else {
-							obj.put("science:", new String(""));
-							obj.put("stillExists:", new Boolean(false));
+							obj.put("science", new String(""));
+							obj.put("stillExists", new Boolean(false));
 						}
 					
+						
 						// Send JSON object to server using HTTP POST method
 						sendJSONToServer(obj,"http://localhost:8080/sensor");
 
@@ -975,7 +976,6 @@ public class ROVER_12_wk6_wael {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
 	}
 
 	private void move(String dir) throws IOException {
