@@ -941,6 +941,19 @@ public class ROVER_12 {
 			}
 		}
 	}
+	/* **********************************
+	 * The time the rover takes in getting to a point to another point */
+	 
+	 @SuppressWarnings("unused")
+	private long startWatch() {
+		return System.currentTimeMillis();
+	}
+
+	@SuppressWarnings("unused")
+	private long stopWatch(long start) {
+		return System.currentTimeMillis() - start;
+	}
+
 
 	// public void debugPrintMapTileHashMap(Map<Coord,MapTile> maptiles, int
 	// xStart, int yXtart, int edgeSize){

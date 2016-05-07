@@ -1,13 +1,14 @@
 package rover_kae;
-
+// must fix 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpResponse;
@@ -47,7 +48,10 @@ public class CopyOf_ROVER_12 {
 			targetLocation = null;
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
 	// MapTile[][] mapTileLog = new MapTile[100][100];
-	private ArrayList<Coord> pathMap = new ArrayList<Coord>();
+	private List<Coord> pathMap = new ArrayList<Coord>();
+	//private Deque<String> directionStack = new ArrayDeque<String>();
+	private List<Coord> directionStack = new LinkedList<Coord>();
+	
 	private boolean[] cardinals = new boolean[4];
 
 	public CopyOf_ROVER_12() {
