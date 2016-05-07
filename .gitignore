@@ -1,9 +1,7 @@
 # Ignore everything
 *
-
 # But not these files...
 !.gitignore
-
 !src
 !src/
 !src/*
@@ -11,11 +9,9 @@
 !src/*/*
 !src/*/*/*
 !src/*/*/*/*
-
 !libs
 !libs/
 !libs/*
 !libs/*/
 !libs/*/*
-
 !*.txt
