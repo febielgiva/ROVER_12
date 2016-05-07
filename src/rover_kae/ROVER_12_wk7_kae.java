@@ -1011,7 +1011,12 @@ public class ROVER_12_wk7_kae {
 						+ (scanLoc.getXpos() - halfTileSize + x) + ","
 						+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
 						+ tempCoord + tempTile);
+<<<<<<< HEAD
+				
+				// OUR COPY OF THE SCANNED MAP
+=======
 				// our copy of the scanned map in global context
+>>>>>>> master
 				mapTileLog.put(tempCoord, tempTile);
 
 				// Create JSON object
@@ -1019,6 +1024,32 @@ public class ROVER_12_wk7_kae {
 				obj.put("x", new Integer(tempCoord.getXpos()));
 				obj.put("y", new Integer(tempCoord.getXpos()));
 
+<<<<<<< HEAD
+					// Create JSON object
+					JSONObject obj = new JSONObject();
+					obj.put("x", new Integer(tempCoord.getXpos()));
+					obj.put("y", new Integer(tempCoord.getYpos()));
+
+					// Check if terrain exist
+					if (!ter.getTerString().isEmpty()) {
+						obj.put("terrain", new String(ter.getTerString()));
+					} else {
+						obj.put("terrain", new String(""));
+					}
+					// Check if science exist
+					if (!sci.getSciString().isEmpty()) {
+						obj.put("science", new String(sci.getSciString()));
+						obj.put("stillExists", new Boolean(true));
+					} else {
+						obj.put("science", new String(""));
+						obj.put("stillExists", new Boolean(false));
+					}
+
+					System.out.println(obj.toString());
+					
+					// Send JSON object to server using HTTP POST method
+					sendJSONToServer(obj, "http://localhost:8080/sensor");
+=======
 				// Check if terrain exist
 				if (!ter.getTerString().isEmpty()) {
 					obj.put("terrain", new String(ter.getTerString()));
@@ -1088,6 +1119,7 @@ public class ROVER_12_wk7_kae {
 
 		// print result
 		System.out.println(response.toString());
+>>>>>>> master
 
 	}
 
@@ -1131,11 +1163,14 @@ public class ROVER_12_wk7_kae {
 			e.printStackTrace();
 		}
 
+<<<<<<< HEAD
+=======
 		// optional default is GET
 
 		return responseStr;
 	}
 
+>>>>>>> master
 	private void move(String dir) throws IOException {
 		System.out.println("current location in move(): " + currentLoc);
 		setCurrentLoc();
@@ -1276,8 +1311,7 @@ public class ROVER_12_wk7_kae {
 			// Check response
 			System.out.println(obj.toString());
 
-			System.out.println("Response Code : "
-					+ response.getStatusLine().getStatusCode());
+			System.out.println("Response Code : " + response.getStatusLine().getStatusCode());
 
 		} catch (Exception e) {
 			e.printStackTrace();

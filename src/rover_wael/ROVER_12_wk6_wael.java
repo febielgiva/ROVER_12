@@ -1,6 +1,10 @@
 package rover_wael;
+<<<<<<< HEAD
+//cc
+=======
 
 // must fix 
+>>>>>>> master
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
