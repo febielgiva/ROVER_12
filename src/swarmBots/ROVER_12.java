@@ -1034,7 +1034,7 @@ public class ROVER_12 {
 					obj.put("stillExists", new Boolean(false));
 				}
 				try {
-					sendPost(obj);
+					//sendPost(obj);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
