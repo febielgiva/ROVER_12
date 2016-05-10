@@ -12,9 +12,11 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -213,6 +215,39 @@ public class ROVER_12 {
 
 	}// END of Rover main control loop
 
+	private Set<Integer> findMaxIndeces(int[] array) {
+		/*
+		 * returns the index/indeces of the element(s) that hold(s) the maximum
+		 * value
+		 */
+		int max = Integer.MIN_VALUE, maxIndex = -1;
+		Set<Integer> tie = new HashSet<Integer>();
+		for (int i = 0; i < array.length; i++) {
+			if (max < array[i]) {
+				maxIndex = i;
+				max = array[i];
+			}
+		}
+		tie.add(maxIndex);
+		/*
+		 * if 2 or more quadrant ties, return the farthest from current location
+		 * of rover 12
+		 */
+		for (int i = 0; i < array.length; i++) {
+			if (max == array[i]) {
+				tie.add(i);
+			}
+		}
+		return tie;
+	}
+
+	
+	private double getDistanceBetween2Points(Coord p1, Coord p2) {
+		return Math.sqrt(Math.pow(p2.getXpos() - p1.getXpos(), 2)
+				+ Math.pow(p2.getYpos() - p1.getYpos(), 2));
+	}
+
+	
 	private void roverMotionLogic(boolean[] cardinals,
 			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
 			int currentYPos) throws InterruptedException, IOException {
