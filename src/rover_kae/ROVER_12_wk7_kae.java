@@ -217,6 +217,8 @@ public class ROVER_12_wk7_kae {
 
 	}// END of Rover main control loop
 
+	
+	
 	private void roverMotionLogic(boolean[] cardinals,
 			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
 			int currentYPos) throws InterruptedException, IOException {
@@ -1226,6 +1228,7 @@ public class ROVER_12_wk7_kae {
 		return false;
 	}
 
+	// KS - must complete
 	public Coord getG12Target() {
 		// 1. divide the map into quadrants
 		// 2. count num of null cells
@@ -1234,7 +1237,8 @@ public class ROVER_12_wk7_kae {
 
 		return new Coord(-1, -1);
 	}
-
+	
+	// KS - must complete
 	public boolean isObstacle(String direction) {
 
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -1289,6 +1293,7 @@ public class ROVER_12_wk7_kae {
 
 	}
 
+	// KS - must test it extensively
 	private Set<Integer> findMaxIndeces(int[] array) {
 		/*
 		 * returns the index/indeces of the element(s) that hold(s) the maximum
