@@ -1021,7 +1021,7 @@ public class ROVER_12_wk7_kae {
 		boolean hasR;
 		int halfTileSize = ptrScanMap.length / 2;
 
-		// debug - print out must be erased
+		// debug - print out
 		System.out.println("inside of loadMapTileIntoGlobal()[scanLoc="
 
 		+ scanLoc + "]:" + "[currLoc=" + currentLoc);
@@ -1068,8 +1068,7 @@ public class ROVER_12_wk7_kae {
 					obj.put("stillExists", new Boolean(false));
 				}
 				try {
-					System.out.println("From line 1071:\n" + obj );
-					// sendPost(obj);
+					 sendPost(obj);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1110,7 +1109,7 @@ public class ROVER_12_wk7_kae {
 		}
 	}
 
-	// HTTP POST request 
+	// HTTP POST request
 		private void sendPost(JSONObject jsonObj) throws Exception {
 			String url = "http://localhost:3000/scout"; //<-- Wed. 5/11
 			//String url = "http://192.168.0.101:3000/scout"; <-- Sat 5/7/16
