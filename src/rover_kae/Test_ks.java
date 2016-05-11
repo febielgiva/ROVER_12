@@ -15,8 +15,7 @@ public class Test_ks {
 
 	@Test
 	public void testFindMaxIndeces() {
-		System.out.println(getDistanceBetween2Points(new Coord(1, 3),
-				new Coord(4, 8)));
+		
 		int[] array = { 4, 6, 2, 9, 1, 17, 2, 17, 5 };
 		Set<Integer> maxes = findMaxIndeces(array);
 		for (Integer num : maxes) {
@@ -27,6 +26,7 @@ public class Test_ks {
 
 	// @Test
 	public void testGetDistanceBetween2Points() {
+		
 		System.out.println(getDistanceBetween2Points(new Coord(1, 3),
 				new Coord(4, 8)));
 
