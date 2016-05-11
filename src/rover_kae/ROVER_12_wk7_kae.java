@@ -12,9 +12,12 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -170,7 +173,7 @@ public class ROVER_12_wk7_kae {
 				// ***** MOVING *****
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
-				//request(scanMapTiles);
+				// request(scanMapTiles);
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
@@ -190,8 +193,9 @@ public class ROVER_12_wk7_kae {
 
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
-				//Thread.sleep(sleepTime); // G12 - sleepTime has been reduced to
-											// 100. is that alright?
+				// Thread.sleep(sleepTime); // G12 - sleepTime has been reduced
+				// to
+				// 100. is that alright?
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
@@ -213,6 +217,8 @@ public class ROVER_12_wk7_kae {
 
 	}// END of Rover main control loop
 
+	
+	
 	private void roverMotionLogic(boolean[] cardinals,
 			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
 			int currentYPos) throws InterruptedException, IOException {
@@ -1034,7 +1040,7 @@ public class ROVER_12_wk7_kae {
 					obj.put("stillExists", new Boolean(false));
 				}
 				try {
-					sendPost(obj);
+					//sendPost(obj);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1064,7 +1070,7 @@ public class ROVER_12_wk7_kae {
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 		con.setDoOutput(true);
-		
+
 		// Send post request
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
 		wr.writeBytes(jsonObj.toString());
@@ -1222,6 +1228,7 @@ public class ROVER_12_wk7_kae {
 		return false;
 	}
 
+	// KS - must complete
 	public Coord getG12Target() {
 		// 1. divide the map into quadrants
 		// 2. count num of null cells
@@ -1230,7 +1237,8 @@ public class ROVER_12_wk7_kae {
 
 		return new Coord(-1, -1);
 	}
-
+	
+	// KS - must complete
 	public boolean isObstacle(String direction) {
 
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -1282,6 +1290,125 @@ public class ROVER_12_wk7_kae {
 			e.printStackTrace();
 		}
 
+	}
+
+	// KS - must test it extensively
+	private Set<Integer> findMaxIndeces(int[] array) {
+		/*
+		 * returns the index/indeces of the element(s) that hold(s) the maximum
+		 * value
+		 */
+		int max = Integer.MIN_VALUE, maxIndex = -1;
+		Set<Integer> tie = new HashSet<Integer>();
+		for (int i = 0; i < array.length; i++) {
+			if (max < array[i]) {
+				maxIndex = i;
+				max = array[i];
+			}
+		}
+		tie.add(maxIndex);
+		/*
+		 * if 2 or more quadrant ties, return the farthest from current location
+		 * of rover 12
+		 */
+		for (int i = 0; i < array.length; i++) {
+			if (max == array[i]) {
+				tie.add(i);
+			}
+		}
+		return tie;
+	}
+
+	private double getDistanceBetween2Points(Coord p1, Coord p2) {
+		return Math.sqrt(Math.pow(p2.getXpos() - p1.getXpos(), 2)
+				+ Math.pow(p2.getYpos() - p1.getYpos(), 2));
+	}
+
+	private int getFurthestQuadrant(Coord q1, Coord q2, Coord q3, Coord q4) {
+
+		double[] distances = { 0, getDistanceBetween2Points(q1, currentLoc),
+				getDistanceBetween2Points(q2, currentLoc),
+				getDistanceBetween2Points(q3, currentLoc),
+				getDistanceBetween2Points(q4, currentLoc) };
+
+		double max = Double.MIN_VALUE;
+		int maxIndex = -1;
+		for (int i = 0; i < distances.length; i++) {
+			if (max < distances[i]) {
+				maxIndex = i;
+				max = distances[i];
+			}
+		}
+
+		return maxIndex;
+	}
+
+	private Coord getRover12TargetAreas() {
+
+		// approximate the size of the map
+		int w = targetLocation.getXpos(), h = targetLocation.getYpos(), q1 = 0, q2 = 0, q3 = 0, q4 = 0;
+		Coord target_rv12 = new Coord(-1, -1);
+
+		// quadrant I
+		for (int j = 0; j < h / 2; j++) {
+			for (int i = 0; i < w / 2; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					q1++;
+				}
+			}
+		}
+
+		// quadrant II
+		for (int j = 0; j < h / 2; j++) {
+			for (int i = w / 2 + 1; i < w; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					q2++;
+				}
+			}
+		}
+
+		// quadrant III
+		for (int j = h / 2; j < h; j++) {
+			for (int i = 0; i < w / 2; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					q3++;
+				}
+			}
+		}
+
+		// quadrant IV
+		for (int j = h / 2; j < h; j++) {
+			for (int i = w / 2 + 1; i < w; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					q4++;
+				}
+			}
+		}
+		int[] array = { 0, q1, q2, q3, q4 };
+		Set<Integer> maxIndeces = findMaxIndeces(array);
+
+		// if there are ties, get the furthest quadrant
+		if (maxIndeces.size() > 1) {
+
+		}
+		Random rd = new Random();
+		int num = rd.nextInt(array.length);
+		Object[] tempArray = findMaxIndeces(array).toArray();
+		int maxIdx = (Integer)tempArray[num];
+
+		switch (maxIdx) {
+		case 1: // Quadrant I
+			return new Coord(w / 4, h / 4);
+		case 2: // Quadrant II
+			return new Coord((w * 3 / 4), h / 4);
+		case 3: // Quadrant III
+			return new Coord(w / 4, h * 3 / 4);
+		case 4: // Quadrant IV
+			return new Coord(w * 3 / 4, h * 3 / 4);
+		default:
+			break;
+		}
+		return target_rv12;
 	}
 
 	/**
