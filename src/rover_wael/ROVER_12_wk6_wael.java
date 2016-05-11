@@ -1,10 +1,5 @@
 package rover_wael;
-<<<<<<< HEAD
-//cc
-=======
 
-// must fix 
->>>>>>> master
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -1058,7 +1053,7 @@ public class ROVER_12_wk6_wael {
 
 	// HTTP POST request
 	private void sendPost(JSONObject jsonObj) throws Exception {
-		String url = "http://192.168.0.101:3000/scout";
+		String url = "http://localhost:3000/scout";
 		// String url = "https://selfsolve.apple.com/wcResults.do";
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -1095,10 +1090,11 @@ public class ROVER_12_wk6_wael {
 
 	}
 
+	// GET request
 	private String request(MapTile[][] scanMapTile) {
 
 		String USER_AGENT = "ROVER_11";
-		String url = "http://192.168.0.101:3000/globalMap";
+		String url = "http://localhost:3000/globalMap";
 
 		URL obj = null;
 
