@@ -1021,7 +1021,7 @@ public class ROVER_12_wk7_kae {
 		boolean hasR;
 		int halfTileSize = ptrScanMap.length / 2;
 
-		// debug - print out
+		// debug - print out must be erased
 		System.out.println("inside of loadMapTileIntoGlobal()[scanLoc="
 
 		+ scanLoc + "]:" + "[currLoc=" + currentLoc);
