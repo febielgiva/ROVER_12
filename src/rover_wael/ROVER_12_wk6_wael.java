@@ -944,7 +944,7 @@ public class ROVER_12_wk6_wael {
 				// Create JSON object
 				JSONObject obj = new JSONObject();
 				obj.put("x", new Integer(tempCoord.getXpos()));
-				obj.put("y", new Integer(tempCoord.getXpos()));
+				obj.put("y", new Integer(tempCoord.getYpos()));
 
 				// Check if terrain exist
 				if (!ter.getTerString().isEmpty()) {

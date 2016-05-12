@@ -1045,22 +1045,14 @@ public class ROVER_12_wk7_kae {
 						+ (scanLoc.getXpos() - halfTileSize + x) + ","
 						+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
 						+ tempCoord + tempTile);
-<<<<<<< HEAD
 
-=======
-				// our copy of the scanned map in global context
->>>>>>> master
 				mapTileLog.put(tempCoord, tempTile);
 
 				// Create JSON object
 				JSONObject obj = new JSONObject();
 				obj.put("x", new Integer(tempCoord.getXpos()));
-<<<<<<< HEAD
-				obj.put("y", new Integer(tempCoord.getXpos()));
-=======
 				obj.put("y", new Integer(tempCoord.getYpos()));
->>>>>>> master
-
+				
 				// Check if terrain exist
 				if (!ter.getTerString().isEmpty()) {
 					obj.put("terrain", new String(ter.getTerString()));
@@ -1103,13 +1095,7 @@ public class ROVER_12_wk7_kae {
 			StringEntity se = new StringEntity(obj.toString());
 			post.setHeader("content-type", "application/json");
 			post.setEntity(se);
-
-<<<<<<< HEAD
-		// print result
-		System.out.println(response.toString());
-=======
 			HttpResponse response = client.execute(post);
->>>>>>> master
 
 			// Check response
 			System.out.println(obj.toString());
