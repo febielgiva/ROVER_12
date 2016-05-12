@@ -32,6 +32,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import common.Communication;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
@@ -87,6 +88,10 @@ public class ROVER_12_wk7_kae {
 	 * Connects to the server then enters the processing loop.
 	 */
 	private void run() throws IOException, InterruptedException {
+		
+		String url = "http://23.251.155.186:3000/api/global";
+		Communication com = new Communication(url);
+		
 
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
@@ -148,10 +153,6 @@ public class ROVER_12_wk7_kae {
 
 			int stepTrack = 0;
 
-			// // debug
-			// System.out.println(requestTimeRemaining(socket));
-			// Thread.sleep(10000);
-
 			/**
 			 * #### Rover controller process loop ####
 			 */
@@ -177,6 +178,8 @@ public class ROVER_12_wk7_kae {
 				// ***** MOVING *****
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
+				com.postScanMapTiles(currentLoc, scanMapTiles);
+				
 				// request(scanMapTiles);
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
@@ -781,24 +784,7 @@ public class ROVER_12_wk7_kae {
 		return targetLocation;
 	}
 
-	private int requestTimeRemaining(Socket soc) throws IOException {
-
-		// **** Request Remaining Time from SwarmServer ****
-		out.println("TIMER");
-		line = in.readLine();
-		int timeRemaining = -2;
-		if (line == null) {
-			System.out.println(rovername + " check connection to server");
-			line = "";
-		}
-		if (line.startsWith("TIMER")) {
-			timeRemaining = extractTimeRemaining(line);
-
-		}
-		return timeRemaining;
-	}
-
-	private static Coord extractCurrLOC(String sStr) {
+	public static Coord extractCurrLOC(String sStr) {
 		sStr = sStr.substring(4);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -811,7 +797,7 @@ public class ROVER_12_wk7_kae {
 		return null;
 	}
 
-	private static Coord extractStartLOC(String sStr) {
+	public static Coord extractStartLOC(String sStr) {
 
 		sStr = sStr.substring(10);
 
@@ -826,7 +812,7 @@ public class ROVER_12_wk7_kae {
 		return null;
 	}
 
-	private static Coord extractTargetLOC(String sStr) {
+	public static Coord extractTargetLOC(String sStr) {
 		sStr = sStr.substring(11);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -839,18 +825,9 @@ public class ROVER_12_wk7_kae {
 		return null;
 	}
 
-	private static int extractTimeRemaining(String sStr) {
-		sStr = sStr.substring(6);
-		if (sStr.lastIndexOf(" ") != -1) {
-			String timeStr = sStr.substring(0, sStr.lastIndexOf(" "));
-			return Integer.parseInt(timeStr);
-		}
-		return -1;
-	}
-
 	// this takes the server response string, parses out the x and x values and
 	// returns a Coord object
-	private static Coord extractLocationFromString(String sStr) {
+	public static Coord extractLocationFromString(String sStr) {
 		int indexOf;
 		indexOf = sStr.indexOf(" ");
 		sStr = sStr.substring(indexOf + 1);
@@ -1051,7 +1028,7 @@ public class ROVER_12_wk7_kae {
 				// Create JSON object
 				JSONObject obj = new JSONObject();
 				obj.put("x", new Integer(tempCoord.getXpos()));
-				obj.put("y", new Integer(tempCoord.getYpos()));
+				obj.put("y", new Integer(tempCoord.getXpos()));
 
 				// Check if terrain exist
 				if (!ter.getTerString().isEmpty()) {
@@ -1068,7 +1045,13 @@ public class ROVER_12_wk7_kae {
 					obj.put("stillExists", new Boolean(false));
 				}
 				try {
-					 sendPost(obj);
+					// sendPost(obj);
+
+					// debug
+					//MapTile[][] tempTiles = new MapTile[20][20];
+					//debugPrintMapTileArray(tempTiles);
+					//request(tempTiles);
+
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1086,74 +1069,56 @@ public class ROVER_12_wk7_kae {
 		}
 	}
 
-	private void sendJSONToServer(JSONObject obj, String URL) {
-		// TODO need testing
-		try {
-			HttpClient client = HttpClientBuilder.create().build();
-			HttpPost post = new HttpPost(URL);
+	// HTTP POST request
+	public void sendPost(JSONObject jsonObj) throws Exception {
+		
+		
+		
+		
+		
+		// String url = "http://192.168.0.101:3000/scout";
+		String url = "http://localhost:3000/scout";
+		// String url = "https://selfsolve.apple.com/wcResults.do";
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		String USER_AGENT = "ROVER 12";
+		// add reuqest header
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+		con.setDoOutput(true);
 
-			StringEntity se = new StringEntity(obj.toString());
-			post.setHeader("content-type", "application/json");
-			post.setEntity(se);
+		// Send post request
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(jsonObj.toString());
+		wr.flush();
+		wr.close();
 
-			HttpResponse response = client.execute(post);
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'POST' request to URL : " + url);
+		System.out.println("Post parameters : " + jsonObj.toString());
+		System.out.println("Response Code : " + responseCode);
 
-			// Check response
-			System.out.println(obj.toString());
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
 
-			System.out.println("Response Code : "
-					+ response.getStatusLine().getStatusCode());
-
-		} catch (Exception e) {
-			e.printStackTrace();
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
 		}
+		in.close();
+
+		// print result
+		System.out.println(response.toString());
+
 	}
 
-	// HTTP POST request
-		private void sendPost(JSONObject jsonObj) throws Exception {
-			String url = "http://localhost:3000/scout"; //<-- Wed. 5/11
-			//String url = "http://192.168.0.101:3000/scout"; <-- Sat 5/7/16
-			// String url = "https://selfsolve.apple.com/wcResults.do";
-			URL obj = new URL(url);
-			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-			String USER_AGENT = "ROVER 12";
-			// add reuqest header
-			con.setRequestMethod("POST");
-			con.setRequestProperty("User-Agent", USER_AGENT);
-			con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-			con.setDoOutput(true);
+	public String request(MapTile[][] scanMapTile) {
 
-			// Send post request
-			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-			wr.writeBytes(jsonObj.toString());// this throws an exception?
-			wr.flush();
-			wr.close();
-
-			int responseCode = con.getResponseCode();
-			System.out.println("\nSending 'POST' request to URL : " + url);
-			System.out.println("Post parameters : " + jsonObj.toString());
-			System.out.println("Response Code : " + responseCode);
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					con.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
-
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
-			}
-			in.close();
-
-			// print result
-			System.out.println(response.toString());
-
-		}
-
-	
-	private String request(MapTile[][] scanMapTile) {
-
-		String USER_AGENT = "ROVER_11";
-		String url = "http://192.168.0.101:3000/globalMap";
+		String USER_AGENT = "ROVER_12";
+		// String url = "http://192.168.0.101:3000/globalMap";
+		String url = "http://localhost:3000/globalMap";
 
 		URL obj = null;
 
@@ -1281,9 +1246,14 @@ public class ROVER_12_wk7_kae {
 		return false;
 	}
 
-	// a check function to prevent IndexOutOfBounds exception
-	public boolean withinTheGrid(int i, int j, int arrayLength) {
-		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
+	// KS - must complete
+	public Coord getG12Target() {
+		// 1. divide the map into quadrants
+		// 2. count num of null cells
+		// 3. take the quadrant with the most null cell, and repeat until the
+		// target quadrant is a single cell
+
+		return new Coord(-1, -1);
 	}
 
 	// KS - must complete
@@ -1312,48 +1282,60 @@ public class ROVER_12_wk7_kae {
 		return false;
 	}
 
-
-	
-	
-	private int[] approximateGlobalMapDimension(){
-		return null;
+	// a check function to prevent IndexOutOfBounds exception
+	public boolean withinTheGrid(int i, int j, int arrayLength) {
+		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
-	
-	// KS - must complete
-	private Coord getG12Target() {
-		// 1. divide the map into quadrants
-		// 2. count num of null cells
-		// 3. take the quadrant with the most null cell, and repeat until the
-		// target quadrant is a single cell
 
-		return new Coord(-1, -1);
+	private void sendJSONToServer(JSONObject obj, String URL) {
+		// TODO need testing
+		try {
+			HttpClient client = HttpClientBuilder.create().build();
+			HttpPost post = new HttpPost(URL);
+
+			StringEntity se = new StringEntity(obj.toString());
+			post.setHeader("content-type", "application/json");
+			post.setEntity(se);
+
+			HttpResponse response = client.execute(post);
+
+			// Check response
+			System.out.println(obj.toString());
+
+			System.out.println("Response Code : "
+					+ response.getStatusLine().getStatusCode());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
-	
-	/*
-	 * Finds the index/indices of the element(s) of an array that has the largest value, puts the index into a set, returns the set.
-	 * Indices of all duplicate elements will be accounted.  
-	 */
+
+	// KS - must test it extensively
 	private Set<Integer> findMaxIndeces(int[] array) {
-		
+		/*
+		 * returns the index/indeces of the element(s) that hold(s) the maximum
+		 * value
+		 */
 		int max = Integer.MIN_VALUE, maxIndex = -1;
-		Set<Integer> maxIndices = new HashSet<Integer>();
+		Set<Integer> tie = new HashSet<Integer>();
 		for (int i = 0; i < array.length; i++) {
 			if (max < array[i]) {
 				maxIndex = i;
 				max = array[i];
 			}
 		}
-		maxIndices.add(maxIndex);
+		tie.add(maxIndex);
 		/*
 		 * if 2 or more quadrant ties, return the farthest from current location
 		 * of rover 12
 		 */
 		for (int i = 0; i < array.length; i++) {
 			if (max == array[i]) {
-				maxIndices.add(i);
+				tie.add(i);
 			}
 		}
-		return maxIndices;
+		return tie;
 	}
 
 	private double getDistanceBetween2Points(Coord p1, Coord p2) {
@@ -1361,7 +1343,10 @@ public class ROVER_12_wk7_kae {
 				+ Math.pow(p2.getYpos() - p1.getYpos(), 2));
 	}
 
-	private int getFurthestQuadrant(Coord q1, Coord q2, Coord q3, Coord q4) {
+	public int getFurthestQuadrant(Coord q1, Coord q2, Coord q3, Coord q4) {
+
+		// debug
+		System.out.println("curr loc(getFurthestQuadrant()): " + currentLoc);
 
 		double[] distances = { 0, getDistanceBetween2Points(q1, currentLoc),
 				getDistanceBetween2Points(q2, currentLoc),
@@ -1376,7 +1361,6 @@ public class ROVER_12_wk7_kae {
 				max = distances[i];
 			}
 		}
-
 		return maxIndex;
 	}
 
@@ -1446,6 +1430,14 @@ public class ROVER_12_wk7_kae {
 			break;
 		}
 		return target_rv12;
+	}
+
+	public Coord getCurrentLoc() {
+		return currentLoc;
+	}
+
+	public void setCurrentLoc(Coord currentLoc) {
+		this.currentLoc = currentLoc;
 	}
 
 	/**
