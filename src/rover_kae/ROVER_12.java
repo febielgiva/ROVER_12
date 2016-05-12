@@ -12,9 +12,12 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -29,6 +32,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import common.Communication;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
@@ -41,7 +45,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class Dummy {
+public class ROVER_12 {
 
 	private BufferedReader in;
 	private PrintWriter out;
@@ -61,7 +65,7 @@ public class Dummy {
 
 	private boolean[] cardinals = new boolean[4];
 
-	public Dummy() {
+	public ROVER_12() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -71,7 +75,7 @@ public class Dummy {
 							// will cut connection if it is too small
 	}
 
-	public Dummy(String serverAddress) {
+	public ROVER_12(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -84,6 +88,10 @@ public class Dummy {
 	 * Connects to the server then enters the processing loop.
 	 */
 	private void run() throws IOException, InterruptedException {
+		
+		String url = "http://23.251.155.186:3000/api/global";
+		Communication com = new Communication(url);
+		
 
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
@@ -170,7 +178,9 @@ public class Dummy {
 				// ***** MOVING *****
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
-				//request(scanMapTiles);
+				com.postScanMapTiles(currentLoc, scanMapTiles);
+				
+				// request(scanMapTiles);
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
@@ -190,8 +200,9 @@ public class Dummy {
 
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
-				//Thread.sleep(sleepTime); // G12 - sleepTime has been reduced to
-											// 100. is that alright?
+				// Thread.sleep(sleepTime); // G12 - sleepTime has been reduced
+				// to
+				// 100. is that alright?
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
@@ -1034,7 +1045,13 @@ public class Dummy {
 					obj.put("stillExists", new Boolean(false));
 				}
 				try {
-					//sendPost(obj);
+					// sendPost(obj);
+
+					// debug
+					//MapTile[][] tempTiles = new MapTile[20][20];
+					//debugPrintMapTileArray(tempTiles);
+					//request(tempTiles);
+
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1053,8 +1070,14 @@ public class Dummy {
 	}
 
 	// HTTP POST request
-	private void sendPost(JSONObject jsonObj) throws Exception {
-		String url = "http://192.168.0.101:3000/scout";
+	public void sendPost(JSONObject jsonObj) throws Exception {
+		
+		
+		
+		
+		
+		// String url = "http://192.168.0.101:3000/scout";
+		String url = "http://localhost:3000/scout";
 		// String url = "https://selfsolve.apple.com/wcResults.do";
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -1064,7 +1087,7 @@ public class Dummy {
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 		con.setDoOutput(true);
-		
+
 		// Send post request
 		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
 		wr.writeBytes(jsonObj.toString());
@@ -1091,10 +1114,11 @@ public class Dummy {
 
 	}
 
-	private String request(MapTile[][] scanMapTile) {
+	public String request(MapTile[][] scanMapTile) {
 
-		String USER_AGENT = "ROVER_11";
-		String url = "http://192.168.0.101:3000/globalMap";
+		String USER_AGENT = "ROVER_12";
+		// String url = "http://192.168.0.101:3000/globalMap";
+		String url = "http://localhost:3000/globalMap";
 
 		URL obj = null;
 
@@ -1222,6 +1246,7 @@ public class Dummy {
 		return false;
 	}
 
+	// KS - must complete
 	public Coord getG12Target() {
 		// 1. divide the map into quadrants
 		// 2. count num of null cells
@@ -1231,6 +1256,7 @@ public class Dummy {
 		return new Coord(-1, -1);
 	}
 
+	// KS - must complete
 	public boolean isObstacle(String direction) {
 
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -1285,11 +1311,140 @@ public class Dummy {
 
 	}
 
+	// KS - must test it extensively
+	private Set<Integer> findMaxIndeces(int[] array) {
+		/*
+		 * returns the index/indeces of the element(s) that hold(s) the maximum
+		 * value
+		 */
+		int max = Integer.MIN_VALUE, maxIndex = -1;
+		Set<Integer> tie = new HashSet<Integer>();
+		for (int i = 0; i < array.length; i++) {
+			if (max < array[i]) {
+				maxIndex = i;
+				max = array[i];
+			}
+		}
+		tie.add(maxIndex);
+		/*
+		 * if 2 or more quadrant ties, return the farthest from current location
+		 * of rover 12
+		 */
+		for (int i = 0; i < array.length; i++) {
+			if (max == array[i]) {
+				tie.add(i);
+			}
+		}
+		return tie;
+	}
+
+	private double getDistanceBetween2Points(Coord p1, Coord p2) {
+		return Math.sqrt(Math.pow(p2.getXpos() - p1.getXpos(), 2)
+				+ Math.pow(p2.getYpos() - p1.getYpos(), 2));
+	}
+
+	public int getFurthestQuadrant(Coord q1, Coord q2, Coord q3, Coord q4) {
+
+		// debug
+		System.out.println("curr loc(getFurthestQuadrant()): " + currentLoc);
+
+		double[] distances = { 0, getDistanceBetween2Points(q1, currentLoc),
+				getDistanceBetween2Points(q2, currentLoc),
+				getDistanceBetween2Points(q3, currentLoc),
+				getDistanceBetween2Points(q4, currentLoc) };
+
+		double max = Double.MIN_VALUE;
+		int maxIndex = -1;
+		for (int i = 0; i < distances.length; i++) {
+			if (max < distances[i]) {
+				maxIndex = i;
+				max = distances[i];
+			}
+		}
+		return maxIndex;
+	}
+
+	private Coord getRover12TargetAreas() {
+
+		// approximate the size of the map
+		int w = targetLocation.getXpos(), h = targetLocation.getYpos(), q1 = 0, q2 = 0, q3 = 0, q4 = 0;
+		Coord target_rv12 = new Coord(-1, -1);
+
+		// quadrant I
+		for (int j = 0; j < h / 2; j++) {
+			for (int i = 0; i < w / 2; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					q1++;
+				}
+			}
+		}
+
+		// quadrant II
+		for (int j = 0; j < h / 2; j++) {
+			for (int i = w / 2 + 1; i < w; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					q2++;
+				}
+			}
+		}
+
+		// quadrant III
+		for (int j = h / 2; j < h; j++) {
+			for (int i = 0; i < w / 2; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					q3++;
+				}
+			}
+		}
+
+		// quadrant IV
+		for (int j = h / 2; j < h; j++) {
+			for (int i = w / 2 + 1; i < w; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					q4++;
+				}
+			}
+		}
+		int[] array = { 0, q1, q2, q3, q4 };
+		Set<Integer> maxIndeces = findMaxIndeces(array);
+
+		// if there are ties, get the furthest quadrant
+		if (maxIndeces.size() > 1) {
+
+		}
+		Random rd = new Random();
+		int num = rd.nextInt(array.length);
+		Object[] tempArray = findMaxIndeces(array).toArray();
+		int maxIdx = (Integer) tempArray[num];
+
+		switch (maxIdx) {
+		case 1: // Quadrant I
+			return new Coord(w / 4, h / 4);
+		case 2: // Quadrant II
+			return new Coord((w * 3 / 4), h / 4);
+		case 3: // Quadrant III
+			return new Coord(w / 4, h * 3 / 4);
+		case 4: // Quadrant IV
+			return new Coord(w * 3 / 4, h * 3 / 4);
+		default:
+			break;
+		}
+		return target_rv12;
+	}
+
+	public Coord getCurrentLoc() {
+		return currentLoc;
+	}
+
+	public void setCurrentLoc(Coord currentLoc) {
+		this.currentLoc = currentLoc;
+	}
+
 	/**
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		Dummy client = new Dummy();
+		ROVER_12 client = new ROVER_12();
 		client.run();
 	}
 }

@@ -2,18 +2,61 @@ package rover_kae;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
+import org.json.simple.JSONObject;
 import org.junit.Test;
 
 import common.Coord;
+import common.MapTile;
 
 public class Test_ks {
-
 	@Test
+	public void testgetFurthestQuadrant() {
+		ROVER_12_wk7_kae rv = new ROVER_12_wk7_kae();
+		Coord q1 = new Coord(1,1), q2 = new Coord(2,2), q3 = new Coord(3,3), q4 = new Coord(4,4);
+		System.out.println(rv.getFurthestQuadrant(q1, q2, q3, q4));
+		
+	}
+
+	// {"_id":"572e759207cb252a36cfb412","x":11,"y":45,"terrain":"sand","science":"organic","stillExists":true}
+	// @Test
+	public void testPost() {
+
+		// System.out.println(obj.toString());
+		Random rd = new Random();
+		MapTile[][] tiles = new MapTile[20][20];
+		//for (int i = 0; i < tiles.length; i++) {
+			JSONObject obj = new JSONObject();
+			obj.put("x", rd.nextInt(21));
+			obj.put("y", rd.nextInt(21));
+			obj.put("terrain", "sand");
+			obj.put("science", "cry");
+			obj.put("stillExists", true);
+			try {
+				sendPost(obj);
+				// request(tiles);
+
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		//}
+
+	}
+
+	// @Test
 	public void testFindMaxIndeces() {
 		System.out.println(getDistanceBetween2Points(new Coord(1, 3),
 				new Coord(4, 8)));
@@ -63,6 +106,92 @@ public class Test_ks {
 
 		return Math.sqrt(Math.pow(p2.getXpos() - p1.getXpos(), 2)
 				+ Math.pow(p2.getYpos() - p1.getYpos(), 2));
+	}
+
+	// HTTP POST request
+	public void sendPost(JSONObject jsonObj) throws Exception {
+		String url = "http://localhost:3000/scout";
+		// String url = "http://192.168.0.101:3000/scout";
+		// String url = "https://selfsolve.apple.com/wcResults.do";
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		String USER_AGENT = "ROVER 12";
+		// add reuqest header
+		con.setRequestMethod("POST");
+		con.setRequestProperty("User-Agent", USER_AGENT);
+		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+		con.setDoOutput(true);
+
+		// Send post request
+		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		wr.writeBytes(jsonObj.toString());
+		wr.flush();
+		wr.close();
+
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'POST' request to URL : " + url);
+		System.out.println("Post parameters : " + jsonObj.toString());
+		System.out.println("Response Code : " + responseCode);
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+
+		// print result
+		System.out.println(response.toString());
+
+	}
+
+	public String request(MapTile[][] scanMapTile) {
+
+		String USER_AGENT = "ROVER_12";
+		// String url = "http://192.168.0.101:3000/globalMap";
+		String url = "http://localhost:3000/globalMap";
+
+		URL obj = null;
+
+		String responseStr = "";
+		try {
+			obj = new URL(url);
+			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+			con.setRequestMethod("GET");
+
+			// add request header
+			con.setRequestProperty("User-Agent", USER_AGENT);
+
+			int responseCode = con.getResponseCode();
+			System.out.println("\nSending 'GET' request to URL : " + url);
+			System.out.println("Response Code : " + responseCode);
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(
+					con.getInputStream()));
+			String inputLine;
+			StringBuffer response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
+
+			// print result
+			responseStr = response.toString();
+
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		// optional default is GET
+
+		return responseStr;
 	}
 
 }

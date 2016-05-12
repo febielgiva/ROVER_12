@@ -32,6 +32,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import common.Communication;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
@@ -87,6 +88,10 @@ public class ROVER_12_wk7_kae {
 	 * Connects to the server then enters the processing loop.
 	 */
 	private void run() throws IOException, InterruptedException {
+		
+		String url = "http://23.251.155.186:3000/api/global";
+		Communication com = new Communication(url);
+		
 
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
@@ -173,6 +178,8 @@ public class ROVER_12_wk7_kae {
 				// ***** MOVING *****
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
+				com.postScanMapTiles(currentLoc, scanMapTiles);
+				
 				// request(scanMapTiles);
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
@@ -217,8 +224,6 @@ public class ROVER_12_wk7_kae {
 
 	}// END of Rover main control loop
 
-	
-	
 	private void roverMotionLogic(boolean[] cardinals,
 			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
 			int currentYPos) throws InterruptedException, IOException {
@@ -1040,7 +1045,13 @@ public class ROVER_12_wk7_kae {
 					obj.put("stillExists", new Boolean(false));
 				}
 				try {
-					//sendPost(obj);
+					// sendPost(obj);
+
+					// debug
+					//MapTile[][] tempTiles = new MapTile[20][20];
+					//debugPrintMapTileArray(tempTiles);
+					//request(tempTiles);
+
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1059,8 +1070,14 @@ public class ROVER_12_wk7_kae {
 	}
 
 	// HTTP POST request
-	private void sendPost(JSONObject jsonObj) throws Exception {
-		String url = "http://192.168.0.101:3000/scout";
+	public void sendPost(JSONObject jsonObj) throws Exception {
+		
+		
+		
+		
+		
+		// String url = "http://192.168.0.101:3000/scout";
+		String url = "http://localhost:3000/scout";
 		// String url = "https://selfsolve.apple.com/wcResults.do";
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -1097,10 +1114,11 @@ public class ROVER_12_wk7_kae {
 
 	}
 
-	private String request(MapTile[][] scanMapTile) {
+	public String request(MapTile[][] scanMapTile) {
 
-		String USER_AGENT = "ROVER_11";
-		String url = "http://192.168.0.101:3000/globalMap";
+		String USER_AGENT = "ROVER_12";
+		// String url = "http://192.168.0.101:3000/globalMap";
+		String url = "http://localhost:3000/globalMap";
 
 		URL obj = null;
 
@@ -1237,7 +1255,7 @@ public class ROVER_12_wk7_kae {
 
 		return new Coord(-1, -1);
 	}
-	
+
 	// KS - must complete
 	public boolean isObstacle(String direction) {
 
@@ -1325,7 +1343,10 @@ public class ROVER_12_wk7_kae {
 				+ Math.pow(p2.getYpos() - p1.getYpos(), 2));
 	}
 
-	private int getFurthestQuadrant(Coord q1, Coord q2, Coord q3, Coord q4) {
+	public int getFurthestQuadrant(Coord q1, Coord q2, Coord q3, Coord q4) {
+
+		// debug
+		System.out.println("curr loc(getFurthestQuadrant()): " + currentLoc);
 
 		double[] distances = { 0, getDistanceBetween2Points(q1, currentLoc),
 				getDistanceBetween2Points(q2, currentLoc),
@@ -1340,7 +1361,6 @@ public class ROVER_12_wk7_kae {
 				max = distances[i];
 			}
 		}
-
 		return maxIndex;
 	}
 
@@ -1395,7 +1415,7 @@ public class ROVER_12_wk7_kae {
 		Random rd = new Random();
 		int num = rd.nextInt(array.length);
 		Object[] tempArray = findMaxIndeces(array).toArray();
-		int maxIdx = (Integer)tempArray[num];
+		int maxIdx = (Integer) tempArray[num];
 
 		switch (maxIdx) {
 		case 1: // Quadrant I
@@ -1410,6 +1430,14 @@ public class ROVER_12_wk7_kae {
 			break;
 		}
 		return target_rv12;
+	}
+
+	public Coord getCurrentLoc() {
+		return currentLoc;
+	}
+
+	public void setCurrentLoc(Coord currentLoc) {
+		this.currentLoc = currentLoc;
 	}
 
 	/**
