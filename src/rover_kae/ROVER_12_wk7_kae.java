@@ -45,7 +45,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-//KS - must clean up the code, must clean up branches
+//KS - must clean up the code, must clean up branches...
 public class ROVER_12_wk7_kae {
 
 	private BufferedReader in;
