@@ -88,10 +88,9 @@ public class ROVER_12 {
 	 * Connects to the server then enters the processing loop.
 	 */
 	private void run() throws IOException, InterruptedException {
-		
+
 		String url = "http://23.251.155.186:3000/api/global";
 		Communication com = new Communication(url);
-		
 
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
@@ -117,7 +116,6 @@ public class ROVER_12 {
 			}
 
 			// ********* Rover logic setup *********
-
 			/**
 			 * Get initial values that won't change
 			 */
@@ -127,24 +125,15 @@ public class ROVER_12 {
 			System.out.println(rovername + " equipment list results "
 					+ equipment + "\n");
 
-			// **** Request START_LOC Location from SwarmServer ****
+			// **** Request START_LOC from SwarmServer ****
 			rovergroupStartPosition = requestStartLoc(socket);
 			System.out.println(rovername + " START_LOC "
 					+ rovergroupStartPosition);
 			// Thread.sleep(10000);
 
-			// **** Request TARGET_LOC Location from SwarmServer ****
+			// **** Request TARGET_LOC from SwarmServer ****
 			targetLocation = requestTargetLoc(socket);
 			System.out.println(rovername + " TARGET_LOC " + targetLocation);
-
-			// debug
-			// Thread.sleep(10000);
-
-			boolean stuck = false; // just means it did not change locations
-									// between requests,
-			// could be velocity limit or obstruction etc. group12 - anyone
-			// knows what this means?
-			boolean blocked = false;
 
 			cardinals[0] = false; // S: goingSouth
 			cardinals[1] = true; // E: goingEast
@@ -162,12 +151,6 @@ public class ROVER_12 {
 				previousLoc = currentLoc.clone();
 
 				// ***** do a SCAN ******
-				/*
-				 * G12 - for now, it is set to load in 11 x 11 map from
-				 * swarmserver, and copy it onto our g12 map log, every 4 steps
-				 * that rover 12 takes. Better ideas on the iteration interval,
-				 * anyone?
-				 */
 				if ((stepTrack++) % 4 == 0) {
 					loadScanMapFromSwarmServer();
 					scanMap.debugPrintMap();// debug
@@ -179,36 +162,18 @@ public class ROVER_12 {
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				com.postScanMapTiles(currentLoc, scanMapTiles);
-				
+
 				// request(scanMapTiles);
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
 				roverMotionLogic(cardinals, scanMapTiles, centerIndex,
 						currentLoc.getXpos(), currentLoc.getYpos());
-				// test for stuckness
-				// KS - below line causes a crash, must be modified
-				// stuck = currentLoc.equals(previousLoc);
-
-				// System.out.println("ROVER_12 stuck test " + stuck);
-				// System.out.println("ROVER_12 blocked test " + blocked);
-				// System.out.println(currentLoc);
-
-				// store rover 12 path for easy return
 				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
 						.getYpos()));
 
-				// this is the Rovers HeartBeat, it regulates how fast the Rover
-				// cycles through the control loop
-				// Thread.sleep(sleepTime); // G12 - sleepTime has been reduced
-				// to
-				// 100. is that alright?
-
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
-
-				// This catch block closes the open socket connection to the
-				// server
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -221,8 +186,7 @@ public class ROVER_12 {
 				}
 			}
 		}
-
-	}// END of Rover main control loop
+	}
 
 	private void roverMotionLogic(boolean[] cardinals,
 			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
@@ -1048,9 +1012,9 @@ public class ROVER_12 {
 					// sendPost(obj);
 
 					// debug
-					//MapTile[][] tempTiles = new MapTile[20][20];
-					//debugPrintMapTileArray(tempTiles);
-					//request(tempTiles);
+					// MapTile[][] tempTiles = new MapTile[20][20];
+					// debugPrintMapTileArray(tempTiles);
+					// request(tempTiles);
 
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -1071,11 +1035,7 @@ public class ROVER_12 {
 
 	// HTTP POST request
 	public void sendPost(JSONObject jsonObj) throws Exception {
-		
-		
-		
-		
-		
+
 		// String url = "http://192.168.0.101:3000/scout";
 		String url = "http://localhost:3000/scout";
 		// String url = "https://selfsolve.apple.com/wcResults.do";

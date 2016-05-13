@@ -19,6 +19,8 @@ import java.net.URL;
 
 /**
  * Created by samskim on 5/12/16.
+ * 
+ * Thanks to awesome Team 11!
  */
 public class Communication {
 
