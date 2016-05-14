@@ -73,7 +73,6 @@ public class RoverLocations {
 	
 	public void loadExampleTestRoverLocations(){
         // place all the rovers into the map in their initial positions
-        // TODO - have initial positions loaded from a file instead of hard coded
 		roverHash.put(RoverName.ROVER_01, new Coord(1,1));
 		roverHash.put(RoverName.ROVER_02, new Coord(2,1));
 		roverHash.put(RoverName.ROVER_03, new Coord(3,1));

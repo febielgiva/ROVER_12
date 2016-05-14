@@ -1,3 +1,5 @@
+
+// dummy comment
 package controlServer;
 
 import java.awt.Toolkit;
@@ -42,7 +44,7 @@ import supportTools.SwarmMapInit;
  * Many thanks to the authors for publishing their code examples
  */
 
-public class SwarmServer {
+public class SwarmServer {//
 
     /**
      * The port that the server listens on.
@@ -245,7 +247,7 @@ public class SwarmServer {
                     	socket.close();
                     }
                     
-                    // debug checking
+                    // debug - checking
                     //System.out.println("SWARM_SERVER_"+roverNameString+ "_thread: recieved command " + input);
                     
                       
