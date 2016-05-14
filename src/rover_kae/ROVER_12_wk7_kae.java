@@ -1248,14 +1248,63 @@ public class ROVER_12_wk7_kae {
 
 	// KS - must complete
 	public Coord getG12Target() {
+		
+		int approxWidth, approxHeight, quadrantsWidth, quadrantsHeight;
+		
 		// 1. divide the map into quadrants
-		// 2. count num of null cells
+		Coord approxMapBottomRightCorner = targetLocation.clone();
+		approxWidth	= approxMapBottomRightCorner.getXpos();
+		approxHeight = approxMapBottomRightCorner.getYpos();
+		quadrantsWidth = (int) Math.floor(approxWidth/4);
+		quadrantsHeight = (int) Math.floor(approxHeight/4);
+		
+
+		// 2. count num of null cells and store <Coord, #null> k-v pair in numNullInQuadrants(a hash map)
+		Map<Coord, Integer> numNullInQuadrants = new HashMap<Coord, Integer>();
+		int tracker=-1, i, j;
+		for(j=0; j<quadrantsHeight*4; j+=quadrantsHeight){
+			tracker =0;
+			for (i = 0; i < quadrantsWidth*4; i+=quadrantsWidth) {
+				if(!mapTileLog.containsKey(new Coord(i, j))){
+					tracker++;
+				}
+			}
+			numNullInQuadrants.put(new Coord((int)Math.floor(i/4)*4, (int)(Math.floor(j/4)*4)), tracker);
+		}
+		
+		
 		// 3. take the quadrant with the most null cell, and repeat until the
 		// target quadrant is a single cell
 
 		return new Coord(-1, -1);
 	}
 
+	private Set<Integer> findMaxIndeces(int[] array) {
+		/*
+		 * returns the index/indeces of the element(s) that hold(s) the maximum
+		 * value
+		 */
+		int max = Integer.MIN_VALUE, maxIndex = -1;
+		Set<Integer> tie = new HashSet<Integer>();
+		for (int i = 0; i < array.length; i++) {
+			if (max < array[i]) {
+				maxIndex = i;
+				max = array[i];
+			}
+		}
+		tie.add(maxIndex);
+		/*
+		 * if 2 or more quadrant ties, return the farthest from current location
+		 * of rover 12
+		 */
+		for (int i = 0; i < array.length; i++) {
+			if (max == array[i]) {
+				tie.add(i);
+			}
+		}
+		return tie;
+	}
+	
 	// KS - must complete
 	public boolean isObstacle(String direction) {
 
@@ -1311,32 +1360,7 @@ public class ROVER_12_wk7_kae {
 
 	}
 
-	// KS - must test it extensively
-	private Set<Integer> findMaxIndeces(int[] array) {
-		/*
-		 * returns the index/indeces of the element(s) that hold(s) the maximum
-		 * value
-		 */
-		int max = Integer.MIN_VALUE, maxIndex = -1;
-		Set<Integer> tie = new HashSet<Integer>();
-		for (int i = 0; i < array.length; i++) {
-			if (max < array[i]) {
-				maxIndex = i;
-				max = array[i];
-			}
-		}
-		tie.add(maxIndex);
-		/*
-		 * if 2 or more quadrant ties, return the farthest from current location
-		 * of rover 12
-		 */
-		for (int i = 0; i < array.length; i++) {
-			if (max == array[i]) {
-				tie.add(i);
-			}
-		}
-		return tie;
-	}
+	
 
 	private double getDistanceBetween2Points(Coord p1, Coord p2) {
 		return Math.sqrt(Math.pow(p2.getXpos() - p1.getXpos(), 2)

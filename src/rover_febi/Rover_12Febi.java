@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import common.Communication;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
@@ -56,7 +57,8 @@ public class Rover_12Febi {
 	 * Connects to the server then enters the processing loop.
 	 */
 	private void run() throws IOException, InterruptedException {
-
+		String url = "http://23.251.155.186:3000/api/global";
+		Communication com = new Communication(url);
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
 		try {
@@ -187,7 +189,7 @@ public class Rover_12Febi {
 
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
-
+				com.postScanMapTiles(currentLoc, scanMapTiles);
 				//printing the scan map with content and position
 				//to get a clear picture on the obstacles
 				//				for (int i = 0; i < scanMapTiles.length; i++) {

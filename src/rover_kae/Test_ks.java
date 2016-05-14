@@ -1,7 +1,5 @@
 package rover_kae;
 
-import static org.junit.Assert.*;
-
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -9,9 +7,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -22,12 +20,55 @@ import common.Coord;
 import common.MapTile;
 
 public class Test_ks {
+
 	@Test
+	public void testQuadrantsNullCounter() {
+
+		String[][] array = { { "a", "b", "c" }, { "d", null, "f" },
+				{ "g", "h", null }, { "j", "k", "l" } };
+
+		Map<Coord, String> hashmap = new HashMap<Coord, String>();
+		for (int j = 0; j < array.length; j++) {
+			for (int i = 0; i < array[j].length; i++) {
+				hashmap.put(new Coord(i, j), array[j][i]);
+			}
+		}
+		// print hashmap
+		for (Map.Entry<Coord, String> num : hashmap.entrySet()) {
+			System.out.println("hashmap k,v: " + num.getKey() + ", "
+					+ num.getValue());
+		}
+
+		int quadrantsHeight = 2, quadrantsWidth = 1;
+		Map<Coord, Integer> numNullInQuadrants = new HashMap<Coord, Integer>();
+		int tracker = -1, i, j;
+
+		for (j = 0; j < quadrantsHeight * 2; j += quadrantsHeight) {
+			tracker = 0;
+			for (i = 0; i < quadrantsWidth * 3; i += quadrantsWidth) {
+				System.out.println("i,j = " + i + ", " + j);
+				if (hashmap.get(new Coord(i, j)) == null) {
+					System.out.println("\n\nnull detected!!");
+					tracker++;
+				}
+			}
+			numNullInQuadrants.put(new Coord((int) Math.floor(i / 4) * 4,
+					(int) (Math.floor(j / 4) * 4)), tracker);
+		}
+
+		for (Map.Entry<Coord, Integer> num : numNullInQuadrants.entrySet()) {
+			System.out.println("num null quad k,v: " + num.getKey() + ", "
+					+ num.getValue());
+		}
+	}
+
+	// @Test
 	public void testgetFurthestQuadrant() {
 		ROVER_12_wk7_kae rv = new ROVER_12_wk7_kae();
-		Coord q1 = new Coord(1,1), q2 = new Coord(2,2), q3 = new Coord(3,3), q4 = new Coord(4,4);
+		Coord q1 = new Coord(1, 1), q2 = new Coord(2, 2), q3 = new Coord(3, 3), q4 = new Coord(
+				4, 4);
 		System.out.println(rv.getFurthestQuadrant(q1, q2, q3, q4));
-		
+
 	}
 
 	// {"_id":"572e759207cb252a36cfb412","x":11,"y":45,"terrain":"sand","science":"organic","stillExists":true}
@@ -37,28 +78,28 @@ public class Test_ks {
 		// System.out.println(obj.toString());
 		Random rd = new Random();
 		MapTile[][] tiles = new MapTile[20][20];
-		//for (int i = 0; i < tiles.length; i++) {
-			JSONObject obj = new JSONObject();
-			obj.put("x", rd.nextInt(21));
-			obj.put("y", rd.nextInt(21));
-			obj.put("terrain", "sand");
-			obj.put("science", "cry");
-			obj.put("stillExists", true);
-			try {
-				sendPost(obj);
-				// request(tiles);
+		// for (int i = 0; i < tiles.length; i++) {
+		JSONObject obj = new JSONObject();
+		obj.put("x", rd.nextInt(21));
+		obj.put("y", rd.nextInt(21));
+		obj.put("terrain", "sand");
+		obj.put("science", "cry");
+		obj.put("stillExists", true);
+		try {
+			sendPost(obj);
+			// request(tiles);
 
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		//}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// }
 
 	}
 
 	// @Test
 	public void testFindMaxIndeces() {
-		
+
 		int[] array = { 4, 6, 2, 9, 1, 17, 2, 17, 5 };
 		Set<Integer> maxes = findMaxIndeces(array);
 		for (Integer num : maxes) {
@@ -69,7 +110,7 @@ public class Test_ks {
 
 	// @Test
 	public void testGetDistanceBetween2Points() {
-		
+
 		System.out.println(getDistanceBetween2Points(new Coord(1, 3),
 				new Coord(4, 8)));
 

@@ -161,7 +161,7 @@ public class ROVER_12 {
 				// ***** MOVING *****
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
-				com.postScanMapTiles(currentLoc, scanMapTiles);
+				// com.postScanMapTiles(currentLoc, scanMapTiles);
 
 				// request(scanMapTiles);
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -236,8 +236,11 @@ public class ROVER_12 {
 									centerIndex)) {
 								moveEast();
 							} else {
+								// move west
+								// cardinals = moveWest(cardinals);
 								cardinals = moveUsingPastPath(cardinals,
-										currentXPos, currentYPos);
+										currentLoc.getXpos(),
+										currentLoc.getYpos());
 							}
 
 						} else {
@@ -272,8 +275,10 @@ public class ROVER_12 {
 						if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
 							moveWest();
 						} else {
+							// move east
+							// cardinals = moveEast(cardinals);
 							cardinals = moveUsingPastPath(cardinals,
-									currentXPos, currentYPos);
+									currentLoc.getXpos(), currentLoc.getYpos());
 						}
 
 					} else {
@@ -308,8 +313,10 @@ public class ROVER_12 {
 						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
 							moveSouth();
 						} else {
+							// move north
+							// cardinals = moveNorth(cardinals);
 							cardinals = moveUsingPastPath(cardinals,
-									currentXPos, currentYPos);
+									currentLoc.getXpos(), currentLoc.getYpos());
 						}
 					} else {
 						// move east
@@ -343,8 +350,9 @@ public class ROVER_12 {
 						if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 							moveNorth();
 						} else {
+							// cardinals = moveSouth(cardinals);
 							cardinals = moveUsingPastPath(cardinals,
-									currentXPos, currentYPos);
+									currentLoc.getXpos(), currentLoc.getYpos());
 						}
 					} else {
 						// move east
