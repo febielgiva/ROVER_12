@@ -64,7 +64,7 @@ public class Test_ks {
 
 	// @Test
 	public void testgetFurthestQuadrant() {
-		ROVER_12_wk7_kae rv = new ROVER_12_wk7_kae();
+		ROVER_12_wk8_kae rv = new ROVER_12_wk8_kae();
 		Coord q1 = new Coord(1, 1), q2 = new Coord(2, 2), q3 = new Coord(3, 3), q4 = new Coord(
 				4, 4);
 		System.out.println(rv.getFurthestQuadrant(q1, q2, q3, q4));
