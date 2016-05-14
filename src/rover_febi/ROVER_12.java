@@ -247,8 +247,9 @@ public class ROVER_12 {
 									centerIndex)) {
 								cardinals = moveEast(cardinals);
 							} else {
-								cardinals = moveUsingPastPath(cardinals,
-										currentXPos, currentYPos);
+								cardinals = randomPickMotion(cardinals,centerIndex);
+//								cardinals = moveUsingPastPath(cardinals,
+//										currentXPos, currentYPos);
 							}
 
 						} else {
@@ -283,8 +284,10 @@ public class ROVER_12 {
 						if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
 							cardinals = moveWest(cardinals);
 						} else {
-							cardinals = moveUsingPastPath(cardinals,
-									currentXPos, currentYPos);
+							cardinals = randomPickMotion(cardinals,centerIndex);
+
+//							cardinals = moveUsingPastPath(cardinals,
+//									currentXPos, currentYPos);
 						}
 
 					} else {
@@ -319,8 +322,10 @@ public class ROVER_12 {
 						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
 							cardinals = moveSouth(cardinals);
 						} else {
-							cardinals = moveUsingPastPath(cardinals,
-									currentXPos, currentYPos);
+							cardinals = randomPickMotion(cardinals,centerIndex);
+
+//							cardinals = moveUsingPastPath(cardinals,
+//									currentXPos, currentYPos);
 						}
 					} else {
 						// move east
@@ -354,8 +359,10 @@ public class ROVER_12 {
 						if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 							cardinals = moveNorth(cardinals);
 						} else {
-							cardinals = moveUsingPastPath(cardinals,
-									currentXPos, currentYPos);
+							cardinals = randomPickMotion(cardinals,centerIndex);
+
+//							cardinals = moveUsingPastPath(cardinals,
+//									currentXPos, currentYPos);
 						}
 					} else {
 						// move east
@@ -374,6 +381,11 @@ public class ROVER_12 {
 		}
 	}
 
+	private boolean[] randomPickMotion(boolean[] cardinals, int centerIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	private boolean[] moveUsingPastPath(boolean[] cardinals, int currentXPos,
 			int currentYPos) throws InterruptedException {
 		try {
@@ -381,7 +393,6 @@ public class ROVER_12 {
 
 			for (int j = 0; (j < 10) && (j < pathMap.size()); j++) {
 				for (int i = pathMap.size(); i > 0; i++) {
-			
 					while (current.equals(prev)) {
 						Thread.sleep(300);
 						current=returnCurrentLoc();
