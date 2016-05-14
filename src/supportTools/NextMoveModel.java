@@ -1,4 +1,4 @@
-package swarmBots;
+package supportTools;
 
 public class NextMoveModel {
 	int row;
