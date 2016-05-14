@@ -1,6 +1,5 @@
 package rover_nive;
 
-// must fix 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -19,13 +18,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.google.gson.Gson;
@@ -38,6 +36,7 @@ import common.MapTile;
 import common.ScanMap;
 import enums.Science;
 import enums.Terrain;
+import supportTools.CommunicationUtil;
 
 /**
  * The seed that this program is built on is a chat program example found here:
@@ -64,6 +63,7 @@ public class ROVER_12_wk8_nive {
 	private List<Coord> directionStack = new LinkedList<Coord>();
 
 	private boolean[] cardinals = new boolean[4];
+	private boolean isTargetLocReached = false;
 
 	public ROVER_12_wk8_nive() {
 		// constructor
@@ -167,13 +167,13 @@ public class ROVER_12_wk8_nive {
 				 * that rover 12 takes. Better ideas on the iteration interval,
 				 * anyone?
 				 */
-				if ((stepTrack++) % 4 == 0) {
+				if ((stepTrack++) % 10 == 0) {
 					loadScanMapFromSwarmServer();
 					scanMap.debugPrintMap();// debug
 					debugPrintMapTileArrayText(mapTileLog, 30);
 					debugPrintMapTileArray(mapTileLog);
 				}
-
+				updateFromGreenCorpGlobalMap(com.getGlobalMap());
 				// ***** MOVING *****
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
@@ -729,21 +729,21 @@ public class ROVER_12_wk8_nive {
 
 	private int requestTimeRemaining(Socket soc) throws IOException {
 
-        // **** Request Remaining Time from SwarmServer ****
-        out.println("TIMER");
-        line = in.readLine();
-        int timeRemaining = -2;
-        if (line == null) {
-            System.out.println(rovername + " check connection to server");
-            line = "";
-        }
-        if (line.startsWith("TIMER")) {
-            timeRemaining = extractTimeRemaining(line);
+		// **** Request Remaining Time from SwarmServer ****
+		out.println("TIMER");
+		line = in.readLine();
+		int timeRemaining = -2;
+		if (line == null) {
+			System.out.println(rovername + " check connection to server");
+			line = "";
+		}
+		if (line.startsWith("TIMER")) {
+			timeRemaining = extractTimeRemaining(line);
 
-        }
-        return timeRemaining;
-    }
-	
+		}
+		return timeRemaining;
+	}
+
 	public static Coord extractCurrLOC(String sStr) {
 		sStr = sStr.substring(4);
 		if (sStr.lastIndexOf(" ") != -1) {
@@ -755,6 +755,25 @@ public class ROVER_12_wk8_nive {
 			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
+	}
+
+	// Our hats off to brilliant ROVER_11 / Group 11! Many thanks!
+	private void updateFromGreenCorpGlobalMap(JSONArray data) {
+
+		for (Object o : data) {
+
+			JSONObject jsonObj = (JSONObject) o;
+			int x = (int) (long) jsonObj.get("x");
+			int y = (int) (long) jsonObj.get("y");
+			Coord coord = new Coord(x, y);
+
+			if (!mapTileLog.containsKey(coord)) {
+				MapTile tile = supportTools.CommunicationUtil
+						.convertToMapTile(jsonObj);
+
+				mapTileLog.put(coord, tile);
+			}
+		}
 	}
 
 	public static Coord extractStartLOC(String sStr) {
@@ -786,14 +805,14 @@ public class ROVER_12_wk8_nive {
 	}
 
 	public static int extractTimeRemaining(String sStr) {
-	    sStr = sStr.substring(6);
-	    if (sStr.lastIndexOf(" ") != -1) {
-	        String timeStr = sStr.substring(0, sStr.lastIndexOf(" "));
-	        return Integer.parseInt(timeStr);
-	    }
-	    return -1;
+		sStr = sStr.substring(6);
+		if (sStr.lastIndexOf(" ") != -1) {
+			String timeStr = sStr.substring(0, sStr.lastIndexOf(" "));
+			return Integer.parseInt(timeStr);
+		}
+		return -1;
 	}
-	
+
 	// this takes the server response string, parses out the x and x values and
 	// returns a Coord object
 	public static Coord extractLocationFromString(String sStr) {
@@ -967,73 +986,69 @@ public class ROVER_12_wk8_nive {
 		boolean hasR;
 		int halfTileSize = ptrScanMap.length / 2;
 
-		// debug - print out
-		System.out.println("inside of loadMapTileIntoGlobal()[scanLoc="
-
-		+ scanLoc + "]:" + "[currLoc=" + currentLoc);
-
-		System.out.println("ptrScanMap Size: " + ptrScanMap.length);
-
 		for (int y = 0; y < ptrScanMap.length; y++) {
 			for (int x = 0; x < ptrScanMap.length; x++) {
 
-				ter = ptrScanMap[x][y].getTerrain();
-				sci = ptrScanMap[x][y].getScience();
-				elev = ptrScanMap[x][y].getElevation();
-				hasR = ptrScanMap[x][y].getHasRover();
-
-				tempTile = new MapTile(ter, sci, elev, hasR);
 				tempCoord = new Coord((scanLoc.getXpos() - halfTileSize) + x,
 						scanLoc.getYpos() - halfTileSize + y);
+				if (!mapTileLog.containsKey(tempCoord)) {
+					ter = ptrScanMap[x][y].getTerrain();
+					sci = ptrScanMap[x][y].getScience();
+					elev = ptrScanMap[x][y].getElevation();
+					hasR = ptrScanMap[x][y].getHasRover();
 
-				// debug
-				System.out.println("(x,y)=(" + x + "," + y + ")|" + "(X,Y)=("
-						+ (scanLoc.getXpos() - halfTileSize + x) + ","
-						+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
-						+ tempCoord + tempTile);
-				// our copy of the scanned map in global context
-				mapTileLog.put(tempCoord, tempTile);
-
-				// Create JSON object
-				JSONObject obj = new JSONObject();
-				obj.put("x", new Integer(tempCoord.getXpos()));
-				obj.put("y", new Integer(tempCoord.getXpos()));
-
-				// Check if terrain exist
-				if (!ter.getTerString().isEmpty()) {
-					obj.put("terrain", new String(ter.getTerString()));
-				} else {
-					obj.put("terrain", new String(""));
-				}
-				// Check if science exist
-				if (!sci.getSciString().isEmpty()) {
-					obj.put("science", new String(sci.getSciString()));
-					obj.put("stillExists", new Boolean(true));
-				} else {
-					obj.put("science", new String(""));
-					obj.put("stillExists", new Boolean(false));
-				}
-				try {
-					// sendPost(obj);
+					tempTile = new MapTile(ter, sci, elev, hasR);
 
 					// debug
-					// MapTile[][] tempTiles = new MapTile[20][20];
-					// debugPrintMapTileArray(tempTiles);
-					// request(tempTiles);
+					System.out.println("(x,y)=(" + x + "," + y + ")|"
+							+ "(X,Y)=("
+							+ (scanLoc.getXpos() - halfTileSize + x) + ","
+							+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
+							+ tempCoord + tempTile);
+					// our copy of the scanned map in global context
+					mapTileLog.put(tempCoord, tempTile);
 
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					// Create JSON object
+					JSONObject obj = new JSONObject();
+					obj.put("x", new Integer(tempCoord.getXpos()));
+					obj.put("y", new Integer(tempCoord.getXpos()));
+
+					// Check if terrain exist
+					if (!ter.getTerString().isEmpty()) {
+						obj.put("terrain", new String(ter.getTerString()));
+					} else {
+						obj.put("terrain", new String(""));
+					}
+					// Check if science exist
+					if (!sci.getSciString().isEmpty()) {
+						obj.put("science", new String(sci.getSciString()));
+						obj.put("stillExists", new Boolean(true));
+					} else {
+						obj.put("science", new String(""));
+						obj.put("stillExists", new Boolean(false));
+					}
+					try {
+						// sendPost(obj);
+
+						// debug
+						// MapTile[][] tempTiles = new MapTile[20][20];
+						// debugPrintMapTileArray(tempTiles);
+						// request(tempTiles);
+
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					// Send JSON object to server using HTTP POST method
+					// sendJSONToServer(obj,
+					// "http://192.168.0.101:3000/globalMap");
+					// sendJSONToServer(obj,
+					// "http://192.168.0.101:3000/scout");https:
+					// sendJSONToServer(obj,
+					// "www.reddit.com/r/explainlikeimfive/comments/4ibqm3.json");
+					// -----------------------------------
 				}
-
-				// Send JSON object to server using HTTP POST method
-				// sendJSONToServer(obj, "http://192.168.0.101:3000/globalMap");
-				// sendJSONToServer(obj,
-				// "http://192.168.0.101:3000/scout");https:
-				// sendJSONToServer(obj,
-				// "www.reddit.com/r/explainlikeimfive/comments/4ibqm3.json");
-				// -----------------------------------
-
 			}
 		}
 	}
@@ -1220,39 +1235,6 @@ public class ROVER_12_wk8_nive {
 		return false;
 	}
 
-	// KS - must complete
-	public Coord getG12Target() {
-
-		int approxWidth, approxHeight, quadrantsWidth, quadrantsHeight;
-
-		// 1. divide the map into quadrants
-		Coord approxMapBottomRightCorner = targetLocation.clone();
-		approxWidth = approxMapBottomRightCorner.getXpos();
-		approxHeight = approxMapBottomRightCorner.getYpos();
-		quadrantsWidth = (int) Math.floor(approxWidth / 4);
-		quadrantsHeight = (int) Math.floor(approxHeight / 4);
-
-		// 2. count num of null cells and store <Coord, #null> k-v pair in
-		// numNullInQuadrants(a hash map)
-		Map<Coord, Integer> numNullInQuadrants = new HashMap<Coord, Integer>();
-		int tracker = -1, i, j;
-		for (j = 0; j < quadrantsHeight * 4; j += quadrantsHeight) {
-			tracker = 0;
-			for (i = 0; i < quadrantsWidth * 4; i += quadrantsWidth) {
-				if (!mapTileLog.containsKey(new Coord(i, j))) {
-					tracker++;
-				}
-			}
-			numNullInQuadrants.put(new Coord((int) Math.floor(i / 4) * 4,
-					(int) (Math.floor(j / 4) * 4)), tracker);
-		}
-
-		// 3. take the quadrant with the most null cell, and repeat until the
-		// target quadrant is a single cell
-
-		return new Coord(-1, -1);
-	}
-
 	private Set<Integer> findMaxIndeces(int[] array) {
 		/*
 		 * returns the index/indeces of the element(s) that hold(s) the maximum
@@ -1360,72 +1342,14 @@ public class ROVER_12_wk8_nive {
 		return maxIndex;
 	}
 
-	private Coord getRover12TargetAreas() {
+	private Coord getRover12TargetArea() {
 
-		// approximate the size of the map
-		int w = targetLocation.getXpos(), h = targetLocation.getYpos(), q1 = 0, q2 = 0, q3 = 0, q4 = 0;
-		Coord target_rv12 = new Coord(-1, -1);
-
-		// quadrant I
-		for (int j = 0; j < h / 2; j++) {
-			for (int i = 0; i < w / 2; i++) {
-				if (mapTileLog.get(new Coord(i, j)) == null) {
-					q1++;
-				}
-			}
+		if (!isTargetLocReached) {
+			return targetLocation;
 		}
 
-		// quadrant II
-		for (int j = 0; j < h / 2; j++) {
-			for (int i = w / 2 + 1; i < w; i++) {
-				if (mapTileLog.get(new Coord(i, j)) == null) {
-					q2++;
-				}
-			}
-		}
-
-		// quadrant III
-		for (int j = h / 2; j < h; j++) {
-			for (int i = 0; i < w / 2; i++) {
-				if (mapTileLog.get(new Coord(i, j)) == null) {
-					q3++;
-				}
-			}
-		}
-
-		// quadrant IV
-		for (int j = h / 2; j < h; j++) {
-			for (int i = w / 2 + 1; i < w; i++) {
-				if (mapTileLog.get(new Coord(i, j)) == null) {
-					q4++;
-				}
-			}
-		}
-		int[] array = { 0, q1, q2, q3, q4 };
-		Set<Integer> maxIndeces = findMaxIndeces(array);
-
-		// if there are ties, get the furthest quadrant
-		if (maxIndeces.size() > 1) {
-
-		}
-		Random rd = new Random();
-		int num = rd.nextInt(array.length);
-		Object[] tempArray = findMaxIndeces(array).toArray();
-		int maxIdx = (Integer) tempArray[num];
-
-		switch (maxIdx) {
-		case 1: // Quadrant I
-			return new Coord(w / 4, h / 4);
-		case 2: // Quadrant II
-			return new Coord((w * 3 / 4), h / 4);
-		case 3: // Quadrant III
-			return new Coord(w / 4, h * 3 / 4);
-		case 4: // Quadrant IV
-			return new Coord(w * 3 / 4, h * 3 / 4);
-		default:
-			break;
-		}
-		return target_rv12;
+		// randomly pick coordinate from the green corp's common storage
+		return null;
 	}
 
 	public Coord getCurrentLoc() {
