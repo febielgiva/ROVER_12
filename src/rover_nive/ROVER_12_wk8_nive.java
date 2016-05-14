@@ -1,4 +1,4 @@
-package rover_kae;
+package rover_nive;
 
 // must fix 
 import java.io.BufferedReader;
@@ -45,7 +45,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class ROVER_12_wk7_kae {
+public class ROVER_12_wk8_nive {
 
 	private BufferedReader in;
 	private PrintWriter out;
@@ -65,7 +65,7 @@ public class ROVER_12_wk7_kae {
 
 	private boolean[] cardinals = new boolean[4];
 
-	public ROVER_12_wk7_kae() {
+	public ROVER_12_wk8_nive() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -75,7 +75,7 @@ public class ROVER_12_wk7_kae {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12_wk7_kae(String serverAddress) {
+	public ROVER_12_wk8_nive(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -195,12 +195,6 @@ public class ROVER_12_wk7_kae {
 				// store rover 12 path for easy return
 				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
 						.getYpos()));
-
-				// this is the Rovers HeartBeat, it regulates how fast the Rover
-				// cycles through the control loop
-				// Thread.sleep(sleepTime); // G12 - sleepTime has been reduced
-				// to
-				// 100. is that alright?
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
@@ -733,6 +727,23 @@ public class ROVER_12_wk7_kae {
 		return targetLocation;
 	}
 
+	private int requestTimeRemaining(Socket soc) throws IOException {
+
+        // **** Request Remaining Time from SwarmServer ****
+        out.println("TIMER");
+        line = in.readLine();
+        int timeRemaining = -2;
+        if (line == null) {
+            System.out.println(rovername + " check connection to server");
+            line = "";
+        }
+        if (line.startsWith("TIMER")) {
+            timeRemaining = extractTimeRemaining(line);
+
+        }
+        return timeRemaining;
+    }
+	
 	public static Coord extractCurrLOC(String sStr) {
 		sStr = sStr.substring(4);
 		if (sStr.lastIndexOf(" ") != -1) {
@@ -774,6 +785,15 @@ public class ROVER_12_wk7_kae {
 		return null;
 	}
 
+	public static int extractTimeRemaining(String sStr) {
+	    sStr = sStr.substring(6);
+	    if (sStr.lastIndexOf(" ") != -1) {
+	        String timeStr = sStr.substring(0, sStr.lastIndexOf(" "));
+	        return Integer.parseInt(timeStr);
+	    }
+	    return -1;
+	}
+	
 	// this takes the server response string, parses out the x and x values and
 	// returns a Coord object
 	public static Coord extractLocationFromString(String sStr) {
@@ -1420,7 +1440,7 @@ public class ROVER_12_wk7_kae {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_wk7_kae client = new ROVER_12_wk7_kae();
+		ROVER_12_wk8_nive client = new ROVER_12_wk8_nive();
 		client.run();
 	}
 }
