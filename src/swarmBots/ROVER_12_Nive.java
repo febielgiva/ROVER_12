@@ -32,7 +32,7 @@ public class ROVER_12_Nive {
 	PrintWriter out;
 	String rovername;
 	ScanMap scanMap;
-	int sleepTime;
+	static int sleepTime;
 	String SERVER_ADDRESS = "localhost";
 	static final int PORT_ADDRESS = 9537;
 	private ArrayList<String> roverPath;
@@ -404,7 +404,45 @@ public class ROVER_12_Nive {
 	}
 
 
+	public static Coord extractTargetLOC(String sStr) {
+        sStr = sStr.substring(11);
+        if (sStr.lastIndexOf(" ") != -1) {
+            String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
+            // System.out.println("extracted xStr " + xStr);
+
+            String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
+            // System.out.println("extracted yStr " + yStr);
+            return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
+        }
+        return null;
+    }
+	private int requestTimeRemaining(Socket soc) throws IOException {
+
+        // **** Request Remaining Time from SwarmServer ****
+        out.println("TIMER");
+        String line = in.readLine();
+        int timeRemaining = -2;
+        if (line == null) {
+            System.out.println(rovername + " check connection to server");
+            line = "";
+        }
+        if (line.startsWith("TIMER")) {
+            timeRemaining = extractTimeRemaining(line);
+
+        }
+        return timeRemaining;
+    
+}
+public static int extractTimeRemaining(String sStr) {
+    sStr = sStr.substring(6);
+    if (sStr.lastIndexOf(" ") != -1) {
+        String timeStr = sStr.substring(0, sStr.lastIndexOf(" "));
+        return Integer.parseInt(timeStr);
+    }
+	return sleepTime;
 	
+	
+}
 	
 	
 	
