@@ -88,10 +88,9 @@ public class ROVER_12_wk7_kae {
 	 * Connects to the server then enters the processing loop.
 	 */
 	private void run() throws IOException, InterruptedException {
-		
+
 		String url = "http://23.251.155.186:3000/api/global";
 		Communication com = new Communication(url);
-		
 
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
@@ -179,13 +178,12 @@ public class ROVER_12_wk7_kae {
 				// pull the MapTile array out of the ScanMap object
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				com.postScanMapTiles(currentLoc, scanMapTiles);
-				
+
 				// request(scanMapTiles);
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// tile S = y + 1; N = y - 1; E = x + 1; W = x - 1
 
-				roverMotionLogic(cardinals, scanMapTiles, centerIndex,
-						currentLoc.getXpos(), currentLoc.getYpos());
+				roverMotionLogic(cardinals, scanMapTiles, centerIndex);
 				// test for stuckness
 				// KS - below line causes a crash, must be modified
 				// stuck = currentLoc.equals(previousLoc);
@@ -225,8 +223,7 @@ public class ROVER_12_wk7_kae {
 	}// END of Rover main control loop
 
 	private void roverMotionLogic(boolean[] cardinals,
-			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
-			int currentYPos) throws InterruptedException, IOException {
+			MapTile[][] scanMapTiles, int centerIndex) {
 		// ************* Febi's rover motion logic **********
 		// int tempRowArray;
 		// int tempColumnArray;
@@ -255,27 +252,13 @@ public class ROVER_12_wk7_kae {
 				moveNorth();
 			} else {
 				// if next move to east is an obstacle
-				if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
-						|| (isAlreadyTraveledPathTowardsEast(currentXPos,
-								currentYPos))) {
+				if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether south is obstacle
-					if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
-							|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
-									currentYPos))) {
+					if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 						// check whether north is obstacle
-						if ((isTowardsNorthIsObsatacle(scanMapTiles,
-								centerIndex))
-								|| (isAlreadyTraveledPathTowardsNorth(
-										currentXPos, currentYPos))) {
-							// move west if no obstacle or else east
-							if (isTowardsWestIsObsatacle(scanMapTiles,
-									centerIndex)) {
-								moveEast();
-							} else {
-								cardinals = moveUsingPastPath(cardinals,
-										currentXPos, currentYPos);
-							}
-
+						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+							// move west
+							moveWest();
 						} else {
 							// move north
 							moveNorth();
@@ -293,25 +276,13 @@ public class ROVER_12_wk7_kae {
 			}
 		} else if (cardinals[3]) {
 			// if next move to west is an obstacle
-			if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
-					|| (isAlreadyTraveledPathTowardsWest(currentXPos,
-							currentYPos))) {
+			if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
 				// check whether south is obstacle
-				if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
-						|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
-								currentYPos))) {
+				if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether north is obstacle
-					if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex))
-							|| (isAlreadyTraveledPathTowardsNorth(currentXPos,
-									currentYPos))) {
-						// move east if no obstacle or else move to west
-						if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
-							moveWest();
-						} else {
-							cardinals = moveUsingPastPath(cardinals,
-									currentXPos, currentYPos);
-						}
-
+					if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+						// move east
+						moveEast();
 					} else {
 						// move north
 						moveNorth();
@@ -329,24 +300,13 @@ public class ROVER_12_wk7_kae {
 		} else if (cardinals[0]) {
 
 			// check whether south is obstacle
-			if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
-					|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
-							currentYPos))) {
+			if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 				// if next move to west is an obstacle
-				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
-						|| (isAlreadyTraveledPathTowardsWest(currentXPos,
-								currentYPos))) {
+				if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether east is obstacle
-					if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
-							|| (isAlreadyTraveledPathTowardsEast(currentXPos,
-									currentYPos))) {
-						// move north if no obstacle or else move in south
-						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
-							moveSouth();
-						} else {
-							cardinals = moveUsingPastPath(cardinals,
-									currentXPos, currentYPos);
-						}
+					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+						// move north
+						moveNorth();
 					} else {
 						// move east
 						moveEast();
@@ -364,24 +324,13 @@ public class ROVER_12_wk7_kae {
 		} else if (cardinals[2]) {
 
 			// check whether north is obstacle
-			if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex))
-					|| (isAlreadyTraveledPathTowardsNorth(currentXPos,
-							currentYPos))) {
+			if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
 				// if next move to west is an obstacle
-				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
-						|| (isAlreadyTraveledPathTowardsWest(currentXPos,
-								currentYPos))) {
+				if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether east is obstacle
-					if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
-							|| (isAlreadyTraveledPathTowardsEast(currentXPos,
-									currentYPos))) {
-						// move south if no obstacle or else go back to north
-						if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
-							moveNorth();
-						} else {
-							cardinals = moveUsingPastPath(cardinals,
-									currentXPos, currentYPos);
-						}
+					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+						// move south
+						moveSouth();
 					} else {
 						// move east
 						moveEast();
@@ -1048,9 +997,9 @@ public class ROVER_12_wk7_kae {
 					// sendPost(obj);
 
 					// debug
-					//MapTile[][] tempTiles = new MapTile[20][20];
-					//debugPrintMapTileArray(tempTiles);
-					//request(tempTiles);
+					// MapTile[][] tempTiles = new MapTile[20][20];
+					// debugPrintMapTileArray(tempTiles);
+					// request(tempTiles);
 
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
@@ -1071,11 +1020,7 @@ public class ROVER_12_wk7_kae {
 
 	// HTTP POST request
 	public void sendPost(JSONObject jsonObj) throws Exception {
-		
-		
-		
-		
-		
+
 		// String url = "http://192.168.0.101:3000/scout";
 		String url = "http://localhost:3000/scout";
 		// String url = "https://selfsolve.apple.com/wcResults.do";
@@ -1196,31 +1141,40 @@ public class ROVER_12_wk7_kae {
 		}
 	}
 
-	private void moveEast() throws IOException {
-
-		out.println("MOVE E");
-		System.out.print(currentLoc + " - E -> ");
-		System.out.print(currentLoc + "\n");
-	}
-
-	private void moveWest() throws IOException {
+	private void moveWest() {
 		out.println("MOVE W");
-		System.out.print(currentLoc + " - W -> ");
-		System.out.print(currentLoc + "\n");
+		System.out.println("ROVER_12 request move W");
+		cardinals[0] = false; // S
+		cardinals[1] = false; // E
+		cardinals[2] = false; // N
+		cardinals[3] = true; // W
 	}
 
-	private void moveNorth() throws IOException {
+	private void moveNorth() {
 		out.println("MOVE N");
-		System.out.print(currentLoc + " - N -> ");
-		System.out.print(currentLoc + "\n");
-
+		System.out.println("ROVER_12 request move N");
+		cardinals[0] = false; // S
+		cardinals[1] = false; // E
+		cardinals[2] = true; // N
+		cardinals[3] = false; // W
 	}
 
-	private void moveSouth() throws IOException {
+	private void moveSouth() {
 		out.println("MOVE S");
-		System.out.print(currentLoc + " - S -> ");
-		System.out.print(currentLoc + "\n");
+		System.out.println("ROVER_12 request move S");
+		cardinals[0] = true; // S
+		cardinals[1] = false; // E
+		cardinals[2] = false; // N
+		cardinals[3] = false; // W
+	}
 
+	private void moveEast() {
+		out.println("MOVE E");
+		System.out.println("ROVER_12 request move E");
+		cardinals[0] = false; // S
+		cardinals[1] = true; // E
+		cardinals[2] = false; // N
+		cardinals[3] = false; // W
 	}
 
 	public boolean isSand(String direction) {
@@ -1248,31 +1202,31 @@ public class ROVER_12_wk7_kae {
 
 	// KS - must complete
 	public Coord getG12Target() {
-		
+
 		int approxWidth, approxHeight, quadrantsWidth, quadrantsHeight;
-		
+
 		// 1. divide the map into quadrants
 		Coord approxMapBottomRightCorner = targetLocation.clone();
-		approxWidth	= approxMapBottomRightCorner.getXpos();
+		approxWidth = approxMapBottomRightCorner.getXpos();
 		approxHeight = approxMapBottomRightCorner.getYpos();
-		quadrantsWidth = (int) Math.floor(approxWidth/4);
-		quadrantsHeight = (int) Math.floor(approxHeight/4);
-		
+		quadrantsWidth = (int) Math.floor(approxWidth / 4);
+		quadrantsHeight = (int) Math.floor(approxHeight / 4);
 
-		// 2. count num of null cells and store <Coord, #null> k-v pair in numNullInQuadrants(a hash map)
+		// 2. count num of null cells and store <Coord, #null> k-v pair in
+		// numNullInQuadrants(a hash map)
 		Map<Coord, Integer> numNullInQuadrants = new HashMap<Coord, Integer>();
-		int tracker=-1, i, j;
-		for(j=0; j<quadrantsHeight*4; j+=quadrantsHeight){
-			tracker =0;
-			for (i = 0; i < quadrantsWidth*4; i+=quadrantsWidth) {
-				if(!mapTileLog.containsKey(new Coord(i, j))){
+		int tracker = -1, i, j;
+		for (j = 0; j < quadrantsHeight * 4; j += quadrantsHeight) {
+			tracker = 0;
+			for (i = 0; i < quadrantsWidth * 4; i += quadrantsWidth) {
+				if (!mapTileLog.containsKey(new Coord(i, j))) {
 					tracker++;
 				}
 			}
-			numNullInQuadrants.put(new Coord((int)Math.floor(i/4)*4, (int)(Math.floor(j/4)*4)), tracker);
+			numNullInQuadrants.put(new Coord((int) Math.floor(i / 4) * 4,
+					(int) (Math.floor(j / 4) * 4)), tracker);
 		}
-		
-		
+
 		// 3. take the quadrant with the most null cell, and repeat until the
 		// target quadrant is a single cell
 
@@ -1304,7 +1258,7 @@ public class ROVER_12_wk7_kae {
 		}
 		return tie;
 	}
-	
+
 	// KS - must complete
 	public boolean isObstacle(String direction) {
 
@@ -1359,8 +1313,6 @@ public class ROVER_12_wk7_kae {
 		}
 
 	}
-
-	
 
 	private double getDistanceBetween2Points(Coord p1, Coord p2) {
 		return Math.sqrt(Math.pow(p2.getXpos() - p1.getXpos(), 2)
