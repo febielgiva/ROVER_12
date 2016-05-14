@@ -22,10 +22,13 @@ import common.MapTile;
 public class Test_ks {
 
 	@Test
-	public void testQuadrantsNullCounter() {
+	public void test33by33NullCounter() {
 
-		String[][] array = { { "a", "b", "c" }, { "d", null, "f" },
-				{ "g", "h", null }, { "j", "k", "l" } };
+		// every 2 x 2 null counter
+		String[][] array = { { "a", "b", "c", "d" }, { "e", null, "g", "h" },
+				{ "i", "j", null, "l" }, { "m", "n", "o", "p" } };
+
+		// String[][] array = { { "a", null }, { "c", "d" } };
 
 		Map<Coord, String> hashmap = new HashMap<Coord, String>();
 		for (int j = 0; j < array.length; j++) {
@@ -39,21 +42,31 @@ public class Test_ks {
 					+ num.getValue());
 		}
 
-		int quadrantsHeight = 2, quadrantsWidth = 1;
+		int quadrantsHeight = (int) Math.floor(array.length / 2), quadrantsWidth = (int) Math
+				.floor(array[0].length / 2);
 		Map<Coord, Integer> numNullInQuadrants = new HashMap<Coord, Integer>();
-		int tracker = -1, i, j;
+		int tracker = 0, i, j;
 
-		for (j = 0; j < quadrantsHeight * 2; j += quadrantsHeight) {
-			tracker = 0;
-			for (i = 0; i < quadrantsWidth * 3; i += quadrantsWidth) {
-				System.out.println("i,j = " + i + ", " + j);
+		for (j = 0; j < array.length; j++) {
+
+			for (i = 0; i < quadrantsWidth * array[j].length; i++) {
+				System.out.println("------ processing i,j = " + i + ", " + j);
 				if (hashmap.get(new Coord(i, j)) == null) {
-					System.out.println("\n\nnull detected!!");
+					System.out
+							.println("null detected!! @i,j = " + i + ", " + j);
 					tracker++;
 				}
+				if ((i + 1) % quadrantsWidth == 0
+						&& (j + 1) % quadrantsHeight == 0) {
+					numNullInQuadrants.put(new Coord(i, j), tracker);
+					System.out.println("put new entry in numNullInQuadrants");
+				}
+				if (i % quadrantsWidth == 0 && j % quadrantsHeight == 0) {
+					tracker = 0;
+					System.out.println("tracker set to 0 [" + new Coord(i, j)
+							+ ", " + tracker + "]");
+				}
 			}
-			numNullInQuadrants.put(new Coord((int) Math.floor(i / 4) * 4,
-					(int) (Math.floor(j / 4) * 4)), tracker);
 		}
 
 		for (Map.Entry<Coord, Integer> num : numNullInQuadrants.entrySet()) {

@@ -1,6 +1,5 @@
 package rover_febi;
 
-// must fix 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -18,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
