@@ -18,8 +18,8 @@ public class RoverMotionUtil {
 	private String getBackTrackDirection(boolean[] cardinals, Coord prevCoord,
 			Coord currCoord) {
 
-		int currX = currCoord.getXpos();
-		int currY = currCoord.getYpos();
+		int currX = currCoord.xpos;
+		int currY = currCoord.ypos;
 		if (isPastPositonIsNorth(cardinals, prevCoord, currX, currY)) {
 			return "N";
 		} else if (isPastPositonIsEast(cardinals, prevCoord, currX, currY)) {
@@ -33,8 +33,8 @@ public class RoverMotionUtil {
 
 	private boolean isPastPositonIsNorth(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos) && (previousYPos == currentYPos - 1)) {
 			return true;
 		}
@@ -43,8 +43,8 @@ public class RoverMotionUtil {
 
 	private boolean isPastPositonIsWest(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos - 1) && (previousYPos == currentYPos)) {
 			return true;
 		}
@@ -53,82 +53,82 @@ public class RoverMotionUtil {
 
 	private boolean isPastPositonIsSouth(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos) && (previousYPos == currentYPos + 1)) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isPastPositonIsEast(boolean[] cardinals, Coord eachCoord,
+	public boolean isPastPositonIsEast(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos + 1) && (previousYPos == currentYPos)) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex) {
-		if (scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
-				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
-				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.FLUID
-				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
+	public boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex, int i) {
+		if (scanMapTiles[centerIndex - i][centerIndex].getHasRover()
+				|| scanMapTiles[centerIndex - i][centerIndex].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex - i][centerIndex].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex - i][centerIndex].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex - i][centerIndex].getTerrain() == Terrain.SAND) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex) {
-		if (scanMapTiles[centerIndex][centerIndex - 1].getHasRover()
-				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
-				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.FLUID
-				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
+	public boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex, int i) {
+		if (scanMapTiles[centerIndex][centerIndex - i].getHasRover()
+				|| scanMapTiles[centerIndex][centerIndex - i].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex][centerIndex - i].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex][centerIndex - i].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex][centerIndex - i].getTerrain() == Terrain.SAND) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex) {
-		if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
-				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
-				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.FLUID
-				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
+	public boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex, int i) {
+		if (scanMapTiles[centerIndex][centerIndex + i].getHasRover()
+				|| scanMapTiles[centerIndex][centerIndex + i].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex][centerIndex + i].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex][centerIndex + i].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex][centerIndex + i].getTerrain() == Terrain.SAND) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex) {
-		if (scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
-				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
-				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.FLUID
-				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
+	public boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex, int i) {
+		if (scanMapTiles[centerIndex + i][centerIndex].getHasRover()
+				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.SAND) {
 			return true;
 		}
 
 		return false;
 	}
 
-	public double getDistanceBetween2Points(Coord p1, Coord p2) {
+	public double getDistanceBtw2Points(Coord p1, Coord p2) {
 
-		int dx = p2.getXpos() - p1.getXpos();
-		int dy = p2.getYpos() - p1.getYpos();
+		int dx = p2.xpos - p1.xpos;
+		int dy = p2.ypos - p1.ypos;
 
 		return Math.sqrt((dx * dx) + (dy * dy));
 	}
 
-	private Coord getRover12TargetArea(Map<Coord, MapTile> mapTileLog,
+	public Coord getRover12TargetArea(Map<Coord, MapTile> mapTileLog,
 			Coord targetLoc) {
 
 		boolean isTargetLocReached = !mapTileLog.containsKey(targetLoc);

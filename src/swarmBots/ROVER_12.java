@@ -179,8 +179,8 @@ public class ROVER_12  {
 				// System.out.println(currentLoc);
 
 				// store rover 12 path for easy return
-				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
-						.getYpos()));
+				pathMap.add(new Coord(currentLoc.xpos, currentLoc
+						.ypos));
 
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
@@ -508,7 +508,7 @@ public class ROVER_12  {
 	public void loadScanMapFromSwarmServer() throws IOException {
 		// System.out.println("ROVER_12 method doScan()");
 		setCurrentLoc();
-		Coord scanLoc = new Coord(currentLoc.getXpos(), currentLoc.getYpos());
+		Coord scanLoc = new Coord(currentLoc.xpos, currentLoc.ypos);
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
 		out.println("SCAN");
@@ -577,8 +577,8 @@ public class ROVER_12  {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("START_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("START_LOC " + currentLoc.xpos + " "
+				+ currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -610,8 +610,8 @@ public class ROVER_12  {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("TARGET_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("TARGET_LOC " + currentLoc.xpos + " "
+				+ currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -909,13 +909,13 @@ public class ROVER_12  {
 				hasR = ptrScanMap[x][y].getHasRover();
 
 				tempTile = new MapTile(ter, sci, elev, hasR);
-				tempCoord = new Coord((scanLoc.getXpos() - halfTileSize) + x,
-						scanLoc.getYpos() - halfTileSize + y);
+				tempCoord = new Coord((scanLoc.xpos - halfTileSize) + x,
+						scanLoc.ypos - halfTileSize + y);
 
 				// debug
 				System.out.println("(x,y)=(" + x + "," + y + ")|" + "(X,Y)=("
-						+ (scanLoc.getXpos() - halfTileSize + x) + ","
-						+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
+						+ (scanLoc.xpos - halfTileSize + x) + ","
+						+ (scanLoc.ypos - halfTileSize + y) + ")\t"
 						+ tempCoord + tempTile);
 				mapTileLog.put(tempCoord, tempTile);
 

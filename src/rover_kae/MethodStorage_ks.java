@@ -194,8 +194,8 @@ public class MethodStorage_ks {
 				// System.out.println(currentLoc);
 
 				// store rover 12 path for easy return
-				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
-						.getYpos()));
+				pathMap.add(new Coord(currentLoc.xpos, currentLoc
+						.ypos));
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
@@ -406,8 +406,8 @@ public class MethodStorage_ks {
 
 		int n = currentYPos - 1, e = currentXPos, s, w;
 
-		int previousXPos = prevCoord.getXpos();
-		int previousYPos = prevCoord.getYpos();
+		int previousXPos = prevCoord.xpos;
+		int previousYPos = prevCoord.ypos;
 		if (isPastPositonIsNorth(cardinals, prevCoord, currentXPos, currentYPos)) {
 			return "N";
 		} else if (isPastPositonIsEast(cardinals, prevCoord, currentXPos,
@@ -423,8 +423,8 @@ public class MethodStorage_ks {
 
 	private boolean isPastPositonIsNorth(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos) && (previousYPos == currentYPos - 1)) {
 			return true;
 		}
@@ -433,8 +433,8 @@ public class MethodStorage_ks {
 
 	private boolean isPastPositonIsWest(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos - 1) && (previousYPos == currentYPos)) {
 			return true;
 		}
@@ -443,8 +443,8 @@ public class MethodStorage_ks {
 
 	private boolean isPastPositonIsSouth(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos) && (previousYPos == currentYPos + 1)) {
 			return true;
 		}
@@ -453,8 +453,8 @@ public class MethodStorage_ks {
 
 	private boolean isPastPositonIsEast(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos + 1) && (previousYPos == currentYPos)) {
 			return true;
 		}
@@ -638,7 +638,7 @@ public class MethodStorage_ks {
 	public void loadScanMapFromSwarmServer() throws IOException {
 		// System.out.println("ROVER_12 method doScan()");
 		setCurrentLoc();
-		Coord scanLoc = new Coord(currentLoc.getXpos(), currentLoc.getYpos());
+		Coord scanLoc = new Coord(currentLoc.xpos, currentLoc.ypos);
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
 		out.println("SCAN");
@@ -700,8 +700,8 @@ public class MethodStorage_ks {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("START_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("START_LOC " + currentLoc.xpos + " "
+				+ currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -733,8 +733,8 @@ public class MethodStorage_ks {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("TARGET_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("TARGET_LOC " + currentLoc.xpos + " "
+				+ currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -1010,8 +1010,8 @@ public class MethodStorage_ks {
 		for (int y = 0; y < ptrScanMap.length; y++) {
 			for (int x = 0; x < ptrScanMap.length; x++) {
 
-				tempCoord = new Coord((scanLoc.getXpos() - halfTileSize) + x,
-						scanLoc.getYpos() - halfTileSize + y);
+				tempCoord = new Coord((scanLoc.xpos - halfTileSize) + x,
+						scanLoc.ypos - halfTileSize + y);
 				if (!mapTileLog.containsKey(tempCoord)) {
 					ter = ptrScanMap[x][y].getTerrain();
 					sci = ptrScanMap[x][y].getScience();
@@ -1023,16 +1023,16 @@ public class MethodStorage_ks {
 					// debug
 					System.out.println("(x,y)=(" + x + "," + y + ")|"
 							+ "(X,Y)=("
-							+ (scanLoc.getXpos() - halfTileSize + x) + ","
-							+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
+							+ (scanLoc.xpos - halfTileSize + x) + ","
+							+ (scanLoc.ypos - halfTileSize + y) + ")\t"
 							+ tempCoord + tempTile);
 					// our copy of the scanned map in global context
 					mapTileLog.put(tempCoord, tempTile);
 
 					// Create JSON object
 					JSONObject obj = new JSONObject();
-					obj.put("x", new Integer(tempCoord.getXpos()));
-					obj.put("y", new Integer(tempCoord.getXpos()));
+					obj.put("x", new Integer(tempCoord.xpos));
+					obj.put("y", new Integer(tempCoord.ypos));
 
 					// Check if terrain exist
 					if (!ter.getTerString().isEmpty()) {
