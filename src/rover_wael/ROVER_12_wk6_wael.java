@@ -89,7 +89,7 @@ public class ROVER_12_wk6_wael {
 	 */
 	private void run() throws IOException, InterruptedException {
 
-		String url = "http://23.251.155.186:3000/api/global";
+		String url = "http://192.168.1.104:3000/api/global";
 		Communication com = new Communication(url);
 
 		// Make connection to SwarmServer and initialize streams
@@ -768,8 +768,7 @@ public class ROVER_12_wk6_wael {
 			Coord coord = new Coord(x, y);
 
 			if (!mapTileLog.containsKey(coord)) {
-				MapTile tile = supportTools.CommunicationUtil
-						.convertToMapTile(jsonObj);
+				MapTile tile = supportTools.CommunicationUtil.convertToMapTile(jsonObj);
 
 				mapTileLog.put(coord, tile);
 			}
