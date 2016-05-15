@@ -15,7 +15,7 @@ public class Path {
 	// Map<direction, # consecutive open steps> (e.g. <"E", 5>, <"S", 3>, etc)  
 	private Map<String, Integer> openPaths = new HashMap<String, Integer>();
 	
-
+	
 	// returns "N","E","S", or "W" to go back a step
 	public String getBackTrackDir(){
 		int currX = currCoord.xpos;

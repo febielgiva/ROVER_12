@@ -59,6 +59,7 @@ public class ROVER_12_wk8_kae {
 
 	// Group 12 variables
 	static String myJSONStringBackupofMap;
+	static List<Coord> unvisited; // manage this only after targetLoc has been visited
 	private Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
 
@@ -127,7 +128,6 @@ public class ROVER_12_wk8_kae {
 				setCurrentLoc(); // BEFORE the move() in this iteration
 				int numSteps = pathMap.size();
 
-				
 				// ***** do a SCAN ******
 				if (numSteps % 5 == 0) {
 					loadScanMapFromSwarmServer();
@@ -137,8 +137,7 @@ public class ROVER_12_wk8_kae {
 				}
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				com.postScanMapTiles(currentLoc, scanMapTiles);
-				
-				
+
 				// ***** MOVING *****
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 

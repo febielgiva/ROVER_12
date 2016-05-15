@@ -2,6 +2,7 @@ package supportTools;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -13,6 +14,12 @@ import enums.Terrain;
 
 public class RoverMotionUtil {
 	Random rd = new Random();
+	Map<Coord, MapTile> mapTileLog;
+	List<Coord> unvisited;
+
+	public RoverMotionUtil(Map<Coord, MapTile> mapTileLog) {
+		this.mapTileLog = mapTileLog;
+	}
 
 	// returns which direction to go in order to backtrack a step
 	private String getBackTrackDirection(boolean[] cardinals, Coord prevCoord,
@@ -128,16 +135,30 @@ public class RoverMotionUtil {
 		return Math.sqrt((dx * dx) + (dy * dy));
 	}
 
-	public Coord getRover12TargetArea(Map<Coord, MapTile> mapTileLog,
-			Coord targetLoc) {
+	public boolean visited(Coord pos) {
+		if (mapTileLog.containsKey(pos)) {
+			return true;
+		}
+		return false;
+	}
 
-		boolean isTargetLocReached = !mapTileLog.containsKey(targetLoc);
+	public Coord getCurrTargetCoord(Coord globalTargetLoc) {
+
+		boolean isTargetLocReached = !mapTileLog.containsKey(globalTargetLoc);
 		int searchSize = 30, nullCounter = 0;
 
-		if (!isTargetLocReached) {
-			return targetLoc;
+		if (!visited(globalTargetLoc)) {
+			return globalTargetLoc;
 		}
-
+		
+		if(unvisited.size()<1){
+			
+		}
+		// if targetLoc has been visited,and 
+		int max = (globalTargetLoc.xpos>globalTargetLoc.ypos)? globalTargetLoc.xpos: globalTargetLoc.ypos;
+		Coord start = new Coord(globalTargetLoc.xpos-5,globalTargetLoc.ypos-5);
+		while()
+		int numNull = countNumNull(start, searchSize);
 		// whil()
 		// tempCoord = new Coord(randomNum(0, targetLocation.getXpos()),
 		// randomNum(0, targetLocation.getYpos()));
