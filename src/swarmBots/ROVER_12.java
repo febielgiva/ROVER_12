@@ -42,6 +42,9 @@ public class ROVER_12  {
 	Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
 	Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
+	Map<Coord, MapTile> GreenCorpMapTileLog = new HashMap<Coord, MapTile>();
+	
+	
 	// MapTile[][] mapTileLog = new MapTile[100][100];
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 

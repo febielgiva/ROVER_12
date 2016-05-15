@@ -44,7 +44,7 @@ import supportTools.CommunicationUtil;
  * publishing their code examples
  */
 
-public class ROVER_12_wk8_kae {
+public class MethodStorage_ks {
 
 	private BufferedReader in;
 	private PrintWriter out;
@@ -53,23 +53,20 @@ public class ROVER_12_wk8_kae {
 	private int sleepTime;
 	private String SERVER_ADDRESS = "localhost", line;
 	static final int PORT_ADDRESS = 9537;
-	
-	// Group 12 variables
 	static String myJSONStringBackupofMap;
 	private Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
-	
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
 	private Map<Coord, Integer> visitsCount = new HashMap<Coord, Integer>();
-	private Map<Coord> visitsCount = new HashMap<Coord, Integer>();
-
+	// MapTile[][] mapTileLog = new MapTile[100][100];
 	private List<Coord> pathMap = new ArrayList<Coord>();
+	// private Deque<String> directionStack = new ArrayDeque<String>();
 	private List<Coord> directionStack = new LinkedList<Coord>();
 	private Random rd = new Random();
 	private boolean[] cardinals = new boolean[4];
 	private boolean isTargetLocReached = false;
 
-	public ROVER_12_wk8_kae() {
+	public MethodStorage_ks() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -79,7 +76,7 @@ public class ROVER_12_wk8_kae {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12_wk8_kae(String serverAddress) {
+	public MethodStorage_ks(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -402,6 +399,26 @@ public class ROVER_12_wk8_kae {
 
 		}
 		return cardinals;
+	}
+
+	private String getBackTrackDirection(boolean[] cardinals, Coord prevCoord,
+			int currentXPos, int currentYPos) {
+
+		int n = currentYPos - 1, e = currentXPos, s, w;
+
+		int previousXPos = prevCoord.getXpos();
+		int previousYPos = prevCoord.getYpos();
+		if (isPastPositonIsNorth(cardinals, prevCoord, currentXPos, currentYPos)) {
+			return "N";
+		} else if (isPastPositonIsEast(cardinals, prevCoord, currentXPos,
+				currentYPos)) {
+			return "E";
+		} else if (isPastPositonIsSouth(cardinals, prevCoord, currentXPos,
+				currentYPos)) {
+			return "S";
+		} else {
+			return "W";
+		}
 	}
 
 	private boolean isPastPositonIsNorth(boolean[] cardinals, Coord eachCoord,
@@ -1239,8 +1256,6 @@ public class ROVER_12_wk8_kae {
 		return false;
 	}
 
-	
-	
 	// a check function to prevent IndexOutOfBounds exception
 	public boolean withinTheGrid(int i, int j, int arrayLength) {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
@@ -1270,11 +1285,6 @@ public class ROVER_12_wk8_kae {
 
 	}
 
-	
-	
-	
-	
-
 	public Coord getCurrentLoc() {
 		return currentLoc;
 	}
@@ -1287,7 +1297,7 @@ public class ROVER_12_wk8_kae {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_wk8_kae client = new ROVER_12_wk8_kae();
+		MethodStorage_ks client = new MethodStorage_ks();
 		client.run();
 	}
 }
