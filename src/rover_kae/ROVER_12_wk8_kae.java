@@ -67,8 +67,8 @@ public class ROVER_12_wk8_kae {
 			targetLocation = null;
 
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	// private Map<Coord, Path> pathMap = new HashMap<Coord, Path>();
-	private Deque<Coord> pathMap = new ArrayDeque<Coord>();
+	 private Map<Coord, Path> pathMap= new HashMap<Coord, Path>();
+	private Deque<Coord> pathStack = new ArrayDeque<Coord>();
 
 	private List<Coord> directionStack = new LinkedList<Coord>();
 	private Random rd = new Random();
@@ -103,6 +103,7 @@ public class ROVER_12_wk8_kae {
 		// String url = "http://23.251.155.186:3000/api/global";
 		// Communication com = new Communication(url);
 
+		boolean beenToTargetLoc=false;
 		Socket socket = null;
 		try {
 
@@ -118,7 +119,8 @@ public class ROVER_12_wk8_kae {
 			 * #### Rover controller process loop ####
 			 */
 			boolean firstItr = true;
-
+			Coord prevLoc = currentLoc.clone();
+			
 			while (true) {
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
@@ -132,7 +134,9 @@ public class ROVER_12_wk8_kae {
 					// scanMap.debugPrintMap();
 					// debugPrintMapTileArray(mapTileLog);
 				}
-				pathMap.add(currentLoc.clone());
+				footprints.add(currentLoc.clone());
+				pathMap.put(currentLoc.clone(), )
+				
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				// com.postScanMapTiles(currentLoc, scanMapTiles);
 
@@ -162,6 +166,10 @@ public class ROVER_12_wk8_kae {
 				Thread.sleep(sleepTime); // G12 - sleepTime has been reduced to
 											// 100. is that alright?
 
+				if(currentLoc.equals(targetLocation) && ){
+					beenToTargetLoc = true;
+				}
+				
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
 				int idx = 0;
@@ -976,6 +984,48 @@ public class ROVER_12_wk8_kae {
 		}
 	}
 
+	// a check function to prevent IndexOutOfBounds exception
+	public boolean withinTheGrid(int i, int j, int arrayLength) {
+		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
+	}
+
+	private void sendJSONToServer(JSONObject obj, String URL) {
+		// TODO need testing
+		try {
+			HttpClient client = HttpClientBuilder.create().build();
+			HttpPost post = new HttpPost(URL);
+
+			StringEntity se = new StringEntity(obj.toString());
+			post.setHeader("content-type", "application/json");
+			post.setEntity(se);
+
+			HttpResponse response = client.execute(post);
+
+			// Check response
+			System.out.println(obj.toString());
+
+			System.out.println("Response Code : "
+					+ response.getStatusLine().getStatusCode());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public Coord getCurrentLoc() {
+		return currentLoc;
+	}
+
+	public void setCurrentLoc(Coord currentLoc) {
+		this.currentLoc = currentLoc;
+	}
+
+	public int randomNum(int min, int max) {
+		return rd.nextInt(max + 1) + min;
+	}
+
+	// take a random step (just one step) to break the pattern
 	private void random(String[] cardinals) throws InterruptedException,
 			IOException {
 		int rdNum;
@@ -990,7 +1040,7 @@ public class ROVER_12_wk8_kae {
 			}
 		}
 	}
-
+	
 	private void sinusoidal_RtoL(String[] cardinals, int waveLength,
 			int waveHeight) throws InterruptedException, IOException {
 		int steps;
@@ -1027,43 +1077,6 @@ public class ROVER_12_wk8_kae {
 				Thread.sleep(700);
 			}
 		}
-	}
-
-	// a check function to prevent IndexOutOfBounds exception
-	public boolean withinTheGrid(int i, int j, int arrayLength) {
-		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
-	}
-
-	private void sendJSONToServer(JSONObject obj, String URL) {
-		// TODO need testing
-		try {
-			HttpClient client = HttpClientBuilder.create().build();
-			HttpPost post = new HttpPost(URL);
-
-			StringEntity se = new StringEntity(obj.toString());
-			post.setHeader("content-type", "application/json");
-			post.setEntity(se);
-
-			HttpResponse response = client.execute(post);
-
-			// Check response
-			System.out.println(obj.toString());
-
-			System.out.println("Response Code : "
-					+ response.getStatusLine().getStatusCode());
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	public Coord getCurrentLoc() {
-		return currentLoc;
-	}
-
-	public void setCurrentLoc(Coord currentLoc) {
-		this.currentLoc = currentLoc;
 	}
 
 	/**
