@@ -100,21 +100,7 @@ public class WavePatternMotionUtil {
 		return false;
 	}
 
-	public Coord getCurrTargetCoord(Coord globalTargetLoc) {
-
-		boolean isTargetLocReached = !mapTileLog.containsKey(globalTargetLoc);
-		int searchSize = 30, nullCounter = 0;
-
-		if (!visited(globalTargetLoc)) {
-			return globalTargetLoc;
-		}
-		
-		if(unvisited.size()<1){
-			
-		}
-				return null;
-	}
-
+	
 	public int randomNum(int min, int max) {
 		return rd.nextInt(max + 1) + min;
 	}

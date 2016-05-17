@@ -61,19 +61,23 @@ public class ROVER_12_wk8_kae {
 
 	// Group 12 variables
 	static String myJSONStringBackupofMap;
-	static List<Coord> unvisited; // manage this only after targetLoc has been
-									// visited
 	private Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
 
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
+	private Set<Coord,Path> visitCounts = new HashSet<Coord,Path>();// manage this only
+														// after targetLoc has
+														// been
+	// visited
 	// private Map<Coord, Path> pathMap = new HashMap<Coord, Path>();
 	// private Deque<Coord> pathStack = new ArrayDeque<Coord>();
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
-	private List<Coord> directionStack = new LinkedList<Coord>();
+	public Map<Coord, Path> pathMapUltra = new HashMap<Coord,Path>();
+	
 	private Random rd = new Random();
 	private boolean[] cardinals = new boolean[4];
 	private boolean isTargetLocReached = false;
+	private Coord nextTarget;
 
 	public ROVER_12_wk8_kae() {
 		// constructor
@@ -100,6 +104,8 @@ public class ROVER_12_wk8_kae {
 		// String url = "http://23.251.155.186:3000/api/global";
 		// Communication com = new Communication(url, rovername, corp_secret);
 
+		// if(targetReached)
+
 		ArrayList<String> equipment = new ArrayList<String>();
 		boolean beenToTargetLoc = false;
 		Socket socket = null;
@@ -111,6 +117,7 @@ public class ROVER_12_wk8_kae {
 			equipment = getEquipment();
 			rovergroupStartPosition = requestStartLoc(socket);
 			targetLocation = requestTargetLoc(socket);
+			nextTarget = targetLocation.clone();
 
 			/**
 			 * #### Rover controller process loop ####
@@ -139,8 +146,10 @@ public class ROVER_12_wk8_kae {
 				// com.postScanMapTiles(currentLoc, scanMapTiles);
 
 				// random();
-				roverMotionLogic(cardinals, scanMapTiles, currentLoc.xpos,
-						currentLoc.ypos);
+				// roverMotionLogic(cardinals, scanMapTiles, currentLoc.xpos,
+				// currentLoc.ypos);
+
+				sinusoidal_East(targetLocation);
 
 				setCurrentLoc(); // AFTER this iteration
 				System.out.println("AFTER: " + currentLoc);
@@ -895,52 +904,6 @@ public class ROVER_12_wk8_kae {
 
 	}
 
-	public String request(MapTile[][] scanMapTile) {
-
-		String USER_AGENT = "ROVER_12";
-		// String url = "http://192.168.0.101:3000/globalMap";
-		String url = "http://localhost:3000/globalMap";
-
-		URL obj = null;
-
-		String responseStr = "";
-		try {
-			obj = new URL(url);
-			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-			con.setRequestMethod("GET");
-
-			// add request header
-			con.setRequestProperty("User-Agent", USER_AGENT);
-
-			int responseCode = con.getResponseCode();
-			System.out.println("\nSending 'GET' request to URL : " + url);
-			System.out.println("Response Code : " + responseCode);
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					con.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
-
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
-			}
-			in.close();
-
-			// print result
-			responseStr = response.toString();
-
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		// optional default is GET
-
-		return responseStr;
-	}
-
 	private void move(String dir) throws IOException {
 
 		switch (dir) {
@@ -1024,6 +987,16 @@ public class ROVER_12_wk8_kae {
 			// "W"
 			x -= 1;
 
+		if (!mapTileLog.containsKey(new Coord(x, y))) {
+			try {
+			// if mapTileLog does not contain the target info, just load it.
+				loadScanMapFromSwarmServer();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
 		// Checks whether there is sand in the next tile
 		if (mapTileLog.get(new Coord(x, y)).getTerrain() == Terrain.SAND
 				|| mapTileLog.get(new Coord(x, y)).getTerrain() == Terrain.ROCK
@@ -1032,41 +1005,6 @@ public class ROVER_12_wk8_kae {
 			return true;
 
 		return false;
-	}
-
-	private void sinusoidal_LtoR(String[] cardinals, int waveLength,
-			int waveHeight) throws InterruptedException, IOException {
-		int steps;
-
-		steps = waveLength;
-		String currentDir;
-		cardinals[0] = "E";
-		cardinals[1] = "S";
-		cardinals[2] = "E";
-		cardinals[3] = "N";
-
-		setCurrentLoc();
-
-		// if (previousLoc != null && isStuck(currentLoc, previousLoc)) {
-		// doThisWhenStuck(currentLoc, scanMapTiles);
-		// }
-
-		previousLoc = currentLoc;
-
-		for (int i = 0; i < cardinals.length; i++) {
-
-			currentDir = cardinals[i];
-			if (currentDir.equals("E") || currentDir.equals("E")) {
-				steps = waveLength;
-			} else {
-				steps = waveHeight;
-			}
-
-			for (int j = 0; j < steps; j++) {
-				move(currentDir);
-				Thread.sleep(700);
-			}
-		}
 	}
 
 	// a check function to prevent IndexOutOfBounds exception
@@ -1114,7 +1052,9 @@ public class ROVER_12_wk8_kae {
 			Thread.sleep(sleepTime);
 		}
 	}
+
 	public int countUnvisited(Coord currLoc, int searchSize) {
+		// searchSize should be an even number
 		int numUnvisited = 0;
 
 		for (int j = currLoc.ypos - searchSize / 2; j < currLoc.ypos
@@ -1127,8 +1067,44 @@ public class ROVER_12_wk8_kae {
 			}
 		}
 		return numUnvisited;
-
 	}
+
+	public boolean visited(Coord pos) {
+		if (mapTileLog.containsKey(pos)) {
+			return true;
+		}
+		return false;
+	}
+
+	public Coord getNextTargetCoord() {
+
+		boolean isTargetLocReached = !mapTileLog.containsKey(targetLocation);
+		int searchSize = 30, nullCounter = 0;
+		// Coord nextTarget= new Coord(randomNum(min, max));
+
+		if (!visited(targetLocation)) {
+			return targetLocation;
+		}
+
+		// while()
+		if (visitCounts.size() < 1) {
+
+		}
+		return null;
+	}
+
+	public boolean isGoingInCircle() {
+		
+		int searchSize = 10;
+		//
+		int numUnVisited = countUnvisited(currentLoc, searchSize);
+		if (numUnVisited <= 0) {
+			System.out.println("we are going in circle!");// debug
+			return true;
+		} else
+			return false;
+	}
+
 	// return true if rover is in the same position after 3 controll move
 	// iterations
 	public boolean isStuck() {
@@ -1157,7 +1133,7 @@ public class ROVER_12_wk8_kae {
 		return true;
 	}
 
-	private void sinusoidal_RtoL(Coord target) throws InterruptedException,
+	private void sinusoidal_East(Coord target) throws InterruptedException,
 			IOException {
 
 		int waveLength = 5, waveHeight = 3, steps = waveLength;
@@ -1167,6 +1143,56 @@ public class ROVER_12_wk8_kae {
 
 		if (currentLoc.equals(target)) {
 			return;
+		}
+
+		while (!targetReached && !isStuck()
+				&& currentLoc.xpos < targetLocation.xpos) {
+
+			if (currentLoc.xpos > targetLocation.xpos) {
+				sinusoidal_West(target);
+			}
+
+			if(goingInCircle)
+			
+			// jump out of the loop if eastern edge of the land is reached
+			for (int i = 0; i < cardinals.length; i++) {
+
+				currentDir = directions[i];
+				if (currentDir.equals("E")) {
+					steps = waveLength;
+				} else {
+					steps = waveHeight;
+				}
+
+				for (int j = 0; j < steps; j++) {
+					move(currentDir);
+					Thread.sleep(500);
+				}
+			}
+
+			setCurrentLoc();
+			pathMap.add(currentLoc.clone());
+			if (currentLoc.equals(target)) {
+				targetReached = true;
+			}
+		}
+
+	}
+
+	private void sinusoidal_West(Coord target) throws InterruptedException,
+			IOException {
+
+		int waveLength = 5, waveHeight = 3, steps = waveLength;
+		String[] directions = { "W", "S", "W", "N" };
+		boolean targetReached = false;
+		String currentDir;
+
+		if (currentLoc.equals(target)) {
+			return;
+		}
+
+		if (currentLoc.xpos > targetLocation.xpos) {
+			// sinusoidal_west();
 		}
 
 		while (targetReached && !isStuck()
@@ -1196,7 +1222,81 @@ public class ROVER_12_wk8_kae {
 
 	}
 
-	private void roverMotionLogic(boolean[] cardinals,
+	// private void sinusoidal(Coord target, String dir)
+	// throws InterruptedException, IOException {
+	//
+	// int longer = 5, shorter = 3, waveLength = longer, waveHeight = shorter,
+	// steps = waveLength;
+	// String[] directions = {"E","S","E","N"};
+	// switch (dir) {
+	// case "N":
+	// directions[0]="N";
+	// directions[1]="E";
+	// directions[2]="N";
+	// directions[3]="W";
+	// break;
+	// case "E":
+	// directions[0]="E";
+	// directions[1]="S";
+	// directions[2]="E";
+	// directions[3]="N";
+	// break;
+	// case "S":
+	// directions[0]="S";
+	// directions[1]="E";
+	// directions[2]="S";
+	// directions[3]="W";
+	// break;
+	// case "W":
+	// directions[0]="W";
+	// directions[1]="S";
+	// directions[2]="W";
+	// directions[3]="N";
+	// break;
+	//
+	// default:
+	// break;
+	// }
+	//
+	// boolean targetReached = false;
+	// String currentDir;
+	//
+	// if (currentLoc.equals(target)) {
+	// return;
+	// }
+	//
+	// if (currentLoc.xpos > targetLocation.xpos) {
+	// // sinusoidal_west();
+	// }
+	//
+	// while (targetReached && !isStuck()
+	// && currentLoc.xpos < targetLocation.xpos) {
+	// // jump out of the loop if eastern edge of the land is reached
+	// for (int i = 0; i < cardinals.length; i++) {
+	//
+	// currentDir = directions[i];
+	// if (currentDir.equals("E")) {
+	// steps = waveLength;
+	// } else {
+	// steps = waveHeight;
+	// }
+	//
+	// for (int j = 0; j < steps; j++) {
+	// move(currentDir);
+	// Thread.sleep(700);
+	// }
+	// }
+	//
+	// setCurrentLoc();
+	// pathMap.add(currentLoc.clone());
+	// if (currentLoc.equals(target)) {
+	// targetReached = true;
+	// }
+	// }
+	// }
+
+	private void 
+Logic(boolean[] cardinals,
 			MapTile[][] scanMapTiles, int currentXPos, int currentYPos)
 			throws InterruptedException, IOException {
 
