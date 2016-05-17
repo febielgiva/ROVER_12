@@ -57,11 +57,12 @@ public class ROVER_12_wk8_kae {
 	private Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
+	private Map<Coord, Integer> visitsCount = new HashMap<Coord, Integer>();
 	// MapTile[][] mapTileLog = new MapTile[100][100];
 	private List<Coord> pathMap = new ArrayList<Coord>();
 	// private Deque<String> directionStack = new ArrayDeque<String>();
 	private List<Coord> directionStack = new LinkedList<Coord>();
-
+	private Random rd = new Random();
 	private boolean[] cardinals = new boolean[4];
 	private boolean isTargetLocReached = false;
 
@@ -88,7 +89,7 @@ public class ROVER_12_wk8_kae {
 	 * Connects to the server then enters the processing loop.
 	 */
 	private void run() throws IOException, InterruptedException {
-
+		//String url = "http://192.168.1.104:3000/api/global";
 		String url = "http://23.251.155.186:3000/api/global";
 		Communication com = new Communication(url);
 
@@ -1344,12 +1345,33 @@ public class ROVER_12_wk8_kae {
 
 	private Coord getRover12TargetArea() {
 
+		int searchSize = 30, nullCounter = 0;
 		if (!isTargetLocReached) {
 			return targetLocation;
 		}
 
-		// randomly pick coordinate from the green corp's common storage
+		// for now, if more than 1/4 of the searched area is null, return that coordinate
+//		whil()
+//		tempCoord = new Coord(randomNum(0, targetLocation.getXpos()),
+//				randomNum(0, targetLocation.getYpos()));
+//		int nullCounter = 0;
+//		// randomly pick a coordinate from the green corp's common storage, and
+//		// count # null cell in 33 x 33
+//
+//		for (int j = tempCoord.getYpos() - searchSize / 2; j < tempCoord
+//				.getYpos() + searchSize; j++) {
+//			for (int i = tempCoord.getXpos() - searchSize / 2; i < tempCoord
+//					.getYpos() + searchSize; i++) {
+//				if (!mapTileLog.containsKey(tempCoord)) {
+//					nullCounter++;
+//				}
+//			}
+//		}
 		return null;
+	}
+
+	public int randomNum(int min, int max) {
+		return rd.nextInt(max + 1) + min;
 	}
 
 	public Coord getCurrentLoc() {
