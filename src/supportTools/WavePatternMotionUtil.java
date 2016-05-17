@@ -21,21 +21,7 @@ public class WavePatternMotionUtil {
 		this.mapTileLog = mapTileLog;
 	}
 
-	public int countUnvisited(Coord currLoc, int searchSize) {
-		int numUnvisited = 0;
-
-		for (int j = currLoc.ypos - searchSize / 2; j < currLoc.ypos
-				+ searchSize / 2; j++) {
-			for (int i = currLoc.xpos - searchSize / 2; i < currLoc.ypos
-					+ searchSize / 2; i++) {
-				if (!mapTileLog.containsKey(new Coord(i, j))) {
-					numUnvisited++;
-				}
-			}
-		}
-		return numUnvisited;
-
-	}
+	
 
 	// returns which direction to go in order to backtrack a step
 	private String getBackTrackDirection(boolean[] cardinals, Coord prevCoord,

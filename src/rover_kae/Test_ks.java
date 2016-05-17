@@ -21,14 +21,47 @@ import common.Coord;
 import common.MapTile;
 
 public class Test_ks {
+	public int countUnvisited(Coord currLoc, int searchSize,
+			Map<Coord, Boolean> mapTileLog) {
+		int numUnvisited = 0;
+
+		for (int j = currLoc.ypos - searchSize / 2; j < currLoc.ypos
+				+ searchSize / 2; j++) {
+			for (int i = currLoc.xpos - searchSize / 2; i < currLoc.ypos
+					+ searchSize / 2; i++) {
+				if (!mapTileLog.containsKey(new Coord(i, j))) {
+					numUnvisited++;
+				}
+			}
+		}
+		return numUnvisited;
+
+	}
 
 	@Test
+	public void testCountVisited() {
+		Map<Coord, Boolean> mapTileLog = new HashMap<Coord, Boolean>();
+		// populate mapTileLog
+		for (int j = 0; j < 10; j++) {
+			for (int i = 0; i < 10; i++) {
+				mapTileLog.put(new Coord(i, j), false);
+			}
+		}
+
+		mapTileLog.remove(new Coord(3, 3));
+		mapTileLog.remove(new Coord(4, 4));
+		mapTileLog.remove(new Coord(5, 5));
+		System.out.println(countUnvisited());
+
+	}
+
+	// @Test
 	public void testGetBackTrackDir() {
 
 		Path path = new Path(new Coord(1, -2), new Coord(1, -2));
 		// Path path = new Path(new Coord(0,0), new Coord(0,3));
 		// Path path = new Path(new Coord(0,0), new Coord(0,3));
-		
+
 		System.out.println(path.getBackTrackDir());
 
 	}
