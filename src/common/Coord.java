@@ -34,23 +34,9 @@ public class Coord {
             return false;
         if (obj == this)
             return true;
-
         Coord theOther = (Coord) obj;
-//        return new EqualsBuilder().
-//            // if deriving: appendSuper(super.equals(obj)).
-//            append(xpos, theOther.xpos).
-//            append(ypos, theOther.ypos).
-//            isEquals();
         return ((this.xpos == theOther.xpos) && (this.ypos == theOther.ypos));
     }
-
-	public int getXpos() {
-		return xpos;
-	}
-
-	public int getYpos() {
-		return ypos;
-	}
 	
 	public Coord clone(){
 		return new Coord(xpos, ypos);
