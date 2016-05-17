@@ -10,7 +10,9 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -59,12 +61,14 @@ public class ROVER_12_wk8_kae {
 
 	// Group 12 variables
 	static String myJSONStringBackupofMap;
-	static List<Coord> unvisited; // manage this only after targetLoc has been visited
+	static List<Coord> unvisited; // manage this only after targetLoc has been
+									// visited
 	private Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
 
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	private Map<Coord, Path> pathMap = new HashMap<Coord, Path>();
+	// private Map<Coord, Path> pathMap = new HashMap<Coord, Path>();
+	private Deque<Coord> pathMap = new ArrayDeque<Coord>();
 
 	private List<Coord> directionStack = new LinkedList<Coord>();
 	private Random rd = new Random();
@@ -96,8 +100,8 @@ public class ROVER_12_wk8_kae {
 	private void run() throws IOException, InterruptedException {
 
 		// Make connection to GreenCorp Server
-		String url = "http://23.251.155.186:3000/api/global";
-		Communication com = new Communication(url);
+		// String url = "http://23.251.155.186:3000/api/global";
+		// Communication com = new Communication(url);
 
 		Socket socket = null;
 		try {
@@ -105,50 +109,66 @@ public class ROVER_12_wk8_kae {
 			// Make connection to SwarmServer and initialize streams
 			socket = connectToSwarmServer();
 
-			// **** get equipment listing ****
 			ArrayList<String> equipment = new ArrayList<String>();
 			equipment = getEquipment();
-			System.out.println(rovername + " equipment list results "
-					+ equipment + "\n");
-
-			// **** Request START_LOC Location from SwarmServer ****
 			rovergroupStartPosition = requestStartLoc(socket);
-			System.out.println(rovername + " START_LOC "
-					+ rovergroupStartPosition);
-
-			// **** Request TARGET_LOC Location from SwarmServer ****
 			targetLocation = requestTargetLoc(socket);
-			System.out.println(rovername + " TARGET_LOC " + targetLocation);
 
 			/**
 			 * #### Rover controller process loop ####
 			 */
+			boolean firstItr = true;
+
 			while (true) {
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
+				System.out.println("BEFORE: " + currentLoc);
 				int numSteps = pathMap.size();
 
 				// ***** do a SCAN ******
 				if (numSteps % 5 == 0) {
 					loadScanMapFromSwarmServer();
 					// debug
-					scanMap.debugPrintMap();
-					debugPrintMapTileArray(mapTileLog);
+					// scanMap.debugPrintMap();
+					// debugPrintMapTileArray(mapTileLog);
 				}
+				pathMap.add(currentLoc.clone());
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
-				com.postScanMapTiles(currentLoc, scanMapTiles);
+				// com.postScanMapTiles(currentLoc, scanMapTiles);
+
+				if (firstItr) {
+					move("E");
+					System.out.println("step to E 1");
+					Thread.sleep(700);
+					move("E");
+					System.out.println("step to E 2");
+					Thread.sleep(700);
+					move("E");
+					System.out.println("step to E 3");
+					Thread.sleep(700);
+					move("E");
+					System.out.println("step to E 3");
+					Thread.sleep(550);
+					firstItr = false;
+				}
 
 				// ***** MOVING *****
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 
-				moveRover();
+				// moveRover();
+				move("S");
 				setCurrentLoc(); // AFTER this iteration
-
+				System.out.println("AFTER: " + currentLoc);
 				Thread.sleep(sleepTime); // G12 - sleepTime has been reduced to
 											// 100. is that alright?
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
+				int idx = 0;
+				for (Coord pt : pathMap) {
+					System.out.println("i=" + (idx++) + "\t" + pt);
+				}
+				// Thread.sleep(5000);
 
 				// This catch block closes the open socket connection to the
 				// server
@@ -196,22 +216,22 @@ public class ROVER_12_wk8_kae {
 	}
 
 	private String chooseDir() throws IOException {
-		
-		if (isPastPositonIsEast()) {
-			move("E");
 
-		} else if (isPastPositonIsWest() {
-			move("W");
-
-		} else if (isPastPositonIsNorth(cardinals, eachCoord, currentXPos,
-				currentYPos)) {
-			move("N");
-
-		} else if (isPastPositonIsSouth(cardinals, eachCoord, currentXPos,
-				currentYPos)) {
-			move("S");
-
-		}
+		// if (isPastPositonIsEast()) {
+		// move("E");
+		//
+		// } else if (isPastPositonIsWest() {
+		// move("W");
+		//
+		// } else if (isPastPositonIsNorth(cardinals, eachCoord, currentXPos,
+		// currentYPos)) {
+		// move("N");
+		//
+		// } else if (isPastPositonIsSouth(cardinals, eachCoord, currentXPos,
+		// currentYPos)) {
+		// move("S");
+		// }
+		return "huh?";
 	}
 
 	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
@@ -356,7 +376,7 @@ public class ROVER_12_wk8_kae {
 	public void loadScanMapFromSwarmServer() throws IOException {
 		// System.out.println("ROVER_12 method doScan()");
 		setCurrentLoc();
-		Coord scanLoc = new Coord(currentLoc.getXpos(), currentLoc.getYpos());
+		Coord scanLoc = new Coord(currentLoc.xpos, currentLoc.ypos);
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
 		out.println("SCAN");
@@ -368,8 +388,6 @@ public class ROVER_12_wk8_kae {
 			jsonScanMapIn = "";
 		}
 		StringBuilder jsonScanMap = new StringBuilder();
-		System.out.println("ROVER_12 incomming SCAN result - first readline: "
-				+ jsonScanMapIn);
 
 		if (jsonScanMapIn.startsWith("SCAN")) {
 			while (!(jsonScanMapIn = in.readLine()).equals("SCAN_END")) {
@@ -391,14 +409,9 @@ public class ROVER_12_wk8_kae {
 		// new MyWriter( jsonScanMapString, 0); //gives a strange result -
 		// prints the \n instead of newline character in the file
 
-		System.out.println("+++++++++++++++ jsonScanMapString +++++++++++++++");
-		System.out.println(jsonScanMapString.toString());
-
-		// System.out.println("ROVER_12 convert from json back to ScanMap class");
-		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
 
-		myJSONStringBackupofMap = jsonScanMapString;
+		// myJSONStringBackupofMap = jsonScanMapString;
 		loadMapTilesOntoGlobalMapLog(scanMap.getScanMap(), scanLoc);
 	}
 
@@ -418,8 +431,7 @@ public class ROVER_12_wk8_kae {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("START_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("START_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -451,8 +463,7 @@ public class ROVER_12_wk8_kae {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("TARGET_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("TARGET_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -836,32 +847,29 @@ public class ROVER_12_wk8_kae {
 	}
 
 	private void move(String dir) throws IOException {
-		System.out.println("current location in move(): " + currentLoc);
-		setCurrentLoc();
-		// doScanOriginal();
 
 		switch (dir) {
 
 		case "E":
-			if (!isSand("E")) {
+			if (!isSandOrRock("E")) {
 				System.out.println("request move -> E");
 				moveEast();
 			}
 			break;
 		case "W":
-			if (!isSand("W")) {
+			if (!isSandOrRock("W")) {
 				System.out.println("request move -> W");
 				moveWest();
 			}
 			break;
 		case "N":
-			if (!isSand("N")) {
+			if (!isSandOrRock("N")) {
 				System.out.println("request move -> N");
 				moveNorth();
 			}
 			break;
 		case "S":
-			if (!isSand("S")) {
+			if (!isSandOrRock("S")) {
 				System.out.println("request move -> S");
 				moveSouth();
 			}
@@ -907,27 +915,118 @@ public class ROVER_12_wk8_kae {
 		cardinals[3] = false; // W
 	}
 
-	public boolean isSand(String direction) {
+	public boolean isSandOrRock(String direction) {
 
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-		int x = centerIndex, y = centerIndex, scanRange = 2;
+		int x = currentLoc.xpos, y = currentLoc.ypos;
 
-		for (int i = 1; i < scanRange; i++) {
-			if (direction == "S")
-				x = centerIndex + i;
-			else if (direction == "N")
-				x = centerIndex - i;
-			else if (direction == "E")
-				y = centerIndex + i;
-			else
-				y = centerIndex - i;
+		if (direction == "S")
+			y += 1;
+		else if (direction == "N")
+			y -= 1;
+		else if (direction == "E")
+			x += 1;
+		else
+			// "W"
+			x -= 1;
 
-			// Checks whether there is sand in the next tile
-			if (scanMap.getScanMap()[x][y].getTerrain() == Terrain.SAND)
-				return true;
-		}
+		// Checks whether there is sand in the next tile
+		if (mapTileLog.get(new Coord(x, y)).getTerrain() == Terrain.SAND
+				|| mapTileLog.get(new Coord(x, y)).getTerrain() == Terrain.ROCK)
+			return true;
 
 		return false;
+	}
+
+	private void sinusoidal_LtoR(String[] cardinals, int waveLength,
+			int waveHeight) throws InterruptedException, IOException {
+		int steps;
+
+		steps = waveLength;
+		String currentDir;
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "E";
+		cardinals[3] = "N";
+
+		try {
+			setCurrentLoc(currentLoc);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if (previousLoc != null && isStuck(currentLoc, previousLoc)) {
+			doThisWhenStuck(currentLoc, scanMapTiles);
+		}
+
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < cardinals.length; i++) {
+
+			currentDir = cardinals[i];
+			if (currentDir.equals("E") || currentDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+				move(currentDir);
+				Thread.sleep(700);
+			}
+		}
+	}
+
+	private void random(String[] cardinals) throws InterruptedException,
+			IOException {
+		int rdNum;
+		String currentDir;
+		for (int i = 0; i < 5; i++) {
+			rdNum = randomNum(0, 3);
+			currentDir = cardinals[rdNum];
+
+			for (int j = 0; j < 3; j++) {
+				move(currentDir);
+				Thread.sleep(300);
+			}
+		}
+	}
+
+	private void sinusoidal_RtoL(String[] cardinals, int waveLength,
+			int waveHeight) throws InterruptedException, IOException {
+		int steps;
+
+		steps = waveLength;
+		String currentDir;
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "E";
+		cardinals[3] = "N";
+
+		try {
+			setCurrentLoc(currentLoc);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		if (previousLoc != null && isStuck(currentLoc, previousLoc)) {
+			doThisWhenStuck(currentLoc, scanMapTiles);
+		}
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < cardinals.length; i++) {
+
+			currentDir = cardinals[i];
+			if (currentDir.equals("E") || currentDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+				move(currentDir);
+				Thread.sleep(700);
+			}
+		}
 	}
 
 	// a check function to prevent IndexOutOfBounds exception

@@ -17,10 +17,12 @@ public class RoverMotionUtil {
 	Map<Coord, MapTile> mapTileLog;
 	List<Coord> unvisited;
 
+	
 	public RoverMotionUtil(Map<Coord, MapTile> mapTileLog) {
 		this.mapTileLog = mapTileLog;
 	}
 
+	public int surchUnvisited(int searchSize, Coord searchCenter){}
 	// returns which direction to go in order to backtrack a step
 	private String getBackTrackDirection(boolean[] cardinals, Coord prevCoord,
 			Coord currCoord) {
