@@ -67,7 +67,7 @@ public class ROVER_12_wk8_kae {
 			targetLocation = null;
 
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	 private Map<Coord, Path> pathMap= new HashMap<Coord, Path>();
+	private Map<Coord, Path> pathMap = new HashMap<Coord, Path>();
 	private Deque<Coord> pathStack = new ArrayDeque<Coord>();
 
 	private List<Coord> directionStack = new LinkedList<Coord>();
@@ -123,7 +123,9 @@ public class ROVER_12_wk8_kae {
 			
 			while (true) {
 
+				prevLoc = currentLoc.clone();
 				setCurrentLoc(); // BEFORE the move() in this iteration
+				
 				System.out.println("BEFORE: " + currentLoc);
 				int numSteps = pathMap.size();
 
@@ -134,8 +136,9 @@ public class ROVER_12_wk8_kae {
 					// scanMap.debugPrintMap();
 					// debugPrintMapTileArray(mapTileLog);
 				}
-				footprints.add(currentLoc.clone());
-				pathMap.put(currentLoc.clone(), )
+				pathStack.add(currentLoc.clone());
+				
+				pathMap.put(currentLoc.clone(), new Path(currentLoc.clone(),prevLoc.clone()));
 				
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				// com.postScanMapTiles(currentLoc, scanMapTiles);
@@ -1040,7 +1043,7 @@ public class ROVER_12_wk8_kae {
 			}
 		}
 	}
-	
+
 	private void sinusoidal_RtoL(String[] cardinals, int waveLength,
 			int waveHeight) throws InterruptedException, IOException {
 		int steps;

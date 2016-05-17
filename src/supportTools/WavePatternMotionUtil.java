@@ -97,54 +97,7 @@ public class WavePatternMotionUtil {
 		return false;
 	}
 
-	public boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex, int i) {
-		if (scanMapTiles[centerIndex - i][centerIndex].getHasRover()
-				|| scanMapTiles[centerIndex - i][centerIndex].getTerrain() == Terrain.ROCK
-				|| scanMapTiles[centerIndex - i][centerIndex].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex - i][centerIndex].getTerrain() == Terrain.FLUID
-				|| scanMapTiles[centerIndex - i][centerIndex].getTerrain() == Terrain.SAND) {
-			return true;
-		}
-		return false;
-	}
-
-	public boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex, int i) {
-		if (scanMapTiles[centerIndex][centerIndex - i].getHasRover()
-				|| scanMapTiles[centerIndex][centerIndex - i].getTerrain() == Terrain.ROCK
-				|| scanMapTiles[centerIndex][centerIndex - i].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex][centerIndex - i].getTerrain() == Terrain.FLUID
-				|| scanMapTiles[centerIndex][centerIndex - i].getTerrain() == Terrain.SAND) {
-			return true;
-		}
-		return false;
-	}
-
-	public boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex, int i) {
-		if (scanMapTiles[centerIndex][centerIndex + i].getHasRover()
-				|| scanMapTiles[centerIndex][centerIndex + i].getTerrain() == Terrain.ROCK
-				|| scanMapTiles[centerIndex][centerIndex + i].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex][centerIndex + i].getTerrain() == Terrain.FLUID
-				|| scanMapTiles[centerIndex][centerIndex + i].getTerrain() == Terrain.SAND) {
-			return true;
-		}
-		return false;
-	}
-
-	public boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex, int i) {
-		if (scanMapTiles[centerIndex + i][centerIndex].getHasRover()
-				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.ROCK
-				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.FLUID
-				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.SAND) {
-			return true;
-		}
-
-		return false;
-	}
+	
 
 	public double getDistanceBtw2Points(Coord p1, Coord p2) {
 
