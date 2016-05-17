@@ -88,15 +88,11 @@ public class ROVER_12_wk6_wael {
 	 * Connects to the server then enters the processing loop.
 	 */
 	private void run() throws IOException, InterruptedException {
-<<<<<<< HEAD
 
-		String url = "http://192.168.1.104:3000/api/global";
-=======
-		//String url = "http://192.168.1.104:3000/api/global";
-		String url = "http://23.251.155.186:3000/api/global";
->>>>>>> master
-		Communication com = new Communication(url);
-
+		String url = "http://23.251.155.186:3000/api";
+		String corp_secret = "0FSj7Pn23t";
+		Communication com = new Communication(url, rovername, corp_secret);
+		
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
 		try {

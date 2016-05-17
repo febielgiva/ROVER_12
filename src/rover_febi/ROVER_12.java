@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import common.Communication;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
@@ -69,31 +70,21 @@ public class ROVER_12 {
 	 */
 	private void run() throws IOException, InterruptedException {
 
+		String url = "http://23.251.155.186:3000/api";
+		String corp_secret = "0FSj7Pn23t";
+		Communication com = new Communication(url, rovername, corp_secret);
+
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
 		try {
 			socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS);
-
 			in = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
 			out = new PrintWriter(socket.getOutputStream(), true);
 
-			// Process all messages from server, wait until server requests
-			// Rover ID
-			// name - Return Rover Name to complete connection
-			while (true) {
-				String line = in.readLine();
-				if (line.startsWith("SUBMITNAME")) {
-					out.println(rovername); // This sets the name of this
-											// instance
-					// of a swarmBot for identifying the
-					// thread to the server
-					break;
-				}
-			}
+			initSwarmServerConnection();
 
 			// ********* Rover logic setup *********
-
 			/**
 			 * Get initial values that won't change
 			 */
@@ -105,16 +96,9 @@ public class ROVER_12 {
 
 			// **** Request START_LOC Location from SwarmServer ****
 			rovergroupStartPosition = requestStartLoc(socket);
-			System.out.println(rovername + " START_LOC "
-					+ rovergroupStartPosition);
-			// Thread.sleep(10000);
 
 			// **** Request TARGET_LOC Location from SwarmServer ****
 			targetLocation = requestTargetLoc(socket);
-			System.out.println(rovername + " TARGET_LOC " + targetLocation);
-
-			// debug
-			// Thread.sleep(10000);
 
 			boolean stuck = false; // just means it did not change locations
 									// between requests,
@@ -139,12 +123,6 @@ public class ROVER_12 {
 				previousLoc = currentLoc;
 
 				// ***** do a SCAN ******
-				/*
-				 * G12 - for now, it is set to load in 11 x 11 map from
-				 * swarmserver, and copy it onto our g12 map log, every 4 steps
-				 * that rover 12 takes. Better ideas on the iteration interval,
-				 * anyone?
-				 */
 				if ((stepTrack++) % 4 == 0) {
 					loadScanMapFromSwarmServer();
 					scanMap.debugPrintMap();// debug
@@ -199,6 +177,22 @@ public class ROVER_12 {
 		}
 
 	}// END of Rover main control loop
+
+	private void initSwarmServerConnection() throws IOException {
+		// Process all messages from server, wait until server requests
+		// Rover ID
+		// name - Return Rover Name to complete connection
+		while (true) {
+			String line = in.readLine();
+			if (line.startsWith("SUBMITNAME")) {
+				out.println(rovername); // This sets the name of this
+										// instance
+				// of a swarmBot for identifying the
+				// thread to the server
+				break;
+			}
+		}
+	}
 
 	private void roverMotionLogic(boolean[] cardinals,
 			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
