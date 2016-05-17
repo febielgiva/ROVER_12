@@ -16,12 +16,24 @@ import java.util.Set;
 import org.json.simple.JSONObject;
 import org.junit.Test;
 
+import supportTools.Path;
 import common.Coord;
 import common.MapTile;
 
 public class Test_ks {
 
 	@Test
+	public void testGetBackTrackDir() {
+
+		Path path = new Path(new Coord(1, -2), new Coord(1, -2));
+		// Path path = new Path(new Coord(0,0), new Coord(0,3));
+		// Path path = new Path(new Coord(0,0), new Coord(0,3));
+		
+		System.out.println(path.getBackTrackDir());
+
+	}
+
+	// @Test
 	public void test33by33NullCounter() {
 
 		// every 2 x 2 null counter
@@ -73,15 +85,6 @@ public class Test_ks {
 			System.out.println("num null quad k,v: " + num.getKey() + ", "
 					+ num.getValue());
 		}
-	}
-
-	// @Test
-	public void testgetFurthestQuadrant() {
-		ROVER_12_wk8_kae rv = new ROVER_12_wk8_kae();
-		Coord q1 = new Coord(1, 1), q2 = new Coord(2, 2), q3 = new Coord(3, 3), q4 = new Coord(
-				4, 4);
-		System.out.println(rv.getFurthestQuadrant(q1, q2, q3, q4));
-
 	}
 
 	// {"_id":"572e759207cb252a36cfb412","x":11,"y":45,"terrain":"sand","science":"organic","stillExists":true}
@@ -158,8 +161,8 @@ public class Test_ks {
 	private double getDistanceBetween2Points(Coord p1, Coord p2) {
 		// sqrt((x2-x1)^2+(y2-y1)^2)
 
-		return Math.sqrt(Math.pow(p2.getXpos() - p1.getXpos(), 2)
-				+ Math.pow(p2.getYpos() - p1.getYpos(), 2));
+		return Math.sqrt(Math.pow(p2.xpos - p1.xpos, 2)
+				+ Math.pow(p2.ypos - p1.ypos, 2));
 	}
 
 	// HTTP POST request
