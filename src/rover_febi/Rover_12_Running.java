@@ -28,7 +28,7 @@ import enums.Terrain;
  * publishing their code examples
  */
 
-public class Rover_12_Running  {
+public class Rover_12_Running {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -44,7 +44,7 @@ public class Rover_12_Running  {
 	// MapTile[][] mapTileLog = new MapTile[100][100];
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 
-	public Rover_12_Running () {
+	public Rover_12_Running() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -54,7 +54,7 @@ public class Rover_12_Running  {
 							// will cut connection if it is too small
 	}
 
-	public Rover_12_Running (String serverAddress) {
+	public Rover_12_Running(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -170,8 +170,7 @@ public class Rover_12_Running  {
 				// System.out.println(currentLoc);
 
 				// store rover 12 path for easy return
-				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
-						.getYpos()));
+				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 
 				// this is the Rovers HeartBeat, it regulates how fast the Rover
 				// cycles through the control loop
@@ -215,39 +214,39 @@ public class Rover_12_Running  {
 			if (scanMapTiles[centerIndex + 1][centerIndex].getScience().equals(
 					"C")) {
 				// move east
-				cardinals=moveEast(cardinals);
+				cardinals = moveEast(cardinals);
 
 			} else if (scanMapTiles[centerIndex][centerIndex + 1].getScience()
 					.equals("C")) {
 				// move south
-				cardinals=moveSouth(cardinals);
+				cardinals = moveSouth(cardinals);
 
 			} else if (scanMapTiles[centerIndex][centerIndex - 1].getScience()
 					.equals("C")) {
 				// move north
-				cardinals=moveNorth(cardinals);
+				cardinals = moveNorth(cardinals);
 			} else {
 				// if next move to east is an obstacle
-				if (isTowardsEastIsObsatacle(scanMapTiles,centerIndex)) {
+				if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether south is obstacle
 					if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 						// check whether north is obstacle
 						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
-							//move west
-							cardinals=moveWest(cardinals);
+							// move west
+							cardinals = moveWest(cardinals);
 						} else {
 							// move north
-							cardinals=moveNorth(cardinals);
+							cardinals = moveNorth(cardinals);
 						}
 					} else {
 						// move south
-						cardinals=moveSouth(cardinals);
+						cardinals = moveSouth(cardinals);
 					}
 				}
 				// when no obstacle is in next move to east
 				else {
 					// move east
-					cardinals=moveEast(cardinals);
+					cardinals = moveEast(cardinals);
 				}
 			}
 		} else if (cardinals[3]) {
@@ -258,20 +257,20 @@ public class Rover_12_Running  {
 					// check whether north is obstacle
 					if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
 						// move east
-						cardinals=moveEast(cardinals);
+						cardinals = moveEast(cardinals);
 					} else {
 						// move north
-						cardinals=moveNorth(cardinals);
+						cardinals = moveNorth(cardinals);
 					}
 				} else {
 					// move south
-					cardinals=moveSouth(cardinals);
+					cardinals = moveSouth(cardinals);
 				}
 			}
 			// when no obstacle is in next move to west
 			else {
 				// move west
-				cardinals=moveWest(cardinals);
+				cardinals = moveWest(cardinals);
 			}
 		} else if (cardinals[0]) {
 
@@ -282,20 +281,20 @@ public class Rover_12_Running  {
 					// check whether east is obstacle
 					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
 						// move north
-						cardinals=moveNorth(cardinals);
+						cardinals = moveNorth(cardinals);
 					} else {
 						// move east
-						cardinals=moveEast(cardinals);
+						cardinals = moveEast(cardinals);
 					}
 				} else {
 					// move west
-					cardinals=moveWest(cardinals);
+					cardinals = moveWest(cardinals);
 				}
 			}
 			// when no obstacle is in next move to south
 			else {
 				// move south
-				cardinals=moveSouth(cardinals);
+				cardinals = moveSouth(cardinals);
 			}
 		} else if (cardinals[2]) {
 
@@ -306,20 +305,20 @@ public class Rover_12_Running  {
 					// check whether east is obstacle
 					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
 						// move south
-						cardinals=moveSouth(cardinals);
+						cardinals = moveSouth(cardinals);
 					} else {
 						// move east
-						cardinals=moveEast(cardinals);
+						cardinals = moveEast(cardinals);
 					}
 				} else {
 					// move west
-					cardinals=moveWest(cardinals);
+					cardinals = moveWest(cardinals);
 				}
 			}
 			// when no obstacle is in next move to north
 			else {
 				// move north
-				cardinals=moveNorth(cardinals);
+				cardinals = moveNorth(cardinals);
 			}
 		}
 	}
@@ -366,61 +365,51 @@ public class Rover_12_Running  {
 		return cardinals;
 	}
 
-	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if(scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.FLUID
-					|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND){
+	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if(scanMapTiles[centerIndex][centerIndex - 1]
-								.getHasRover()
-								|| scanMapTiles[centerIndex][centerIndex - 1]
-										.getTerrain() == Terrain.ROCK
-								|| scanMapTiles[centerIndex][centerIndex - 1]
-										.getTerrain() == Terrain.NONE
-								|| scanMapTiles[centerIndex][centerIndex - 1]
-										.getTerrain() == Terrain.FLUID
-								|| scanMapTiles[centerIndex][centerIndex - 1]
-										.getTerrain() == Terrain.SAND){
+	private boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex][centerIndex - 1].getHasRover()
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if(scanMapTiles[centerIndex][centerIndex + 1]
-							.getHasRover()
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.ROCK
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.NONE
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.FLUID
-							|| scanMapTiles[centerIndex][centerIndex + 1]
-									.getTerrain() == Terrain.SAND){
+	private boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if(scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
-						|| scanMapTiles[centerIndex + 1][centerIndex]
-								.getTerrain() == Terrain.ROCK
-						|| scanMapTiles[centerIndex + 1][centerIndex]
-								.getTerrain() == Terrain.NONE
-						|| scanMapTiles[centerIndex + 1][centerIndex]
-								.getTerrain() == Terrain.FLUID
-						|| scanMapTiles[centerIndex + 1][centerIndex]
-								.getTerrain() == Terrain.SAND){
-									return true;
-								}
+	private boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex) {
+		if (scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.FLUID
+				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
+			return true;
+		}
 
 		return false;
 	}
@@ -499,7 +488,7 @@ public class Rover_12_Running  {
 	public void loadScanMapFromSwarmServer() throws IOException {
 		// System.out.println("ROVER_12 method doScan()");
 		setCurrentLoc();
-		Coord scanLoc = new Coord(currentLoc.getXpos(), currentLoc.getYpos());
+		Coord scanLoc = new Coord(currentLoc.xpos, currentLoc.ypos);
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
 		out.println("SCAN");
@@ -536,14 +525,13 @@ public class Rover_12_Running  {
 
 		System.out.println("+++++++++++++++ jsonScanMapString +++++++++++++++");
 		System.out.println(jsonScanMapString.toString());
-//		try {
-//			Thread.sleep(10000);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
-		
+		// try {
+		// Thread.sleep(10000);
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+
 		// System.out.println("ROVER_12 convert from json back to ScanMap class");
 		// convert from the json string back to a ScanMap object
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
@@ -568,8 +556,7 @@ public class Rover_12_Running  {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("START_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("START_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -601,8 +588,7 @@ public class Rover_12_Running  {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("TARGET_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("TARGET_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -751,60 +737,61 @@ public class Rover_12_Running  {
 		}
 	}
 
-//	public void debugPrintMapTileHashMap(Map<Coord,MapTile> maptiles, int xStart, int yXtart, int edgeSize){
-//	System.out.println("edge size: " + edgeSize);
-//	for (int k = 0; k < edgeSize + 2; k++) {
-//		System.out.print("--");
-//	}
-//
-//	System.out.print("\n");
-//	for (int j = yXtart; j < edgeSize; j++) {
-//		System.out.print("| ");
-//		for (int i = yXtart; i < edgeSize; i++) {
-//			// check and print edge of map has first priority
-//			if (scanArray[i][j].getTerrain().toString().equals("NONE")) {
-//				System.out.print("XX");
-//
-//				// next most important - print terrain and/or science
-//				// locations
-//				// terrain and science
-//			} else if (!(scanArray[i][j].getTerrain().toString()
-//					.equals("SOIL"))
-//					&& !(scanArray[i][j].getScience().toString()
-//							.equals("NONE"))) {
-//				// both terrain and science
-//
-//				System.out.print(scanArray[i][j].getTerrain().toString()
-//						.substring(0, 1)
-//						+ scanArray[i][j].getScience().getSciString());
-//				// just terrain
-//			} else if (!(scanArray[i][j].getTerrain().toString()
-//					.equals("SOIL"))) {
-//				System.out.print(scanArray[i][j].getTerrain().toString()
-//						.substring(0, 1)
-//						+ " ");
-//				// just science
-//			} else if (!(scanArray[i][j].getScience().toString()
-//					.equals("NONE"))) {
-//				System.out.print(" "
-//						+ scanArray[i][j].getScience().getSciString());
-//
-//				// if still empty check for rovers and print them
-//			} else if (scanArray[i][j].getHasRover()) {
-//				System.out.print("[]");
-//
-//				// nothing here so print nothing
-//			} else {
-//				System.out.print("  ");
-//			}
-//		}
-//		System.out.print(" |\n");
-//	}
-//	for (int k = 0; k < edgeSize + 2; k++) {
-//		System.out.print("--");
-//	}
-//	System.out.print("\n");
-//	}
+	// public void debugPrintMapTileHashMap(Map<Coord,MapTile> maptiles, int
+	// xStart, int yXtart, int edgeSize){
+	// System.out.println("edge size: " + edgeSize);
+	// for (int k = 0; k < edgeSize + 2; k++) {
+	// System.out.print("--");
+	// }
+	//
+	// System.out.print("\n");
+	// for (int j = yXtart; j < edgeSize; j++) {
+	// System.out.print("| ");
+	// for (int i = yXtart; i < edgeSize; i++) {
+	// // check and print edge of map has first priority
+	// if (scanArray[i][j].getTerrain().toString().equals("NONE")) {
+	// System.out.print("XX");
+	//
+	// // next most important - print terrain and/or science
+	// // locations
+	// // terrain and science
+	// } else if (!(scanArray[i][j].getTerrain().toString()
+	// .equals("SOIL"))
+	// && !(scanArray[i][j].getScience().toString()
+	// .equals("NONE"))) {
+	// // both terrain and science
+	//
+	// System.out.print(scanArray[i][j].getTerrain().toString()
+	// .substring(0, 1)
+	// + scanArray[i][j].getScience().getSciString());
+	// // just terrain
+	// } else if (!(scanArray[i][j].getTerrain().toString()
+	// .equals("SOIL"))) {
+	// System.out.print(scanArray[i][j].getTerrain().toString()
+	// .substring(0, 1)
+	// + " ");
+	// // just science
+	// } else if (!(scanArray[i][j].getScience().toString()
+	// .equals("NONE"))) {
+	// System.out.print(" "
+	// + scanArray[i][j].getScience().getSciString());
+	//
+	// // if still empty check for rovers and print them
+	// } else if (scanArray[i][j].getHasRover()) {
+	// System.out.print("[]");
+	//
+	// // nothing here so print nothing
+	// } else {
+	// System.out.print("  ");
+	// }
+	// }
+	// System.out.print(" |\n");
+	// }
+	// for (int k = 0; k < edgeSize + 2; k++) {
+	// System.out.print("--");
+	// }
+	// System.out.print("\n");
+	// }
 
 	public void debugPrintMapTileArray(Map<Coord, MapTile> globalMapCopy) {
 
@@ -887,8 +874,7 @@ public class Rover_12_Running  {
 
 		// debug - print out
 		System.out.println("inside of loadMapTileIntoGlobal()[scanLoc="
-				+ scanLoc + "]:"+"[currLoc="
-				+ currentLoc);
+				+ scanLoc + "]:" + "[currLoc=" + currentLoc);
 		System.out.println("ptrScanMap Size: " + ptrScanMap.length);
 
 		for (int y = 0; y < ptrScanMap.length; y++) {
@@ -900,14 +886,14 @@ public class Rover_12_Running  {
 				hasR = ptrScanMap[x][y].getHasRover();
 
 				tempTile = new MapTile(ter, sci, elev, hasR);
-				tempCoord = new Coord((scanLoc.getXpos() - halfTileSize) + x,
-						scanLoc.getYpos() - halfTileSize + y);
+				tempCoord = new Coord((scanLoc.xpos - halfTileSize) + x,
+						scanLoc.ypos - halfTileSize + y);
 
 				// debug
 				System.out.println("(x,y)=(" + x + "," + y + ")|" + "(X,Y)=("
-						+ (scanLoc.getXpos() - halfTileSize + x) + ","
-						+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
-						+ tempCoord + tempTile);
+						+ (scanLoc.xpos - halfTileSize + x) + ","
+						+ (scanLoc.ypos - halfTileSize + y) + ")\t" + tempCoord
+						+ tempTile);
 				mapTileLog.put(tempCoord, tempTile);
 
 				System.out.println(tempCoord + " *** " + tempTile);
@@ -1006,38 +992,37 @@ public class Rover_12_Running  {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
 
-//	private void SendJsonToServer(JSONObject obj) {
-//		HttpClient client = new DefaultHttpClient();
-//		HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000);
-//		// Timeout Limit
-//		HttpResponse response;
-//
-//		try {
-//			// TODO Update with correct server URL
-//			HttpPost post = new HttpPost("OUR SERVER URL");
-//			StringEntity se = new StringEntity(obj.toString());
-//			se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
-//					"application/json"));
-//			post.setEntity(se);
-//			response = client.execute(post);
-//
-//			/* Checking response */
-//			if (response != null) {
-//				InputStream in = response.getEntity().getContent();
-//				// Get the data in the entity
-//			}
-//
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
+	// private void SendJsonToServer(JSONObject obj) {
+	// HttpClient client = new DefaultHttpClient();
+	// HttpConnectionParams.setConnectionTimeout(client.getParams(), 10000);
+	// // Timeout Limit
+	// HttpResponse response;
+	//
+	// try {
+	// // TODO Update with correct server URL
+	// HttpPost post = new HttpPost("OUR SERVER URL");
+	// StringEntity se = new StringEntity(obj.toString());
+	// se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE,
+	// "application/json"));
+	// post.setEntity(se);
+	// response = client.execute(post);
+	//
+	// /* Checking response */
+	// if (response != null) {
+	// InputStream in = response.getEntity().getContent();
+	// // Get the data in the entity
+	// }
+	//
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	// }
 
 	/**
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		Rover_12_Running  client = new Rover_12_Running ();
+		Rover_12_Running client = new Rover_12_Running();
 		client.run();
 	}
 }
-

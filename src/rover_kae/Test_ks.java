@@ -22,13 +22,75 @@ import common.MapTile;
 
 public class Test_ks {
 
-	@Test
+	public int countUnvisited(Coord currLoc, int searchSize,
+			Map<Coord, Boolean> mapTileLog) {
+		// searchSize should be an even number
+		int numUnvisited = 0;
+
+		for (int j = currLoc.ypos - searchSize / 2; j < currLoc.ypos
+				+ searchSize / 2; j++) {
+			for (int i = currLoc.xpos - searchSize / 2; i < currLoc.ypos
+					+ searchSize / 2; i++) {
+				System.out.println("i,j=" + i + "," + j);
+				if (!mapTileLog.containsKey(new Coord(i, j))) {
+					System.out.println("it's null");
+					numUnvisited++;
+				}
+			}
+		}
+		return numUnvisited;
+
+	}
+
+	// @Test
+	public void testCountVisited() {
+
+		int size = 8;
+		Map<Coord, Boolean> mapTileLog = new HashMap<Coord, Boolean>();
+		// populate mapTileLog
+		for (int j = 0; j < size; j++) {
+			for (int i = 0; i < size; i++) {
+				mapTileLog.put(new Coord(i, j), true);
+			}
+		}
+		// debug print the contents of mapTileLog
+		for (int j = 0; j < size; j++) {
+			for (int i = 0; i < size; i++) {
+				System.out.print(mapTileLog.get(new Coord(i, j)) + "\t");
+			}
+			System.out.println();
+		}
+
+		mapTileLog.remove(new Coord(3, 3));
+		mapTileLog.remove(new Coord(4, 4));
+		mapTileLog.remove(new Coord(5, 5));
+		mapTileLog.remove(new Coord(3, 4));
+		mapTileLog.remove(new Coord(5, 3));
+		mapTileLog.remove(new Coord(3, 4));
+		mapTileLog.remove(new Coord(3, 5));
+		mapTileLog.remove(new Coord(4, 5));
+		mapTileLog.remove(new Coord(1, 1));
+
+		System.out.println("\n\nafter the removals:");
+		// debug print the contents of mapTileLog
+		for (int j = 0; j < size; j++) {
+			for (int i = 0; i < size; i++) {
+				System.out.print(mapTileLog.get(new Coord(i, j)) + "\t");
+			}
+			System.out.println();
+		}
+
+		System.out.println(countUnvisited(new Coord(4, 5), 4, mapTileLog));
+
+	}
+
+	// @Test
 	public void testGetBackTrackDir() {
 
 		Path path = new Path(new Coord(1, -2), new Coord(1, -2));
 		// Path path = new Path(new Coord(0,0), new Coord(0,3));
 		// Path path = new Path(new Coord(0,0), new Coord(0,3));
-		
+
 		System.out.println(path.getBackTrackDir());
 
 	}
