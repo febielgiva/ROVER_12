@@ -89,8 +89,9 @@ public class ROVER_12_wk8_nive {
 	 */
 	private void run() throws IOException, InterruptedException {
 
-		String url = "http://23.251.155.186:3000/api/global";
-		Communication com = new Communication(url);
+		String url = "http://23.251.155.186:3000/api";
+		String corp_secret = "0FSj7Pn23t";
+		Communication com = new Communication(url, rovername, corp_secret);
 
 		// Make connection to SwarmServer and initialize streams
 		Socket socket = null;
@@ -193,8 +194,7 @@ public class ROVER_12_wk8_nive {
 				// System.out.println(currentLoc);
 
 				// store rover 12 path for easy return
-				pathMap.add(new Coord(currentLoc.xpos, currentLoc
-						.ypos));
+				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
@@ -679,8 +679,7 @@ public class ROVER_12_wk8_nive {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("START_LOC " + currentLoc.xpos + " "
-				+ currentLoc.ypos);
+		out.println("START_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -712,8 +711,7 @@ public class ROVER_12_wk8_nive {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("TARGET_LOC " + currentLoc.xpos + " "
-				+ currentLoc.ypos);
+		out.println("TARGET_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -1001,9 +999,8 @@ public class ROVER_12_wk8_nive {
 
 					// debug
 					System.out.println("(x,y)=(" + x + "," + y + ")|"
-							+ "(X,Y)=("
-							+ (scanLoc.xpos - halfTileSize + x) + ","
-							+ (scanLoc.ypos - halfTileSize + y) + ")\t"
+							+ "(X,Y)=(" + (scanLoc.xpos - halfTileSize + x)
+							+ "," + (scanLoc.ypos - halfTileSize + y) + ")\t"
 							+ tempCoord + tempTile);
 					// our copy of the scanned map in global context
 					mapTileLog.put(tempCoord, tempTile);
