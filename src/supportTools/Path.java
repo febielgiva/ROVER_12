@@ -1,8 +1,5 @@
 package supportTools;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import common.Coord;
 
 public class Path {
