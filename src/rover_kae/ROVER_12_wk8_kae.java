@@ -65,7 +65,7 @@ public class ROVER_12_wk8_kae {
 			targetLocation = null;
 
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	private Set<Coord,Path> visitCounts = new HashSet<Coord,Path>();// manage this only
+	//private Set<Coord,Path> visitCounts = new HashSet<Coord,Path>();// manage this only
 														// after targetLoc has
 														// been
 	// visited
@@ -1087,9 +1087,9 @@ public class ROVER_12_wk8_kae {
 		}
 
 		// while()
-		if (visitCounts.size() < 1) {
+		/*if (visitCounts.size() < 1) {
 
-		}
+		}*/
 		return null;
 	}
 
@@ -1152,7 +1152,7 @@ public class ROVER_12_wk8_kae {
 				sinusoidal_West(target);
 			}
 
-			if(goingInCircle)
+			//if(goingInCircle){}
 			
 			// jump out of the loop if eastern edge of the land is reached
 			for (int i = 0; i < cardinals.length; i++) {
