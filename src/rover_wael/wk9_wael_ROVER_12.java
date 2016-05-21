@@ -61,6 +61,7 @@ public class wk9_wael_ROVER_12 {
 	static final int PORT_ADDRESS = 9537;
 
 	// Group 12 variables
+	int numLogics = 3;
 	static String myJSONStringBackupofMap;
 	private Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
@@ -387,8 +388,16 @@ public class wk9_wael_ROVER_12 {
 						// com.postScanMapTiles(currentLoc, scanMapTiles);
 						
 						
+						
 						// ***** under construction ******
-//						if (countUnvisited(currentLoc, 11) < 4) {
+//						if(roverLogicSwitch % numLogics == 0){
+//							roverMotionLogic(cardinals, scanMapTiles, centerIndex);
+//						}else if(roverLogicSwitch % numLogics == 1){
+//							followLhsWall(scanMapTiles, centerIndex);
+//						}else if(roverLogicSwitch % numLogics == 2){
+//							followRhsWall(scanMapTiles, centerIndex);
+//						}
+//						if (countUnvisited(currentLoc, 11) < 1) {
 //							System.out.println("number of unvisited: "
 //									+ countUnvisited(currentLoc, 11));
 //							roverLogicSwitch++;

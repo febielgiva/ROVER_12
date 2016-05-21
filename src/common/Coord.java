@@ -1,5 +1,6 @@
 package common;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class Coord {
@@ -39,14 +40,6 @@ public class Coord {
 	
 	public Coord clone(){
 		return new Coord(xpos, ypos);
-	}
-
-	public int getXpos() {
-		return this.xpos;
-	}
-
-	public int getYpos() {
-		return this.ypos;
 	}
 	
 }
