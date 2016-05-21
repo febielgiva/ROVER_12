@@ -598,6 +598,13 @@ public class ROVER_12_wk9 {
 
 	// ####################### Support Methods #############################
 
+	// cheaper distance computation
+	private int getManhattanDist(Coord target) {
+		int dx = Math.abs(currentLoc.xpos - target.xpos);
+		int dy = Math.abs(currentLoc.ypos - target.ypos);
+		return dx + dy;
+	}
+
 	private void clearReadLineBuffer() throws IOException {
 		while (in.ready()) {
 			// System.out.println("ROVER_12 clearing readLine()");
