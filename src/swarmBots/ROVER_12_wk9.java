@@ -61,6 +61,7 @@ public class ROVER_12_wk9 {
 	static final int PORT_ADDRESS = 9537;
 
 	// Group 12 variables
+	int numLogics = 3;
 	static String myJSONStringBackupofMap;
 	private Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
@@ -333,9 +334,10 @@ public class ROVER_12_wk9 {
 
 	private void run() throws IOException, InterruptedException {
 
-		// Make connection to GreenCorp Server
-				// String url = "http://23.251.155.186:3000/api/global";
-				// Communication com = new Communication(url, rovername, corp_secret);
+				// Make connection to GreenCorp Server
+//				String url = "http://23.251.155.186:3000/api";
+//				String corp_secret = "0FSj7Pn23t";
+//				Communication com = new Communication(url, rovername, corp_secret);
 
 				// if(targetReached)
 
@@ -387,8 +389,16 @@ public class ROVER_12_wk9 {
 						// com.postScanMapTiles(currentLoc, scanMapTiles);
 						
 						
+						
 						// ***** under construction ******
-//						if (countUnvisited(currentLoc, 11) < 4) {
+//						if(roverLogicSwitch % numLogics == 0){
+//							roverMotionLogic(cardinals, scanMapTiles, centerIndex);
+//						}else if(roverLogicSwitch % numLogics == 1){
+//							followLhsWall(scanMapTiles, centerIndex);
+//						}else if(roverLogicSwitch % numLogics == 2){
+//							followRhsWall(scanMapTiles, centerIndex);
+//						}
+//						if (countUnvisited(currentLoc, 11) < 1) {
 //							System.out.println("number of unvisited: "
 //									+ countUnvisited(currentLoc, 11));
 //							roverLogicSwitch++;
@@ -587,6 +597,27 @@ public class ROVER_12_wk9 {
 	}
 
 	// ####################### Support Methods #############################
+	// cheaper distance computation
+	private int getManhattanDist1(Coord target) {
+		int dx = Math.abs(currentLoc.xpos - target.xpos);
+		int dy = Math.abs(currentLoc.ypos - target.ypos);
+		return dx + dy;
+	}
+	
+	// expensive distance computation
+	public double getDistanceBtw2Points(Coord p1, Coord p2) {
+
+		int dx = p2.xpos - p1.xpos;
+		int dy = p2.ypos - p1.ypos;
+
+		return Math.sqrt((dx * dx) + (dy * dy));
+	}
+	// cheaper distance computation
+	private int getManhattanDist(Coord target) {
+		int dx = Math.abs(currentLoc.xpos - target.xpos);
+		int dy = Math.abs(currentLoc.ypos - target.ypos);
+		return dx + dy;
+	}
 
 	private void clearReadLineBuffer() throws IOException {
 		while (in.ready()) {

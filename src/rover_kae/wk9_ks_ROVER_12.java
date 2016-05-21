@@ -334,9 +334,10 @@ public class wk9_ks_ROVER_12 {
 
 	private void run() throws IOException, InterruptedException {
 
-		// Make connection to GreenCorp Server
-				// String url = "http://23.251.155.186:3000/api/global";
-				// Communication com = new Communication(url, rovername, corp_secret);
+				// Make connection to GreenCorp Server
+//				String url = "http://23.251.155.186:3000/api";
+//				String corp_secret = "0FSj7Pn23t";
+//				Communication com = new Communication(url, rovername, corp_secret);
 
 				// if(targetReached)
 
