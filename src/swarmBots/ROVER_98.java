@@ -172,7 +172,6 @@ public class ROVER_98 {
 
 				// gets the scanMap from the server based on the Rover current location
 				doScan();
-				// prints the scanMap to the Console output for debug purposes
 				scanMap.debugPrintMap();
 				
 		
