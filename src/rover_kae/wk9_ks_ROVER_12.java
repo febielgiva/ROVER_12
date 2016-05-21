@@ -57,7 +57,8 @@ public class wk9_ks_ROVER_12 {
 	private String rovername;
 	private ScanMap scanMap;
 	private int sleepTime;
-	private String SERVER_ADDRESS = "localhost", line;
+	 private String SERVER_ADDRESS = "localhost", line;
+	//private String SERVER_ADDRESS = "192.168.1.106", line;
 	static final int PORT_ADDRESS = 9537;
 
 	// Group 12 variables
@@ -86,6 +87,7 @@ public class wk9_ks_ROVER_12 {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
+		//SERVER_ADDRESS = "192.168.1.106";
 		SERVER_ADDRESS = "localhost";
 		// this should be a safe but slow timer value
 		sleepTime = 500; // in milliseconds - smaller is faster, but the server
@@ -102,7 +104,8 @@ public class wk9_ks_ROVER_12 {
 	}
 
 	private void roverMotionLogic(boolean[] cardinals,
-			MapTile[][] scanMapTiles, int centerIndex) throws IOException {
+			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
+			int currentYPos) throws InterruptedException, IOException {
 		// ************* Febi's rover motion logic **********
 		// int tempRowArray;
 		// int tempColumnArray;
@@ -118,21 +121,38 @@ public class wk9_ks_ROVER_12 {
 			if (scanMapTiles[centerIndex + 1][centerIndex].getScience().equals(
 					"C")) {
 				move("E");
+
 			} else if (scanMapTiles[centerIndex][centerIndex + 1].getScience()
 					.equals("C")) {
 				move("S");
 			} else if (scanMapTiles[centerIndex][centerIndex - 1].getScience()
 					.equals("C")) {
-				// move north
-				moveNorth();
+				move("N");
 			} else {
 				// if next move to east is an obstacle
-				if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+				if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsEast(currentXPos,
+								currentYPos))) {
 					// check whether south is obstacle
-					if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
+					if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
+									currentYPos))) {
 						// check whether north is obstacle
-						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
-							move("W");
+						if ((isTowardsNorthIsObsatacle(scanMapTiles,
+								centerIndex))
+								|| (isAlreadyTraveledPathTowardsNorth(
+										currentXPos, currentYPos))) {
+							// move west if no obstacle or else east
+							if (isTowardsWestIsObsatacle(scanMapTiles,
+									centerIndex)) {
+								move("E");
+							} else {
+								cardinals = randomPickMotion(cardinals,
+										centerIndex, scanMapTiles);
+								// cardinals = moveUsingPastPath(cardinals,
+								// currentXPos, currentYPos);
+							}
+
 						} else {
 							move("N");
 						}
@@ -145,15 +165,30 @@ public class wk9_ks_ROVER_12 {
 					move("E");
 				}
 			}
-			// logic if going in west
 		} else if (cardinals[3]) {
 			// if next move to west is an obstacle
-			if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
+			if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
+					|| (isAlreadyTraveledPathTowardsWest(currentXPos,
+							currentYPos))) {
 				// check whether south is obstacle
-				if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
+				if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
+								currentYPos))) {
 					// check whether north is obstacle
-					if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
-						move("E");
+					if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsNorth(currentXPos,
+									currentYPos))) {
+						// move east if no obstacle or else move to west
+						if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+							move("W");
+						} else {
+							cardinals = randomPickMotion(cardinals,
+									centerIndex, scanMapTiles);
+
+							// cardinals = moveUsingPastPath(cardinals,
+							// currentXPos, currentYPos);
+						}
+
 					} else {
 						move("N");
 					}
@@ -165,16 +200,30 @@ public class wk9_ks_ROVER_12 {
 			else {
 				move("W");
 			}
-			// logic if going in south
 		} else if (cardinals[0]) {
 
 			// check whether south is obstacle
-			if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
+			if ((isTowardsSouthIsObsatacle(scanMapTiles, centerIndex))
+					|| (isAlreadyTraveledPathTowardsSouth(currentXPos,
+							currentYPos))) {
 				// if next move to west is an obstacle
-				if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
+				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsWest(currentXPos,
+								currentYPos))) {
 					// check whether east is obstacle
-					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
-						move("N");
+					if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsEast(currentXPos,
+									currentYPos))) {
+						// move north if no obstacle or else move in south
+						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+							move("S");
+						} else {
+							cardinals = randomPickMotion(cardinals,
+									centerIndex, scanMapTiles);
+
+							// cardinals = moveUsingPastPath(cardinals,
+							// currentXPos, currentYPos);
+						}
 					} else {
 						move("E");
 					}
@@ -186,20 +235,36 @@ public class wk9_ks_ROVER_12 {
 			else {
 				move("S");
 			}
-			// logic if going in north
 		} else if (cardinals[2]) {
 
 			// check whether north is obstacle
-			if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+			if ((isTowardsNorthIsObsatacle(scanMapTiles, centerIndex))
+					|| (isAlreadyTraveledPathTowardsNorth(currentXPos,
+							currentYPos))) {
 				// if next move to west is an obstacle
-				if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
+				if ((isTowardsWestIsObsatacle(scanMapTiles, centerIndex))
+						|| (isAlreadyTraveledPathTowardsWest(currentXPos,
+								currentYPos))) {
 					// check whether east is obstacle
-					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
-						move("S");
+					if ((isTowardsEastIsObsatacle(scanMapTiles, centerIndex))
+							|| (isAlreadyTraveledPathTowardsEast(currentXPos,
+									currentYPos))) {
+						// move south if no obstacle or else go back to
+						// north098uuu
+						if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
+							move("N");
+						} else {
+							cardinals = randomPickMotion(cardinals,
+									centerIndex, scanMapTiles);
+
+							// cardinals = moveUsingPastPath(cardinals,
+							// currentXPos, currentYPos);
+						}
 					} else {
 						move("E");
 					}
 				} else {
+
 					move("W");
 				}
 			}
@@ -350,7 +415,7 @@ public class wk9_ks_ROVER_12 {
 		int dy = Math.abs(currentLoc.ypos - target.ypos);
 		return dx + dy;
 	}
-	
+
 	// expensive distance computation
 	public double getDistanceBtw2Points(Coord p1, Coord p2) {
 
@@ -359,6 +424,7 @@ public class wk9_ks_ROVER_12 {
 
 		return Math.sqrt((dx * dx) + (dy * dy));
 	}
+
 	private void followLhsWall(MapTile[][] scanMapTiles, int centerIndex)
 			throws IOException {
 
@@ -436,10 +502,10 @@ public class wk9_ks_ROVER_12 {
 
 	private void run() throws IOException, InterruptedException {
 
-		// Make connection to GreenCorp Server
 		// String url = "http://23.251.155.186:3000/api";
-		// String corp_secret = "0FSj7Pn23t";
-		// Communication com = new Communication(url, rovername, corp_secret);
+		String url = "http://192.168.1.104:3000/api";
+		String corp_secret = "0FSj7Pn23t";
+		Communication com = new Communication(url, rovername, corp_secret);
 
 		// if(targetReached)
 
@@ -482,11 +548,11 @@ public class wk9_ks_ROVER_12 {
 
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-				// com.postScanMapTiles(currentLoc, scanMapTiles);
+				com.postScanMapTiles(currentLoc, scanMapTiles);
 
 				// ***** under construction ******
 				// if(roverLogicSwitch % numLogics == 0){
-				// roverMotionLogic(cardinals, scanMapTiles, centerIndex);
+
 				// }else if(roverLogicSwitch % numLogics == 1){
 				// followLhsWall(scanMapTiles, centerIndex);
 				// }else if(roverLogicSwitch % numLogics == 2){
@@ -502,10 +568,10 @@ public class wk9_ks_ROVER_12 {
 				// }
 
 				previousLoc = currentLoc;
-				// roverMotionLogic(cardinals, scanMapTiles, centerIndex);
+				roverMotionLogic(cardinals, scanMapTiles, centerIndex, currentLoc.xpos,currentLoc.ypos);
 				// followLhsWall(scanMapTiles, centerIndex);
-				headEast(scanMapTiles, centerIndex);
-				headWest(scanMapTiles, centerIndex);
+				// headEast(scanMapTiles, centerIndex);
+				// headWest(scanMapTiles, centerIndex);
 
 				setCurrentLoc(); // AFTER this iteration
 				System.out.println("AFTER: " + currentLoc);
