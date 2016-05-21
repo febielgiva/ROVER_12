@@ -863,7 +863,7 @@ public class wk9_ks_ROVER_12 {
 		return timeRemaining;
 	}
 
-	public static Coord extractCurrLOC(String sStr) {
+	private static Coord extractCurrLOC(String sStr) {
 		sStr = sStr.substring(4);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -895,7 +895,7 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-	public static Coord extractStartLOC(String sStr) {
+	private static Coord extractStartLOC(String sStr) {
 
 		sStr = sStr.substring(10);
 
@@ -910,7 +910,7 @@ public class wk9_ks_ROVER_12 {
 		return null;
 	}
 
-	public static Coord extractTargetLOC(String sStr) {
+	private static Coord extractTargetLOC(String sStr) {
 		sStr = sStr.substring(11);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -923,7 +923,7 @@ public class wk9_ks_ROVER_12 {
 		return null;
 	}
 
-	public static int extractTimeRemaining(String sStr) {
+	private static int extractTimeRemaining(String sStr) {
 		sStr = sStr.substring(6);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String timeStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -934,7 +934,7 @@ public class wk9_ks_ROVER_12 {
 
 	// this takes the server response string, parses out the x and x values and
 	// returns a Coord object
-	public static Coord extractLocationFromString(String sStr) {
+	private static Coord extractLocationFromString(String sStr) {
 		int indexOf;
 		indexOf = sStr.indexOf(" ");
 		sStr = sStr.substring(indexOf + 1);
