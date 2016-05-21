@@ -1,4 +1,4 @@
-package rover_wael;
+package rover_nive;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -50,7 +50,7 @@ import supportTools.RoverMotionUtil;
  * publishing their code examples
  */
 
-public class ROVER_12_wk6_wael {
+public class wk9_nive_ROVER_12 {
 
 	private BufferedReader in;
 	private PrintWriter out;
@@ -81,7 +81,7 @@ public class ROVER_12_wk6_wael {
 	private boolean isTargetLocReached = false;
 	private Coord nextTarget;
 
-	public ROVER_12_wk6_wael() {
+	public wk9_nive_ROVER_12() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -91,7 +91,7 @@ public class ROVER_12_wk6_wael {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12_wk6_wael(String serverAddress) {
+	public wk9_nive_ROVER_12(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -1539,7 +1539,7 @@ public class ROVER_12_wk6_wael {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_wk6_wael client = new ROVER_12_wk6_wael();
+		wk9_nive_ROVER_12 client = new wk9_nive_ROVER_12();
 		client.run();
 	}
 }
