@@ -57,7 +57,8 @@ public class wk9_ks_ROVER_12 {
 	private String rovername;
 	private ScanMap scanMap;
 	private int sleepTime;
-	private String SERVER_ADDRESS = "localhost", line;
+	//private String SERVER_ADDRESS = "localhost", line;
+	private String SERVER_ADDRESS = "192.168.1.106", line;
 	static final int PORT_ADDRESS = 9537;
 
 	// Group 12 variables
@@ -85,7 +86,7 @@ public class wk9_ks_ROVER_12 {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
-		SERVER_ADDRESS = "localhost";
+		SERVER_ADDRESS = "192.168.1.106";
 		// this should be a safe but slow timer value
 		sleepTime = 500; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
@@ -333,9 +334,10 @@ public class wk9_ks_ROVER_12 {
 
 	private void run() throws IOException, InterruptedException {
 
-		// Make connection to GreenCorp Server
-		// String url = "http://23.251.155.186:3000/api/global";
-		// Communication com = new Communication(url, rovername, corp_secret);
+		//String url = "http://23.251.155.186:3000/api";
+		String url = "http://192.168.1.104:3000/api";
+		String corp_secret = "0FSj7Pn23t";
+		Communication com = new Communication(url, rovername, corp_secret);
 
 		// if(targetReached)
 
@@ -380,7 +382,7 @@ public class wk9_ks_ROVER_12 {
 
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-				// com.postScanMapTiles(currentLoc, scanMapTiles);
+				com.postScanMapTiles(currentLoc, scanMapTiles);
 
 //				if (countUnvisited(currentLoc, 11) < 4) {
 //					System.out.println("number of unvisited: "
