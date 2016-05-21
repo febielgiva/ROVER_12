@@ -50,7 +50,7 @@ import supportTools.RoverMotionUtil;
  * publishing their code examples
  */
 
-public class ROVER_12_wk8_kae {
+public class wk8_ks_ROVER_12 {
 
 	private BufferedReader in;
 	private PrintWriter out;
@@ -81,7 +81,7 @@ public class ROVER_12_wk8_kae {
 	private boolean isTargetLocReached = false;
 	private Coord nextTarget;
 
-	public ROVER_12_wk8_kae() {
+	public wk8_ks_ROVER_12() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -91,7 +91,7 @@ public class ROVER_12_wk8_kae {
 							// will cut connection if it is too small
 	}
 
-	public ROVER_12_wk8_kae(String serverAddress) {
+	public wk8_ks_ROVER_12(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -1777,7 +1777,7 @@ public class ROVER_12_wk8_kae {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_wk8_kae client = new ROVER_12_wk8_kae();
+		wk8_ks_ROVER_12 client = new wk8_ks_ROVER_12();
 		client.run();
 	}
 }
