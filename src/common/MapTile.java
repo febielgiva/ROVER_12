@@ -82,8 +82,6 @@ public class MapTile {
 		return this.hasRover;
 	}
 
-	//G12 - Does anyone know what this means?
-	// well, broke the thread safe rule
 	public void setHasRoverTrue() {
 		this.hasRover = true;
 	}
