@@ -597,13 +597,7 @@ public class ROVER_12_wk9 {
 	}
 
 	// ####################### Support Methods #############################
-	// cheaper distance computation
-	private int getManhattanDist(Coord target) {
-		int dx = Math.abs(currentLoc.xpos - target.xpos);
-		int dy = Math.abs(currentLoc.ypos - target.ypos);
-		return dx + dy;
-	}
-	
+
 	// expensive distance computation
 	public double getDistanceBtw2Points(Coord p1, Coord p2) {
 
