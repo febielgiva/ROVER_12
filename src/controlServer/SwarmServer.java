@@ -49,7 +49,9 @@ public class SwarmServer {
 	private static final int PORT = 9537; // because ... csula class number
 
 	private static SwarmMapInit mapInit = new SwarmMapInit();
-	private static String mapFileName = "MapDefault.txt";
+	private static String mapFileName = "rv12_test.txt";
+//	private static String mapFileName = "MapDefault.txt";
+
 	// private static String mapFileName = "convertedPaintMapToTextMap.txt";
 
 	private static int mapWidth = 0;
@@ -574,10 +576,10 @@ public class SwarmServer {
 			int yCurrentPos = roverPos.ypos;
 
 			// debug status out
-			System.out
-					.println("******* System.currentTimeMillis() - thisRover.getRoverLastMoveTime() = "
-							+ (System.currentTimeMillis() - thisRover
-									.getRoverLastMoveTime()));
+//			System.out
+//					.println("******* System.currentTimeMillis() - thisRover.getRoverLastMoveTime() = "
+//							+ (System.currentTimeMillis() - thisRover
+//									.getRoverLastMoveTime()));
 			// ********* WHEELS **********
 			// Respond based on the rover drive type AND
 			// Check that is has been at a minimum of "time limeit per second"
