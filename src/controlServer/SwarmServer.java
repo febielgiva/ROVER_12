@@ -49,7 +49,9 @@ public class SwarmServer {
 	private static final int PORT = 9537; // because ... csula class number
 
 	private static SwarmMapInit mapInit = new SwarmMapInit();
-	private static String mapFileName = "MapDefault.txt";
+	private static String mapFileName = "rv12_test.txt";
+//	private static String mapFileName = "MapDefault.txt";
+
 	// private static String mapFileName = "convertedPaintMapToTextMap.txt";
 
 	private static int mapWidth = 0;
