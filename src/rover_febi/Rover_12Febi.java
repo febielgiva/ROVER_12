@@ -193,8 +193,8 @@ public class Rover_12Febi {
 				// System.out.println(currentLoc);
 
 				// store rover 12 path for easy return
-				pathMap.add(new Coord(currentLoc.getXpos(), currentLoc
-						.getYpos()));
+				pathMap.add(new Coord(currentLoc.xpos, currentLoc
+						.ypos));
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
@@ -402,8 +402,8 @@ public class Rover_12Febi {
 
 	private boolean isPastPositonIsNorth(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos) && (previousYPos == currentYPos - 1)) {
 			return true;
 		}
@@ -412,8 +412,8 @@ public class Rover_12Febi {
 
 	private boolean isPastPositonIsWest(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos - 1) && (previousYPos == currentYPos)) {
 			return true;
 		}
@@ -422,8 +422,8 @@ public class Rover_12Febi {
 
 	private boolean isPastPositonIsSouth(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos) && (previousYPos == currentYPos + 1)) {
 			return true;
 		}
@@ -432,8 +432,8 @@ public class Rover_12Febi {
 
 	private boolean isPastPositonIsEast(boolean[] cardinals, Coord eachCoord,
 			int currentXPos, int currentYPos) {
-		int previousXPos = eachCoord.getXpos();
-		int previousYPos = eachCoord.getYpos();
+		int previousXPos = eachCoord.xpos;
+		int previousYPos = eachCoord.ypos;
 		if ((previousXPos == currentXPos + 1) && (previousYPos == currentYPos)) {
 			return true;
 		}
@@ -617,7 +617,7 @@ public class Rover_12Febi {
 	public void loadScanMapFromSwarmServer() throws IOException {
 		// System.out.println("ROVER_12 method doScan()");
 		setCurrentLoc();
-		Coord scanLoc = new Coord(currentLoc.getXpos(), currentLoc.getYpos());
+		Coord scanLoc = new Coord(currentLoc.xpos, currentLoc.ypos);
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
 		out.println("SCAN");
@@ -679,8 +679,8 @@ public class Rover_12Febi {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("START_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("START_LOC " + currentLoc.xpos + " "
+				+ currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -712,8 +712,8 @@ public class Rover_12Febi {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("TARGET_LOC " + currentLoc.getXpos() + " "
-				+ currentLoc.getYpos());
+		out.println("TARGET_LOC " + currentLoc.xpos + " "
+				+ currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -989,8 +989,8 @@ public class Rover_12Febi {
 		for (int y = 0; y < ptrScanMap.length; y++) {
 			for (int x = 0; x < ptrScanMap.length; x++) {
 
-				tempCoord = new Coord((scanLoc.getXpos() - halfTileSize) + x,
-						scanLoc.getYpos() - halfTileSize + y);
+				tempCoord = new Coord((scanLoc.xpos - halfTileSize) + x,
+						scanLoc.ypos - halfTileSize + y);
 				if (!mapTileLog.containsKey(tempCoord)) {
 					ter = ptrScanMap[x][y].getTerrain();
 					sci = ptrScanMap[x][y].getScience();
@@ -1002,16 +1002,16 @@ public class Rover_12Febi {
 					// debug
 					System.out.println("(x,y)=(" + x + "," + y + ")|"
 							+ "(X,Y)=("
-							+ (scanLoc.getXpos() - halfTileSize + x) + ","
-							+ (scanLoc.getYpos() - halfTileSize + y) + ")\t"
+							+ (scanLoc.xpos - halfTileSize + x) + ","
+							+ (scanLoc.ypos - halfTileSize + y) + ")\t"
 							+ tempCoord + tempTile);
 					// our copy of the scanned map in global context
 					mapTileLog.put(tempCoord, tempTile);
 
 					// Create JSON object
 					JSONObject obj = new JSONObject();
-					obj.put("x", new Integer(tempCoord.getXpos()));
-					obj.put("y", new Integer(tempCoord.getXpos()));
+					obj.put("x", new Integer(tempCoord.xpos));
+					obj.put("y", new Integer(tempCoord.ypos));
 
 					// Check if terrain exist
 					if (!ter.getTerString().isEmpty()) {
@@ -1317,8 +1317,8 @@ public class Rover_12Febi {
 	}
 
 	private double getDistanceBetween2Points(Coord p1, Coord p2) {
-		return Math.sqrt(Math.pow(p2.getXpos() - p1.getXpos(), 2)
-				+ Math.pow(p2.getYpos() - p1.getYpos(), 2));
+		return Math.sqrt(Math.pow(p2.xpos - p1.xpos, 2)
+				+ Math.pow(p2.ypos - p1.ypos, 2));
 	}
 
 	public int getFurthestQuadrant(Coord q1, Coord q2, Coord q3, Coord q4) {

@@ -1,5 +1,6 @@
 
 package rover_febi;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -436,6 +437,7 @@ public class ROVER_12 {
 					cardinals = moveSouth(cardinals);
 				}
 				break;
+
 			}
 
 			}
