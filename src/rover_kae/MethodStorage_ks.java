@@ -194,8 +194,7 @@ public class MethodStorage_ks {
 				// System.out.println(currentLoc);
 
 				// store rover 12 path for easy return
-				pathMap.add(new Coord(currentLoc.xpos, currentLoc
-						.ypos));
+				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
@@ -218,7 +217,7 @@ public class MethodStorage_ks {
 	}// END of Rover main control loop
 
 	private void roverMotionLogic(boolean[] cardinals,
-			MapTile[][] scanMapTiles, int centerIndex) {
+			MapTile[][] scanMapTiles, int centerIndex) throws IOException {
 		// ************* Febi's rover motion logic **********
 		// int tempRowArray;
 		// int tempColumnArray;
@@ -233,14 +232,10 @@ public class MethodStorage_ks {
 									.getScience().getSciString());
 			if (scanMapTiles[centerIndex + 1][centerIndex].getScience().equals(
 					"C")) {
-				// move east
-				moveEast();
-
+				move("E");
 			} else if (scanMapTiles[centerIndex][centerIndex + 1].getScience()
 					.equals("C")) {
-				// move south
-				moveSouth();
-
+				move("S");
 			} else if (scanMapTiles[centerIndex][centerIndex - 1].getScience()
 					.equals("C")) {
 				// move north
@@ -252,23 +247,20 @@ public class MethodStorage_ks {
 					if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 						// check whether north is obstacle
 						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
-							// move west
-							moveWest();
+							move("W");
 						} else {
-							// move north
-							moveNorth();
+							move("N");
 						}
 					} else {
-						// move south
-						moveSouth();
+						move("S");
 					}
 				}
 				// when no obstacle is in next move to east
 				else {
-					// move east
-					moveEast();
+					move("E");
 				}
 			}
+			// logic if going in west
 		} else if (cardinals[3]) {
 			// if next move to west is an obstacle
 			if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
@@ -276,22 +268,19 @@ public class MethodStorage_ks {
 				if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether north is obstacle
 					if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
-						// move east
-						moveEast();
+						move("E");
 					} else {
-						// move north
-						moveNorth();
+						move("N");
 					}
 				} else {
-					// move south
-					moveSouth();
+					move("S");
 				}
 			}
 			// when no obstacle is in next move to west
 			else {
-				// move west
-				moveWest();
+				move("W");
 			}
+			// logic if going in south
 		} else if (cardinals[0]) {
 
 			// check whether south is obstacle
@@ -300,22 +289,19 @@ public class MethodStorage_ks {
 				if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether east is obstacle
 					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
-						// move north
-						moveNorth();
+						move("N");
 					} else {
-						// move east
-						moveEast();
+						move("E");
 					}
 				} else {
-					// move west
-					moveWest();
+					move("W");
 				}
 			}
 			// when no obstacle is in next move to south
 			else {
-				// move south
-				moveSouth();
+				move("S");
 			}
+			// logic if going in north
 		} else if (cardinals[2]) {
 
 			// check whether north is obstacle
@@ -324,21 +310,17 @@ public class MethodStorage_ks {
 				if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
 					// check whether east is obstacle
 					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
-						// move south
-						moveSouth();
+						move("S");
 					} else {
-						// move east
-						moveEast();
+						move("E");
 					}
 				} else {
-					// move west
-					moveWest();
+					move("W");
 				}
 			}
 			// when no obstacle is in next move to north
 			else {
-				// move north
-				moveNorth();
+				move("N");
 			}
 		}
 	}
@@ -700,8 +682,7 @@ public class MethodStorage_ks {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("START_LOC " + currentLoc.xpos + " "
-				+ currentLoc.ypos);
+		out.println("START_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -733,8 +714,7 @@ public class MethodStorage_ks {
 		}
 		System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("TARGET_LOC " + currentLoc.xpos + " "
-				+ currentLoc.ypos);
+		out.println("TARGET_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
 		line = in.readLine();
 
 		if (line == null || line == "") {
@@ -1022,9 +1002,8 @@ public class MethodStorage_ks {
 
 					// debug
 					System.out.println("(x,y)=(" + x + "," + y + ")|"
-							+ "(X,Y)=("
-							+ (scanLoc.xpos - halfTileSize + x) + ","
-							+ (scanLoc.ypos - halfTileSize + y) + ")\t"
+							+ "(X,Y)=(" + (scanLoc.xpos - halfTileSize + x)
+							+ "," + (scanLoc.ypos - halfTileSize + y) + ")\t"
 							+ tempCoord + tempTile);
 					// our copy of the scanned map in global context
 					mapTileLog.put(tempCoord, tempTile);
