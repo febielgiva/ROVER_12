@@ -65,15 +65,16 @@ public class ROVER_12_wk8_kae {
 			targetLocation = null;
 
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	private Set<Coord,Path> visitCounts = new HashSet<Coord,Path>();// manage this only
-														// after targetLoc has
-														// been
+	private HashMap<Coord, Path> visitCounts = new HashMap<Coord, Path>();// manage
+																			// this
+																			// only
+	// after targetLoc has
+	// been
 	// visited
 	// private Map<Coord, Path> pathMap = new HashMap<Coord, Path>();
 	// private Deque<Coord> pathStack = new ArrayDeque<Coord>();
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
-	public Map<Coord, Path> pathMapUltra = new HashMap<Coord,Path>();
-	
+
 	private Random rd = new Random();
 	private boolean[] cardinals = new boolean[4];
 	private boolean isTargetLocReached = false;
@@ -96,6 +97,161 @@ public class ROVER_12_wk8_kae {
 		SERVER_ADDRESS = serverAddress;
 		sleepTime = 500; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
+	}
+
+	private void roverMotionLogic(boolean[] cardinals,
+			MapTile[][] scanMapTiles, int centerIndex) throws IOException {
+		// ************* Febi's rover motion logic **********
+		// int tempRowArray;
+		// int tempColumnArray;
+
+		// logic if going in east
+		if (cardinals[1]) {
+			// Checks to see if there is science on current tile, if not
+			// it moves East
+			System.out
+					.println("ROVER_12: scanMapTiles[centerIndex][centerIndex].getScience().getSciString() "
+							+ scanMapTiles[centerIndex][centerIndex]
+									.getScience().getSciString());
+			if (scanMapTiles[centerIndex + 1][centerIndex].getScience().equals(
+					"C")) {
+				move("E");
+			} else if (scanMapTiles[centerIndex][centerIndex + 1].getScience()
+					.equals("C")) {
+				move("S");
+			} else if (scanMapTiles[centerIndex][centerIndex - 1].getScience()
+					.equals("C")) {
+				// move north
+				moveNorth();
+			} else {
+				// if next move to east is an obstacle
+				if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+					// check whether south is obstacle
+					if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
+						// check whether north is obstacle
+						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+							move("W");
+						} else {
+							move("N");
+						}
+					} else {
+						move("S");
+					}
+				}
+				// when no obstacle is in next move to east
+				else {
+					move("E");
+				}
+			}
+			// logic if going in west
+		} else if (cardinals[3]) {
+			// if next move to west is an obstacle
+			if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
+				// check whether south is obstacle
+				if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
+					// check whether north is obstacle
+					if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+						move("E");
+					} else {
+						move("N");
+					}
+				} else {
+					move("S");
+				}
+			}
+			// when no obstacle is in next move to west
+			else {
+				move("W");
+			}
+			// logic if going in south
+		} else if (cardinals[0]) {
+
+			// check whether south is obstacle
+			if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
+				// if next move to west is an obstacle
+				if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
+					// check whether east is obstacle
+					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+						move("N");
+					} else {
+						move("E");
+					}
+				} else {
+					move("W");
+				}
+			}
+			// when no obstacle is in next move to south
+			else {
+				move("S");
+			}
+			// logic if going in north
+		} else if (cardinals[2]) {
+
+			// check whether north is obstacle
+			if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
+				// if next move to west is an obstacle
+				if (isTowardsWestIsObsatacle(scanMapTiles, centerIndex)) {
+					// check whether east is obstacle
+					if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
+						move("S");
+					} else {
+						move("E");
+					}
+				} else {
+					move("W");
+				}
+			}
+			// when no obstacle is in next move to north
+			else {
+				move("N");
+			}
+		}
+	}
+
+	private void followRhsWall(MapTile[][] scanMapTiles, int centerIndex)
+			throws IOException {
+
+		String[] directions = { "S", "E", "N", "W" };
+		switch (getFacingDirection()) {
+		case "E":
+			break;
+		case "S":
+			directions[0] = "W";
+			directions[1] = "S";
+			directions[2] = "E";
+			directions[3] = "N";
+			break;
+		case "W":
+			directions[0] = "N";
+			directions[1] = "W";
+			directions[2] = "S";
+			directions[3] = "E";
+			break;
+		case "N":
+			directions[0] = "E";
+			directions[1] = "N";
+			directions[2] = "W";
+			directions[3] = "S";
+			break;
+		default:
+			break;
+		}
+
+		boolean hasMoved = false;
+		for (int i = 0; i < directions.length; i++) {
+			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
+					directions[i])) {
+				System.out.println("(wall follower) move " + directions[i]);
+				hasMoved = move(directions[i]);
+				System.out.println("(WF) has moved? " + hasMoved);
+				if (hasMoved) {
+
+					return;
+				} else {
+					System.out.println("chose another direction.");
+				}
+			}
+		}
 	}
 
 	private void run() throws IOException, InterruptedException {
@@ -131,7 +287,8 @@ public class ROVER_12_wk8_kae {
 				// prevLoc = currentLoc.clone();
 				setCurrentLoc(); // BEFORE the move() in this iteration
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
-				System.out.println("BEFORE: " + currentLoc);
+				System.out.println("BEFORE: " + currentLoc + " | facing "
+						+ getFacingDirection());
 				int numSteps = pathMap.size();
 
 				// ***** do a SCAN ******
@@ -139,17 +296,31 @@ public class ROVER_12_wk8_kae {
 				loadScanMapFromSwarmServer();
 				// debug
 				// scanMap.debugPrintMap();
-				debugPrintMapTileArray(mapTileLog);
+				// debugPrintMapTileArray(mapTileLog);
 				// }
 
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
+				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 				// com.postScanMapTiles(currentLoc, scanMapTiles);
 
-				// random();
-				// roverMotionLogic(cardinals, scanMapTiles, currentLoc.xpos,
-				// currentLoc.ypos);
+				// roverMotionLogic(cardinals, scanMapTiles, centerIndex);
+				if (isTowardsThisDirectionIsObsatacle(scanMapTiles,
+						centerIndex, "E")
+						|| isTowardsThisDirectionIsObsatacle(scanMapTiles,
+								centerIndex, "S")
+						|| isTowardsThisDirectionIsObsatacle(scanMapTiles,
+								centerIndex, "W")
+						|| isTowardsThisDirectionIsObsatacle(scanMapTiles,
+								centerIndex, "N")) {
+					System.out.println("now be a wall-follower");
+					followRhsWall(scanMapTiles, centerIndex);
+				} else {
+					move("E");
+				}
 
-				sinusoidal_East(targetLocation);
+				// debugSandAvoidanceMotion(scanMapTiles, centerIndex);
+
+				Thread.sleep(500);
 
 				setCurrentLoc(); // AFTER this iteration
 				System.out.println("AFTER: " + currentLoc);
@@ -157,6 +328,7 @@ public class ROVER_12_wk8_kae {
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
 				// Thread.sleep(sleepTime);
+
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -170,6 +342,42 @@ public class ROVER_12_wk8_kae {
 			}
 		}
 	}// END of run()
+
+	private void debugSandAvoidanceMotion(MapTile[][] scanMapTiles,
+			int centerIndex) throws IOException, InterruptedException {
+		// ===========================================
+
+		if (currentLoc.xpos == 10 && currentLoc.ypos < 15) {
+			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
+					"S")) {
+				System.out.println("move south");
+				move("S");
+			}
+		} else if (currentLoc.xpos >= 13 && currentLoc.xpos <= 15
+				&& currentLoc.ypos >= 14 && currentLoc.ypos < 17
+				|| currentLoc.xpos >= 13 && currentLoc.xpos <= 17
+				|| currentLoc.xpos >= 14 && currentLoc.xpos <= 15) {
+
+			System.out.println("move random");
+			randomStep(scanMapTiles, centerIndex);
+
+		} else if (!isTowardsThisDirectionIsObsatacle(scanMapTiles,
+				centerIndex, "E")) {
+			System.out.println("move east");
+			move("E");
+		} else if (!isTowardsThisDirectionIsObsatacle(scanMapTiles,
+				centerIndex, "S")) {
+			System.out.println("move south");
+			move("S");
+		} else if (!isTowardsThisDirectionIsObsatacle(scanMapTiles,
+				centerIndex, "W")) {
+			System.out.println("move south");
+			move("W");
+		} else {
+			System.out.println("move south");
+			move("N");
+		}
+	}
 
 	/**
 	 * Connects to the server then enters the processing loop.
@@ -301,37 +509,24 @@ public class ROVER_12_wk8_kae {
 		return socket;
 	}
 
-	private void moveRover() throws IOException {
-		String dir = chooseDir();
-		move(dir);
-	}
-
-	private String chooseDir() throws IOException {
-
-		// if (isPastPositonIsEast()) {
-		// move("E");
-		//
-		// } else if (isPastPositonIsWest() {
-		// move("W");
-		//
-		// } else if (isPastPositonIsNorth(cardinals, eachCoord, currentXPos,
-		// currentYPos)) {
-		// move("N");
-		//
-		// } else if (isPastPositonIsSouth(cardinals, eachCoord, currentXPos,
-		// currentYPos)) {
-		// move("S");
-		// }
-		return "huh?";
-	}
-
 	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
 			int centerIndex) {
 		if (scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
 				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
 				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
 				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.FLUID
-				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND) {
+				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND
+				|| scanMapTiles[centerIndex + 1][centerIndex].getHasRover()) {
+			// debug print out
+			System.out.println("x,y=" + (currentLoc.xpos + 1) + ","
+					+ currentLoc.ypos + " west is blocked");
+			// debug pause
+			//try {
+				//Thread.sleep(4000);
+			//} catch (InterruptedException e) {
+				
+				//e.printStackTrace();
+			//}
 			return true;
 		}
 		return false;
@@ -344,10 +539,16 @@ public class ROVER_12_wk8_kae {
 				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
 				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.FLUID
 				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
+			// debug print out
+			System.out.println("x,y=" + (currentLoc.xpos + 1) + ","
+					+ currentLoc.ypos + " east is blocked");
 			return true;
+		} else {
+			// debug print out
+			System.out.println("x,y=" + (currentLoc.xpos + 1) + ","
+					+ currentLoc.ypos + " is open");
+			return false;
 		}
-
-		return false;
 	}
 
 	private boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles,
@@ -357,6 +558,15 @@ public class ROVER_12_wk8_kae {
 				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
 				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.FLUID
 				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
+			// debug print out
+			System.out.println("x,y=" + (currentLoc.xpos + 1) + ","
+					+ currentLoc.ypos + " north is blocked");
+			try {
+				Thread.sleep(4000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return true;
 		}
 		return false;
@@ -369,23 +579,32 @@ public class ROVER_12_wk8_kae {
 				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
 				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.FLUID
 				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
+			// debug print out
+			System.out.println("x,y=" + (currentLoc.xpos + 1) + ","
+					+ currentLoc.ypos + "south is blocked");
+
 			return true;
 		}
 		return false;
 	}
 
-	private boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex, int i) {
-		// i = # steps away
-		if (scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
-				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.ROCK
-				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.FLUID
-				|| scanMapTiles[centerIndex + i][centerIndex].getTerrain() == Terrain.SAND) {
+	private boolean isTowardsThisDirectionIsObsatacle(MapTile[][] scanMapTiles,
+			int centerIndex, String dir) {
+		switch (dir) {
+		case "E":
+			return isTowardsEastIsObsatacle(scanMapTiles, centerIndex);
+
+		case "S":
+			return isTowardsSouthIsObsatacle(scanMapTiles, centerIndex);
+
+		case "W":
+			return isTowardsWestIsObsatacle(scanMapTiles, centerIndex);
+
+		case "N":
+			return isTowardsNorthIsObsatacle(scanMapTiles, centerIndex);
+		default:
 			return true;
 		}
-
-		return false;
 	}
 
 	private void setCurrentLoc() throws IOException {
@@ -904,37 +1123,47 @@ public class ROVER_12_wk8_kae {
 
 	}
 
-	private void move(String dir) throws IOException {
+	private boolean move(String dir) throws IOException {
+
+		MapTile[][] scanMapTiles = scanMap.getScanMap();
+		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 
 		switch (dir) {
-
 		case "E":
-			if (!isSandOrRock("E")) {
-				// System.out.println("request move -> E"); debug
+			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
+					"E")) {
 				moveEast();
+				System.out.println("moved east, return true");
+				return true;
 			}
-			break;
 		case "W":
-			if (!isSandOrRock("W")) {
-				// System.out.println("request move -> W");
+			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
+					"W")) {
 				moveWest();
+				System.out.println("moved west, return true");
+				return true;
 			}
 			break;
 		case "N":
-			if (!isSandOrRock("N")) {
-				// System.out.println("request move -> N");
+			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
+					"N")) {
 				moveNorth();
+				System.out.println("moved north, return true");
+				return true;
 			}
 			break;
 		case "S":
-			if (!isSandOrRock("S")) {
-				// System.out.println("request move -> S");
+			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
+					"S")) {
 				moveSouth();
+				System.out.println("moved south, return true");
+				return true;
 			}
 			break;
 		default:
-			break;
+			return false;
 		}
+		return false;
 	}
 
 	private void moveWest() {
@@ -973,40 +1202,6 @@ public class ROVER_12_wk8_kae {
 		cardinals[3] = false; // W
 	}
 
-	public boolean isSandOrRock(String direction) {
-
-		int x = currentLoc.xpos, y = currentLoc.ypos;
-
-		if (direction == "S")
-			y += 1;
-		else if (direction == "N")
-			y -= 1;
-		else if (direction == "E")
-			x += 1;
-		else
-			// "W"
-			x -= 1;
-
-		if (!mapTileLog.containsKey(new Coord(x, y))) {
-			try {
-			// if mapTileLog does not contain the target info, just load it.
-				loadScanMapFromSwarmServer();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		// Checks whether there is sand in the next tile
-		if (mapTileLog.get(new Coord(x, y)).getTerrain() == Terrain.SAND
-				|| mapTileLog.get(new Coord(x, y)).getTerrain() == Terrain.ROCK
-				|| mapTileLog.get(new Coord(x, y)).getTerrain() == Terrain.NONE
-				|| mapTileLog.get(new Coord(x, y)).getTerrain() == Terrain.FLUID)
-			return true;
-
-		return false;
-	}
-
 	// a check function to prevent IndexOutOfBounds exception
 	public boolean withinTheGrid(int i, int j, int arrayLength) {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
@@ -1040,16 +1235,48 @@ public class ROVER_12_wk8_kae {
 		return rd.nextInt(max + 1) + min;
 	}
 
+	public String getFacingDirection() {
+		if (cardinals[0] == true) {
+			return "S";
+		}
+		if (cardinals[1] == true) {
+			return "E";
+		}
+		if (cardinals[2] == true) {
+			return "N";
+		}
+		return "W";
+
+	}
+
+	private void shuffuleArray(String[] directions) {
+		// Thanks, Fisher-Yates shuffle
+		int idx;
+		String temp;
+
+		for (int i = directions.length - 1; i > -1; i--) {
+			idx = randomNum(0, i);
+			temp = directions[idx];
+			directions[idx] = directions[i];
+			directions[i] = temp;
+		}
+	}
+
 	// take a random step (just one step) to break the pattern
-	private void random() throws InterruptedException, IOException {
+	private void randomStep(MapTile[][] scanMapTiles, int centerIndex)
+			throws InterruptedException, IOException {
 
+		String currDir = getFacingDirection();
 		String[] directions = { "N", "E", "S", "W" };
+		shuffuleArray(directions);
 
-		while (isStuck()) {
-			move(directions[randomNum(0, 3)]);
-			setCurrentLoc();
-			pathMap.add(currentLoc.clone());
-			Thread.sleep(sleepTime);
+		for (String thisDir : directions) {
+			if (!currDir.equals(thisDir)) {
+				System.out.println("move " + thisDir);
+				move(thisDir);
+				return;
+			}
+
 		}
 	}
 
@@ -1094,7 +1321,7 @@ public class ROVER_12_wk8_kae {
 	}
 
 	public boolean isGoingInCircle() {
-		
+
 		int searchSize = 10;
 		//
 		int numUnVisited = countUnvisited(currentLoc, searchSize);
@@ -1152,8 +1379,8 @@ public class ROVER_12_wk8_kae {
 				sinusoidal_West(target);
 			}
 
-			if(goingInCircle)
-			
+			// if (goingInCircle)
+
 			// jump out of the loop if eastern edge of the land is reached
 			for (int i = 0; i < cardinals.length; i++) {
 
@@ -1295,14 +1522,9 @@ public class ROVER_12_wk8_kae {
 	// }
 	// }
 
-	private void 
-Logic(boolean[] cardinals,
-			MapTile[][] scanMapTiles, int currentXPos, int currentYPos)
-			throws InterruptedException, IOException {
-
-		if (isStuck()) {
-			random();
-		}
+	private void Logic(boolean[] cardinals, MapTile[][] scanMapTiles,
+			int currentXPos, int currentYPos) throws InterruptedException,
+			IOException {
 
 		// ************* Febi's rover motion logic **********
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
@@ -1516,7 +1738,6 @@ Logic(boolean[] cardinals,
 					}
 					break;
 				}
-
 				}
 
 			}

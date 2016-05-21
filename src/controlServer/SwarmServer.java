@@ -574,10 +574,10 @@ public class SwarmServer {
 			int yCurrentPos = roverPos.ypos;
 
 			// debug status out
-			System.out
-					.println("******* System.currentTimeMillis() - thisRover.getRoverLastMoveTime() = "
-							+ (System.currentTimeMillis() - thisRover
-									.getRoverLastMoveTime()));
+//			System.out
+//					.println("******* System.currentTimeMillis() - thisRover.getRoverLastMoveTime() = "
+//							+ (System.currentTimeMillis() - thisRover
+//									.getRoverLastMoveTime()));
 			// ********* WHEELS **********
 			// Respond based on the rover drive type AND
 			// Check that is has been at a minimum of "time limeit per second"
