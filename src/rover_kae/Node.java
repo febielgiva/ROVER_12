@@ -40,7 +40,7 @@ public class Node {
 
 	// f is just g + h
 	public int getF(Coord p1, Coord target) {
-		return getH(p1, target) + getG(p1, target);
+		return getH(p1, target) + getG(target);
 	}
 
 }
