@@ -409,21 +409,7 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-	// cheaper distance computation
-	private int getManhattanDist(Coord target) {
-		int dx = Math.abs(currentLoc.xpos - target.xpos);
-		int dy = Math.abs(currentLoc.ypos - target.ypos);
-		return dx + dy;
-	}
 
-	// expensive distance computation
-	public double getDistanceBtw2Points(Coord p1, Coord p2) {
-
-		int dx = p2.xpos - p1.xpos;
-		int dy = p2.ypos - p1.ypos;
-
-		return Math.sqrt((dx * dx) + (dy * dy));
-	}
 
 	private void followLhsWall(MapTile[][] scanMapTiles, int centerIndex)
 			throws IOException {
