@@ -1,46 +1,47 @@
 package rover_kae;
 
+import java.util.Deque;
+import java.util.List;
+
 import common.Coord;
 
 public class Node {
 
-	Coord currCoord;
+	Coord coord;
 	Node parentNode;
+	// List<Node> adjacents;
+	int cost; // movement cost
 
 	public Node() {
 	}
 
-	public Node(Coord c, Node p) {
-		currCoord = c;
-		parentNode = p;
+	// center is parent of all adj
+	public Node(Coord pos, Node parent, int cost) {
+		coord = pos;
+		parentNode = parent;
 	}
 
-	// cheaper distance computation (Manhattan heuristic cost)
-	public int getH(Coord here, Coord target) {
-		int dx = Math.abs(here.xpos - target.xpos);
-		int dy = Math.abs(here.ypos - target.ypos);
-		return dx + dy;
+	public void setF(int f) {
+		cost = f;
 	}
 
-	// more expensive distance computation (modified Pythagorean, movement cost)
-	public int getG(Coord end) {
-		int parentG = 0;
-		if (parentNode.parentNode != null) {
-			parentNode.getG(end);
-		}
-		int baseVal = 10, dist = 0;
-		if (currCoord.xpos == end.xpos || currCoord.ypos == end.ypos) {
-			// 14 because sqrt(10*10 + 10*10) = 1.414...
-			baseVal = 14;
-		}
-
-		dist = parentG + baseVal;
-		return dist;
+	// KS - ask someone about how to take advantage of this (comparison?)
+	// @Override
+	// public int hashCode() {
+	// // return the coordinate's hashCode value
+	// return coord.hashCode();
+	// }
+	@Override
+	public boolean equals(Object o) {
+		Node other = (Node) o;
+		// return other.coord.equals(this.coord) &&
+		// other.parentNode.coord.equals(this.parentNode.coord);
+		return other.coord.equals(this.coord);
 	}
 
-	// f is just g + h
-	public int getF(Coord p1, Coord target) {
-		return getH(p1, target) + getG(target);
+	@Override
+	public String toString() {
+		return "Node [coord=" + coord + ", parent=" + parentNode.coord
+				+ ", cost=" + cost + "]";
 	}
-
 }
