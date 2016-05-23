@@ -50,7 +50,7 @@ import supportTools.RoverMotionUtil;
  * publishing their code examples
  */
 
-public class Test_rv {
+public class Rv_curr {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -83,7 +83,7 @@ public class Test_rv {
 	boolean isTargetLocReached = false;
 	Coord nextTarget;
 
-	public Test_rv() {
+	public Rv_curr() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -94,7 +94,7 @@ public class Test_rv {
 							// will cut connection if it is too small
 	}
 
-	public Test_rv(String serverAddress) {
+	public Rv_curr(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -1543,7 +1543,7 @@ public class Test_rv {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		Test_rv client = new Test_rv();
+		Rv_curr client = new Rv_curr();
 		client.test();
 	}
 }
