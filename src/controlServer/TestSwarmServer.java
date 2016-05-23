@@ -41,7 +41,7 @@ import supportTools.SwarmMapInit;
  * publishing their code examples
  */
 
-public class SwarmServer {
+public class TestSwarmServer {
 
 	/**
 	 * The port that the server listens on.
@@ -106,7 +106,7 @@ public class SwarmServer {
 	 * The application main method, which just listens on a port and spawns
 	 * handler threads.
 	 */
-	public static void main(String[] args) throws Exception {
+	public void runServer(String mapFileName) throws Exception {
 		ActionListener timeLimitListener = new TimeLimitStop();
 		countDownTimer = new Timer(MAXIMUM_ACTIVITY_TIME_LIMIT,
 				timeLimitListener);
@@ -115,10 +115,6 @@ public class SwarmServer {
 
 		roversAreGO = true;
 
-		// if a command line argument is included it is used as the map filename
-		for (String s : args) {
-			mapFileName = s;
-		}
 		System.out.println("The Swarm server is running.");
 		ServerSocket listener = new ServerSocket(PORT);
 
@@ -977,10 +973,10 @@ public class SwarmServer {
 	}
 }
 
-class TimeLimitStop implements ActionListener {
-	public void actionPerformed(ActionEvent event) {
-		SwarmServer.stopRoverAreGO();
-		System.out.println("Time is up - Return mission is launching");
-		Toolkit.getDefaultToolkit().beep();
-	}
-}
+//class TimeLimitStop implements ActionListener {
+//	public void actionPerformed(ActionEvent event) {
+//		TestSwarmServer.stopRoverAreGO();
+//		System.out.println("Time is up - Return mission is launching");
+//		Toolkit.getDefaultToolkit().beep();
+//	}
+//}
