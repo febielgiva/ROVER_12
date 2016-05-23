@@ -59,8 +59,7 @@ public class InABeeLine {
 		if (!nodesComputed.containsKey(n)) {
 
 			Node N = new Node(n, center, -1);
-			cost = setF(N, center, goalNode);
-			N.setF(cost);
+			setF(N, center, goalNode);
 			System.out.println("N: " + N);
 			adjacents.add(N);
 
@@ -72,8 +71,7 @@ public class InABeeLine {
 		if (!nodesComputed.containsKey(ne)) {
 
 			Node NE = new Node(ne, center, -1);
-			cost = setF(NE, center, goalNode);
-			NE.setF(cost);
+			setF(NE, center, goalNode);
 			adjacents.add(NE);
 
 		} else {
@@ -83,9 +81,9 @@ public class InABeeLine {
 		if (!nodesComputed.containsKey(e)) {
 
 			Node E = new Node(e, center, -1);
-			cost = setF(E, center, goalNode);
-			E.setF(cost);
+			setF(E, center, goalNode);
 			adjacents.add(E);
+
 		} else {
 			adjacents.add(nodesComputed.get(e));
 		}
@@ -93,8 +91,7 @@ public class InABeeLine {
 		if (!nodesComputed.containsKey(se)) {
 
 			Node SE = new Node(se, center, -1);
-			cost = setF(SE, center, goalNode);
-			SE.setF(cost);
+			setF(SE, center, goalNode);
 			adjacents.add(SE);
 
 		} else {
@@ -104,8 +101,7 @@ public class InABeeLine {
 		if (!nodesComputed.containsKey(s)) {
 
 			Node S = new Node(s, center, -1);
-			cost = setF(S, center, goalNode);
-			S.setF(cost);
+			setF(S, center, goalNode);
 			adjacents.add(S);
 
 		} else {
@@ -115,8 +111,7 @@ public class InABeeLine {
 		if (!nodesComputed.containsKey(sw)) {
 
 			Node SW = new Node(sw, center, -1);
-			cost = setF(SW, center, goalNode);
-			SW.setF(cost);
+			setF(SW, center, goalNode);
 			adjacents.add(SW);
 
 		} else {
@@ -126,8 +121,7 @@ public class InABeeLine {
 		if (!nodesComputed.containsKey(w)) {
 
 			Node W = new Node(w, center, -1);
-			cost = setF(W, center, goalNode);
-			W.setF(cost);
+			setF(W, center, goalNode);
 			adjacents.add(W);
 
 		} else {
@@ -137,8 +131,7 @@ public class InABeeLine {
 		if (!nodesComputed.containsKey(nw)) {
 
 			Node NW = new Node(nw, center, -1);
-			cost = setF(NW, center, goalNode);
-			NW.setF(cost);
+			setF(NW, center, goalNode);
 			adjacents.add(NW);
 
 		} else {
@@ -161,7 +154,6 @@ public class InABeeLine {
 	// start -> goal distance
 	public void setH(Node focus, Node goal) {
 
-		System.out.println("here: " + focus.coord + "\t there: " + goal.coord);
 		int dx = Math.abs(focus.coord.xpos - goal.coord.xpos);
 		int dy = Math.abs(focus.coord.ypos - goal.coord.ypos);
 
@@ -200,25 +192,13 @@ public class InABeeLine {
 
 		int g = center.g + baseVal;
 		focus.g = g;
-
-		// debug print out
-		// System.out.println("p1 " + center.coord + "\tp2 " + focus);
-		// System.out.println("p1.g=" + center.cost + "\tp2.g=" + g);
 	}
 
-	public int setF(Node focus, Node center, Node goal) {
-
-		// set h if not done yet
-		if (focus.h < 0) {
-			setH(focus, goal);
-		}
-
-		// set g if not done yet
-		if (focus.g < 0) {
-			setG(center, focus);
-		}
-
-		return focus.h + focus.g;
+	public void setF(Node focus, Node center, Node goal) {
+		
+		setH(focus, goal);
+		setG(center, focus);
+		focus.f = focus.h + focus.g;
 	}
 
 	private Node min(List<Node> adjacents) {
