@@ -57,8 +57,8 @@ public class wk9_ks_ROVER_12 {
 	private String rovername;
 	private ScanMap scanMap;
 	private int sleepTime;
-	 private String SERVER_ADDRESS = "localhost", line;
-	//private String SERVER_ADDRESS = "192.168.1.106", line;
+	// private String SERVER_ADDRESS = "localhost", line;
+	private String SERVER_ADDRESS = "192.168.1.106", line;
 	static final int PORT_ADDRESS = 9537;
 
 	// Group 12 variables
@@ -87,7 +87,7 @@ public class wk9_ks_ROVER_12 {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
-		//SERVER_ADDRESS = "192.168.1.106";
+		// SERVER_ADDRESS = "192.168.1.106";
 		SERVER_ADDRESS = "localhost";
 		// this should be a safe but slow timer value
 		sleepTime = 500; // in milliseconds - smaller is faster, but the server
@@ -409,8 +409,6 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-
-
 	private void followLhsWall(MapTile[][] scanMapTiles, int centerIndex)
 			throws IOException {
 
@@ -488,12 +486,10 @@ public class wk9_ks_ROVER_12 {
 
 	private void run() throws IOException, InterruptedException {
 
-
 		// String url = "http://23.251.155.186:3000/api";
-		String url = "http://192.168.1.104:3000/api";
-		String corp_secret = "0FSj7Pn23t";
-		Communication com = new Communication(url, rovername, corp_secret);
-
+		// String url = "http://192.168.1.104:3000/api";
+		// String corp_secret = "0FSj7Pn23t";
+		// Communication com = new Communication(url, rovername, corp_secret);
 
 		// if(targetReached)
 
@@ -502,7 +498,6 @@ public class wk9_ks_ROVER_12 {
 		Socket socket = null;
 
 		try {
-
 
 			// ***** connect to server ******
 			socket = connectToSwarmServer();
@@ -537,7 +532,7 @@ public class wk9_ks_ROVER_12 {
 
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-				com.postScanMapTiles(currentLoc, scanMapTiles);
+				// com.postScanMapTiles(currentLoc, scanMapTiles);
 
 				// ***** under construction ******
 				// if(roverLogicSwitch % numLogics == 0){
@@ -557,7 +552,8 @@ public class wk9_ks_ROVER_12 {
 				// }
 
 				previousLoc = currentLoc;
-				roverMotionLogic(cardinals, scanMapTiles, centerIndex, currentLoc.xpos,currentLoc.ypos);
+				roverMotionLogic(cardinals, scanMapTiles, centerIndex,
+						currentLoc.xpos, currentLoc.ypos);
 				// followLhsWall(scanMapTiles, centerIndex);
 				// headEast(scanMapTiles, centerIndex);
 				// headWest(scanMapTiles, centerIndex);
@@ -568,7 +564,6 @@ public class wk9_ks_ROVER_12 {
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
 				Thread.sleep(sleepTime);
-
 
 			}
 		} catch (Exception e) {
