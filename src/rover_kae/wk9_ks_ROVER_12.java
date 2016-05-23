@@ -62,6 +62,7 @@ public class wk9_ks_ROVER_12 {
 	static final int PORT_ADDRESS = 9537;
 
 	// Group 12 variables
+	int numLogics = 3;
 	static String myJSONStringBackupofMap;
 	private Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
@@ -334,98 +335,107 @@ public class wk9_ks_ROVER_12 {
 
 	private void run() throws IOException, InterruptedException {
 
+
 		//String url = "http://23.251.155.186:3000/api";
 		String url = "http://192.168.1.104:3000/api";
 		String corp_secret = "0FSj7Pn23t";
 		Communication com = new Communication(url, rovername, corp_secret);
 
-		// if(targetReached)
 
-		ArrayList<String> equipment = new ArrayList<String>();
-		boolean beenToTargetLoc = false;
-		Socket socket = null;
+				// if(targetReached)
 
-		try {
+				ArrayList<String> equipment = new ArrayList<String>();
+				boolean beenToTargetLoc = false;
+				Socket socket = null;
 
-			// initialize variables
-			socket = connectToSwarmServer();
-			equipment = getEquipment();
-			rovergroupStartPosition = requestStartLoc(socket);
-			targetLocation = requestTargetLoc(socket);
-			nextTarget = targetLocation.clone();
-
-			/**
-			 * #### Rover controller process loop ####
-			 */
-			boolean firstItr = true;
-			Coord prevLoc = currentLoc.clone();
-			cardinals[1] = true;
-			int roverLogicSwitch = 0;
-			int numLogic = 3;
-
-			while (true) {
-
-				// prevLoc = currentLoc.clone();
-				setCurrentLoc(); // BEFORE the move() in this iteration
-				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
-//				System.out.println("BEFORE: " + currentLoc + " | facing "
-//						+ getFacingDirection());
-				int numSteps = pathMap.size();
-
-				// ***** do a SCAN ******
-				// if (numSteps % 5 == 0 || numSteps == 1) {
-				loadScanMapFromSwarmServer();
-				// debug
-				// scanMap.debugPrintMap();
-				// debugPrintMapTileArray(mapTileLog);
-				// }
-
-				MapTile[][] scanMapTiles = scanMap.getScanMap();
-				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-				com.postScanMapTiles(currentLoc, scanMapTiles);
-
-//				if (countUnvisited(currentLoc, 11) < 4) {
-//					System.out.println("number of unvisited: "
-//							+ countUnvisited(currentLoc, 11));
-//					roverLogicSwitch++;
-//					System.out.println("logic switch flipped ("
-//							+ roverLogicSwitch + ")");
-//					//Thread.sleep(3000);
-//
-//				}
-
-				//if (roverLogicSwitch % numLogic == 0) {
-					roverMotionLogic(cardinals, scanMapTiles, centerIndex);
-//				} else if (roverLogicSwitch % numLogic == 1) {
-//					followRhsWall(scanMapTiles, centerIndex);
-//				} else if (roverLogicSwitch % numLogic == 2) {
-//					followLhsWall(scanMapTiles, centerIndex);
-//				}
-
-				// debugSandAvoidanceMotion(scanMapTiles, centerIndex);
-
-				Thread.sleep(500);
-
-				setCurrentLoc(); // AFTER this iteration
-				//System.out.println("AFTER: " + currentLoc);
-
-				System.out
-						.println("ROVER_12 ------------ bottom process control --------------");
-				// Thread.sleep(sleepTime);
-
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (socket != null) {
 				try {
-					socket.close();
-				} catch (IOException e) {
-					System.out.println("ROVER_12 problem closing socket");
+
+
+					// ***** connect to server ******
+					socket = connectToSwarmServer();
+					
+					
+					// ***** get equipments ******
+					equipment = getEquipment();
+					
+					
+					
+					// ***** initialize critical locations ******
+					rovergroupStartPosition = requestStartLoc(socket);
+					targetLocation = requestTargetLoc(socket);
+					nextTarget = targetLocation.clone();
+
+					
+					
+					/**
+					 * #### Rover controller process loop ####
+					 */
+					boolean firstItr = true;
+					Coord prevLoc = currentLoc.clone();
+					cardinals[1] = true;
+					int roverLogicSwitch = 0;
+					int numLogic = 3;
+
+					while (true) {
+
+						setCurrentLoc(); // BEFORE the move() in this iteration
+						pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
+						System.out.println("BEFORE: " + currentLoc + " | facing "
+								+ getFacingDirection());
+						int numSteps = pathMap.size();
+
+						// ***** do a SCAN ******						
+						loadScanMapFromSwarmServer();
+						
+						
+						MapTile[][] scanMapTiles = scanMap.getScanMap();
+						int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+						// com.postScanMapTiles(currentLoc, scanMapTiles);
+						
+						
+						
+						// ***** under construction ******
+//						if(roverLogicSwitch % numLogics == 0){
+//							roverMotionLogic(cardinals, scanMapTiles, centerIndex);
+//						}else if(roverLogicSwitch % numLogics == 1){
+//							followLhsWall(scanMapTiles, centerIndex);
+//						}else if(roverLogicSwitch % numLogics == 2){
+//							followRhsWall(scanMapTiles, centerIndex);
+//						}
+//						if (countUnvisited(currentLoc, 11) < 1) {
+//							System.out.println("number of unvisited: "
+//									+ countUnvisited(currentLoc, 11));
+//							roverLogicSwitch++;
+//							System.out.println("logic switch flipped ("
+//									+ roverLogicSwitch + ")");
+//							//Thread.sleep(3000);
+//						}
+
+							roverMotionLogic(cardinals, scanMapTiles, centerIndex);
+
+					
+
+						setCurrentLoc(); // AFTER this iteration
+						System.out.println("AFTER: " + currentLoc);
+
+						System.out
+								.println("ROVER_12 ------------ bottom process control --------------");
+						Thread.sleep(sleepTime);
+
+
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					if (socket != null) {
+						try {
+							socket.close();
+						} catch (IOException e) {
+							System.out.println("ROVER_12 problem closing socket");
+						}
+					}
 				}
-			}
-		}
-	}// END of run()
+			}// END of run()
 
 	private void debugSandAvoidanceMotion(MapTile[][] scanMapTiles,
 			int centerIndex) throws IOException, InterruptedException {
@@ -463,7 +473,6 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-	
 	private Socket connectToSwarmServer() throws UnknownHostException,
 			IOException {
 		Socket socket;
@@ -496,16 +505,6 @@ public class wk9_ks_ROVER_12 {
 				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.FLUID
 				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.SAND
 				|| scanMapTiles[centerIndex + 1][centerIndex].getHasRover()) {
-			// debug print out
-//			System.out.println("x,y=" + (currentLoc.xpos + 1) + ","
-//					+ currentLoc.ypos + " west is blocked");
-			// debug pause
-			// try {
-			// Thread.sleep(4000);
-			// } catch (InterruptedException e) {
-
-			// e.printStackTrace();
-			// }
 			return true;
 		}
 		return false;
@@ -518,14 +517,8 @@ public class wk9_ks_ROVER_12 {
 				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
 				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.FLUID
 				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
-			// debug print out
-//			System.out.println("x,y=" + (currentLoc.xpos + 1) + ","
-//					+ currentLoc.ypos + " east is blocked");
 			return true;
 		} else {
-			// debug print out
-//			System.out.println("x,y=" + (currentLoc.xpos + 1) + ","
-//					+ currentLoc.ypos + " is open");
 			return false;
 		}
 	}
@@ -537,15 +530,6 @@ public class wk9_ks_ROVER_12 {
 				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
 				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.FLUID
 				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
-			// debug print out
-//			System.out.println("x,y=" + (currentLoc.xpos + 1) + ","
-//					+ currentLoc.ypos + " north is blocked");
-			try {
-				Thread.sleep(4000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			return true;
 		}
 		return false;
@@ -558,10 +542,6 @@ public class wk9_ks_ROVER_12 {
 				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
 				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.FLUID
 				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
-			// debug print out
-//			System.out.println("x,y=" + (currentLoc.xpos + 1) + ","
-//					+ currentLoc.ypos + "south is blocked");
-
 			return true;
 		}
 		return false;
@@ -707,9 +687,6 @@ public class wk9_ks_ROVER_12 {
 		// System.out.println("ROVER_12 finished scan while");
 
 		String jsonScanMapString = jsonScanMap.toString();
-		// debug print json object to a file
-		// new MyWriter( jsonScanMapString, 0); //gives a strange result -
-		// prints the \n instead of newline character in the file
 
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
 
@@ -1298,208 +1275,6 @@ public class wk9_ks_ROVER_12 {
 		}
 		return null;
 	}
-
-	public boolean isGoingInCircle() {
-
-		int searchSize = 10;
-		//
-		int numUnVisited = countUnvisited(currentLoc, searchSize);
-		if (numUnVisited <= 0) {
-			System.out.println("we are going in circle!");// debug
-			return true;
-		} else
-			return false;
-	}
-
-	// return true if rover is in the same position after 3 controll move
-	// iterations
-	public boolean isStuck() {
-
-		int stuckThreshHold = 6, last = pathMap.size() - 1;
-
-		if (pathMap.size() < stuckThreshHold) {
-			return false;
-		}
-
-		for (int i = 0; i < stuckThreshHold; i++) {
-			if (pathMap.get(last).equals(pathMap.get(last - i))) {
-				return false;
-			}
-		}
-		// KS - need refinements
-
-		// debug
-		System.out.println("we are stuck!");
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return true;
-	}
-
-//	private void sinusoidal_East(Coord target) throws InterruptedException,
-//			IOException {
-//
-//		int waveLength = 5, waveHeight = 3, steps = waveLength;
-//		String[] directions = { "E", "S", "E", "N" };
-//		boolean targetReached = false;
-//		String currentDir;
-//
-//		if (currentLoc.equals(target)) {
-//			return;
-//		}
-//
-//		while (!targetReached && !isStuck()
-//				&& currentLoc.xpos < targetLocation.xpos) {
-//
-//			if (currentLoc.xpos > targetLocation.xpos) {
-//				sinusoidal_West(target);
-//			}
-//
-//			// if (goingInCircle)
-//
-//			// jump out of the loop if eastern edge of the land is reached
-//			for (int i = 0; i < cardinals.length; i++) {
-//
-//				currentDir = directions[i];
-//				if (currentDir.equals("E")) {
-//					steps = waveLength;
-//				} else {
-//					steps = waveHeight;
-//				}
-//
-//				for (int j = 0; j < steps; j++) {
-//					move(currentDir);
-//					Thread.sleep(500);
-//				}
-//			}
-//
-//			setCurrentLoc();
-//			pathMap.add(currentLoc.clone());
-//			if (currentLoc.equals(target)) {
-//				targetReached = true;
-//			}
-//		}
-//
-//	}
-//
-//	private void sinusoidal_West(Coord target) throws InterruptedException,
-//			IOException {
-//
-//		int waveLength = 5, waveHeight = 3, steps = waveLength;
-//		String[] directions = { "W", "S", "W", "N" };
-//		boolean targetReached = false;
-//		String currentDir;
-//
-//		if (currentLoc.equals(target)) {
-//			return;
-//		}
-//
-//		if (currentLoc.xpos > targetLocation.xpos) {
-//			// sinusoidal_west();
-//		}
-//
-//		while (targetReached && !isStuck()
-//				&& currentLoc.xpos < targetLocation.xpos) {
-//			// jump out of the loop if eastern edge of the land is reached
-//			for (int i = 0; i < cardinals.length; i++) {
-//
-//				currentDir = directions[i];
-//				if (currentDir.equals("E")) {
-//					steps = waveLength;
-//				} else {
-//					steps = waveHeight;
-//				}
-//
-//				for (int j = 0; j < steps; j++) {
-//					move(currentDir);
-//					Thread.sleep(700);
-//				}
-//			}
-//
-//			setCurrentLoc();
-//			pathMap.add(currentLoc.clone());
-//			if (currentLoc.equals(target)) {
-//				targetReached = true;
-//			}
-//		}
-//
-//	}
-
-	// private void sinusoidal(Coord target, String dir)
-	// throws InterruptedException, IOException {
-	//
-	// int longer = 5, shorter = 3, waveLength = longer, waveHeight = shorter,
-	// steps = waveLength;
-	// String[] directions = {"E","S","E","N"};
-	// switch (dir) {
-	// case "N":
-	// directions[0]="N";
-	// directions[1]="E";
-	// directions[2]="N";
-	// directions[3]="W";
-	// break;
-	// case "E":
-	// directions[0]="E";
-	// directions[1]="S";
-	// directions[2]="E";
-	// directions[3]="N";
-	// break;
-	// case "S":
-	// directions[0]="S";
-	// directions[1]="E";
-	// directions[2]="S";
-	// directions[3]="W";
-	// break;
-	// case "W":
-	// directions[0]="W";
-	// directions[1]="S";
-	// directions[2]="W";
-	// directions[3]="N";
-	// break;
-	//
-	// default:
-	// break;
-	// }
-	//
-	// boolean targetReached = false;
-	// String currentDir;
-	//
-	// if (currentLoc.equals(target)) {
-	// return;
-	// }
-	//
-	// if (currentLoc.xpos > targetLocation.xpos) {
-	// // sinusoidal_west();
-	// }
-	//
-	// while (targetReached && !isStuck()
-	// && currentLoc.xpos < targetLocation.xpos) {
-	// // jump out of the loop if eastern edge of the land is reached
-	// for (int i = 0; i < cardinals.length; i++) {
-	//
-	// currentDir = directions[i];
-	// if (currentDir.equals("E")) {
-	// steps = waveLength;
-	// } else {
-	// steps = waveHeight;
-	// }
-	//
-	// for (int j = 0; j < steps; j++) {
-	// move(currentDir);
-	// Thread.sleep(700);
-	// }
-	// }
-	//
-	// setCurrentLoc();
-	// pathMap.add(currentLoc.clone());
-	// if (currentLoc.equals(target)) {
-	// targetReached = true;
-	// }
-	// }
-	// }
 
 	private void Logic(boolean[] cardinals, MapTile[][] scanMapTiles,
 			int currentXPos, int currentYPos) throws InterruptedException,
