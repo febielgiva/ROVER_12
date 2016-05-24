@@ -21,26 +21,31 @@ public class Node {
 		parentNode = parent;
 		f = fIn;
 	}
-	
+
 	public Node(Coord pos, Node parent) {
 		coord = pos;
 		parentNode = parent;
 	}
 
-	public void setF(int f) {
-		f = f;
+	public void setF(int fIn) {
+		f = fIn;
 	}
 
-	public void setParent(Node p){
+	public void setG(int gIn) {
+		g = gIn;
+	}
+
+	public void setParent(Node p) {
 		parentNode = p;
 	}
+
 	// KS - ask someone about how to take advantage of this (comparison?)
 	// @Override
 	// public int hashCode() {
 	// // return the coordinate's hashCode value
 	// return coord.hashCode();
 	// }
-	
+
 	@Override
 	public boolean equals(Object o) {
 		Node other = (Node) o;
@@ -53,13 +58,13 @@ public class Node {
 				+ ", cost=" + f + "]";
 	}
 
-	public Node clone(){
-		Node clone =  new Node(this.coord, this.parentNode, this.f);
+	public Node clone() {
+		Node clone = new Node(this.coord, this.parentNode, this.f);
 		clone.g = this.g;
 		clone.h = this.h;
 		return clone;
 	}
-	
+
 	public String str() {
 		return "[Node: coord=" + coord.xpos + "," + coord.ypos + "\th=" + h
 				+ ", g=" + g + ", f=" + f + "]";

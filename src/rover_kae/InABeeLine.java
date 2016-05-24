@@ -21,23 +21,21 @@ public class InABeeLine {
 			Map<Coord, MapTile> mapTileLog) {
 
 		StringBuffer sb = new StringBuffer();
-		// List<Coord> open, closed, adjacent;
 		Map<Coord, Node> open = new HashMap<Coord, Node>();
 		Deque<Coord> closed = new ArrayDeque<>();
-		Deque<Coord> parenr = new ArrayDeque<>(); // the shortest path
 		Map<Coord, Node> nodeComputed = new HashMap<Coord, Node>();
 
 		Node s = new Node(start, null);
 		Node g = new Node(goal, null);
 		Node center;
-		setF(s, s, g);
+		s.setF(computeF(s, s, g));
 
 		// search area: corners[0]= top-left, corners[1] = bottom-right
-		Coord[] corners = getSearchArea(start, goal, 0);
-		int tlX = corners[0].xpos;
-		int tlY = corners[0].ypos;
-		int brX = corners[1].xpos;
-		int brY = corners[1].ypos;
+		// Coord[] corners = getSearchArea(start, goal, 0);
+		// int tlX = corners[0].xpos;
+		// int tlY = corners[0].ypos;
+		// int brX = corners[1].xpos;
+		// int brY = corners[1].ypos;
 
 		// TODO-may be more efficient this way
 		// if (!hasAllTileInfo(tlX, tlY, brX, brY,mapTileLog)) {
@@ -45,23 +43,17 @@ public class InABeeLine {
 		// }
 
 		// add start tile to closed
-		// open.put(start, s);
-		closed.offer(s.coord); // push
+		open.put(start, s);
+		// closed.offer(s.coord); // push
 		center = s.clone();
 
 		// until there are no more viable tiles
-		// while (!open.isEmpty()) {
+		while (!center.coord.equals(goal) || !open.isEmpty()) {
 
-		closed.push(center.coord);
-		open.remove(center.coord);
+			Node cheapest = computeAdjacents(s, s, g, nodeComputed, open,
+					closed, mapTileLog);
 
-		Node cheapest = computeAdjacents(s, s, g, nodeComputed, open, closed,
-				mapTileLog);
-
-		// }
-
-		// debug print out
-		System.out.println(cheapest);
+		}
 		return shortestPath;
 	}
 
@@ -87,93 +79,41 @@ public class InABeeLine {
 		int x = center.coord.xpos;
 		int y = center.coord.ypos;
 
-		setF(start, start, goal);
+		start.setF(computeF(start, start, goal));
+
 		int cost = -1;
 
 		Coord n = new Coord(x, y - 1);
-		examineThisAdjacent(center, start, goal, nodesComputed, open, closed,
+		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, n);
 
 		Coord ne = new Coord(x + 1, y - 1);
-		System.out.println("does nodesComputed contains " + ne + "? "
-				+ nodesComputed.containsKey(ne));
-		if (!nodesComputed.containsKey(ne)) {
-			System.out.println("add NE");
-			Node NE = new Node(ne, center, -1);
-			setF(NE, center, goal);
-			adjacents.add(NE);
-			nodesComputed.put(NE.coord, NE);
-
-		} else if (!closed.contains(n)) {
-			adjacents.add(nodesComputed.get(ne));
-		}
+		examineThisAdjacent(center, goal, nodesComputed, open, closed,
+				mapTileLog, adjacents, ne);
 
 		Coord e = new Coord(x + 1, y);
-		if (!nodesComputed.containsKey(e)) {
-			System.out.println("add E");
-			Node E = new Node(e, center, -1);
-			setF(E, center, goal);
-			adjacents.add(E);
-			nodesComputed.put(E.coord, E);
-
-		} else if (!closed.contains(n)) {
-			adjacents.add(nodesComputed.get(e));
-		}
+		examineThisAdjacent(center, goal, nodesComputed, open, closed,
+				mapTileLog, adjacents, e);
+		
 		Coord se = new Coord(x + 1, y + 1);
-		if (!nodesComputed.containsKey(se)) {
-			System.out.println("add SE");
-			Node SE = new Node(se, center, -1);
-			setF(SE, center, goal);
-			adjacents.add(SE);
-			nodesComputed.put(SE.coord, SE);
-
-		} else if (!closed.contains(n)) {
-			adjacents.add(nodesComputed.get(se));
-		}
+		examineThisAdjacent(center, goal, nodesComputed, open, closed,
+				mapTileLog, adjacents, se);
+		
 		Coord s = new Coord(x, y + 1);
-		if (!nodesComputed.containsKey(s)) {
-			System.out.println("add S");
-			Node S = new Node(s, center, -1);
-			setF(S, center, goal);
-			adjacents.add(S);
-			nodesComputed.put(S.coord, S);
-
-		} else if (!closed.contains(n)) {
-			adjacents.add(nodesComputed.get(s));
-		}
+		examineThisAdjacent(center, goal, nodesComputed, open, closed,
+				mapTileLog, adjacents, s);
+		
 		Coord sw = new Coord(x - 1, y + 1);
-		if (!nodesComputed.containsKey(sw)) {
-			System.out.println("add SW");
-			Node SW = new Node(sw, center, -1);
-			setF(SW, center, goal);
-			adjacents.add(SW);
-			nodesComputed.put(SW.coord, SW);
-
-		} else if (!closed.contains(n)) {
-			adjacents.add(nodesComputed.get(sw));
-		}
+		examineThisAdjacent(center, goal, nodesComputed, open, closed,
+				mapTileLog, adjacents, sw);
+		
 		Coord w = new Coord(x - 1, y);
-		if (!nodesComputed.containsKey(w)) {
-			System.out.println("add W");
-			Node W = new Node(w, center, -1);
-			setF(W, center, goal);
-			adjacents.add(W);
-			nodesComputed.put(W.coord, W);
-
-		} else if (!closed.contains(n)) {
-			adjacents.add(nodesComputed.get(w));
-		}
+		examineThisAdjacent(center, goal, nodesComputed, open, closed,
+				mapTileLog, adjacents, w);
+		
 		Coord nw = new Coord(x - 1, y - 1);
-		if (!nodesComputed.containsKey(nw)) {
-			System.out.println("add NW");
-			Node NW = new Node(nw, center, -1);
-			setF(NW, center, goal);
-			adjacents.add(NW);
-			nodesComputed.put(NW.coord, NW);
-
-		} else if (!closed.contains(n)) {
-			adjacents.add(nodesComputed.get(nw));
-		}
+		examineThisAdjacent(center, goal, nodesComputed, open, closed,
+				mapTileLog, adjacents, nw);
 
 		// debug print out
 		for (Node node : adjacents) {
@@ -186,21 +126,31 @@ public class InABeeLine {
 		return min(adjacents);
 	}
 
-	private void examineThisAdjacent(Node center, Node start, Node goal,
+	private void examineThisAdjacent(Node center, Node goal,
 			Map<Coord, Node> nodesComputed, Map<Coord, Node> open,
 			Deque<Coord> closed, Map<Coord, MapTile> mapTileLog,
 			List<Node> adjacents, Coord adjacent) {
 
+		int thisG = -1;
+		Node thisAdj;
 		if (!closed.contains(adjacent) && !isObsatacle(adjacent, mapTileLog)) {
 			if (nodesComputed.containsKey(adjacent)) {
-				// (parent -> center -> focus) < (parent -> focus) ?
+				// is the g already stored greater than g computed with
+				// reference to current center?
+				thisAdj = nodesComputed.get(adjacent);
+				thisG = computeG(center, thisAdj);
+				if (thisG < thisAdj.g) {
+					thisAdj.setParent(center);
+					thisAdj.setG(thisG);
+				}
+
 			} else {
 				System.out.println("add N");
 				Node node = new Node(adjacent, center, -1);
-				setF(node, start, goal);
+				computeF(node, center, goal);
 				adjacents.add(node);
 				nodesComputed.put(node.coord, node);
-				
+
 				if (!open.containsKey(node.coord)) {
 					open.put(node.coord, node);
 				}
@@ -224,7 +174,7 @@ public class InABeeLine {
 	}
 
 	// start -> goal distance
-	public int getH(Coord focus, Coord goal) {
+	public int computeH(Coord focus, Coord goal) {
 
 		System.out.println("here: " + focus + "\t there: " + goal);
 		int dx = Math.abs(focus.xpos - goal.xpos);
@@ -257,11 +207,35 @@ public class InABeeLine {
 		focus.g = g;
 	}
 
-	public void setF(Node focus, Node center, Node goal) {
+	public int computeG(Node center, Node focus) {
+
+		if (center.equals(focus)) {
+			focus.g = 0;
+			return 0;
+		}
+
+		int cx = center.coord.xpos;
+		int cy = center.coord.ypos;
+		int fx = focus.coord.xpos;
+		int fy = focus.coord.ypos;
+
+		// diagonal cells: 14 because sqrt(10*10 + 10*10) = 1.414...
+		int baseVal = 14;
+		// verical or horizontalcell cells
+		if (cx == fx || cy == fy) {
+			baseVal = 10;
+		}
+
+		int g = center.g + baseVal;
+		return g;
+	}
+
+	public int computeF(Node focus, Node center, Node goal) {
 
 		setH(focus, goal);
 		setG(center, focus);
-		focus.f = focus.h + focus.g;
+
+		return (focus.h + focus.g);
 	}
 
 	private Node min(List<Node> adjacents) {
