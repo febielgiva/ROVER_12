@@ -598,8 +598,59 @@ public class Rv_curr {
 				}
 			}
 		}
-	}// END of run()
+	}// END of test()
 
+	void test2() throws IOException, InterruptedException {
+		ArrayList<String> equipment = new ArrayList<String>();
+		boolean beenToTargetLoc = false;
+		Socket socket = null;
+		InABeeLine cpu = new InABeeLine();
+
+		try {
+
+			// ***** connect to server ******
+			socket = connectToSwarmServer();
+
+			// ***** get equipments ******
+			equipment = getEquipment();
+
+			// ***** initialize critical locations ******
+			rovergroupStartPosition = requestStartLoc(socket);
+			targetLocation = requestTargetLoc(socket);
+			nextTarget = targetLocation.clone();
+
+			boolean firstItr = true;
+			Coord prevLoc = currentLoc.clone();
+			cardinals[1] = true;
+			int roverLogicSwitch = 0;
+			int numLogic = 3;
+
+			/**
+			 * #### Rover controller process loop ####
+			 */
+
+			loadScanMapFromSwarmServer();
+
+			debugPrintMapTileArray(mapTileLog);
+			cpu.getShortestPath(currentLoc, new Coord(3, 3));
+			System.out
+					.println("ROVER_12 ------------ bottom process control --------------");
+			Thread.sleep(sleepTime);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (IOException e) {
+					System.out.println("ROVER_12 problem closing socket");
+				}
+			}
+		}
+	}// END of test2()
+
+	
 	void debugSandAvoidanceMotion(MapTile[][] scanMapTiles, int centerIndex)
 			throws IOException, InterruptedException {
 
@@ -668,6 +719,18 @@ public class Rv_curr {
 			return true;
 		}
 		return false;
+	}
+
+	public boolean isObsatacle(Coord focus) {
+		MapTile tile = mapTileLog.get(focus);
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
@@ -1537,6 +1600,63 @@ public class Rv_curr {
 			}
 		}
 		return false;
+	}
+
+	// return the nearest wall coord
+	public Coord outwardSpiralSearch(Coord curr) throws Exception {
+
+		int searchSize = 3;
+		String[] directions = { "E", "S", "W", "N" };
+		Coord topL, bottomR, temp;
+		int x, y, xx, yy;
+
+		for (int i = 1; i <= searchSize; i++) {
+			topL = new Coord(curr.xpos - i, curr.ypos - i);
+			bottomR = new Coord(curr.xpos + i, curr.ypos + i);
+			
+			// north edge
+			x = topL.xpos;
+			y = topL.ypos;
+			for (xx = x; xx <= bottomR.xpos; xx++) {
+				
+				temp = new Coord(xx, y);
+				if (isObsatacle(temp)) {
+					return temp;
+				}
+			}
+			// east edge
+			x = bottomR.xpos;
+			y = topL.ypos + 1;
+			for (yy = y; yy <= bottomR.ypos; yy++) {
+				
+				temp = new Coord(x, yy);
+				if (isObsatacle(temp)) {
+					return temp;
+				}
+			}
+			// south edge
+			x = bottomR.xpos - 1;
+			y = bottomR.ypos;
+			for (xx = x; xx >= topL.xpos; xx--) {
+				
+				temp = new Coord(xx, y);
+				if (isObsatacle(temp)) {
+					return temp;
+				}
+			}			
+			// west edge
+			x = topL.xpos;
+			y = bottomR.ypos - 1;
+			for (yy = y; yy > topL.ypos; yy--) {
+				
+				temp = new Coord(x, yy);
+				if (isObsatacle(temp)) {
+					return temp;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**

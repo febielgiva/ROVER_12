@@ -7,7 +7,9 @@ import java.io.FileReader;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.DebugGraphics;
 
@@ -31,7 +33,103 @@ public class Test__curr {
 
 	}
 
+	public String pickADir(Coord from, Coord to) {
+
+		int dx = to.xpos - from.xpos;
+		int dy = to.ypos - from.ypos;
+
+		if (dx * dx > dy * dy) {
+			if (dx > 0) {
+				return "E";
+			} else {
+				return "W";
+			}
+		} else {
+			if (dy > 0) {
+				return "S";
+			} else {
+				return "N";
+			}
+		}
+	}
+
+	// @Test
+	public void testPickadir() throws Exception {
+		Coord from = new Coord(5, 1);
+		Coord to = new Coord(-1, 0);
+		System.out.println(pickADir(from, to));
+	}
+
 	@Test
+	public void testOutwardSearch1() throws Exception {
+	}
+	
+	//@Test
+	public void testOutwardSearch0() throws Exception {
+		int searchSize = 3;
+		String[] directions = { "E", "S", "W", "N" };
+		Coord curr = new Coord(4, 3), topL, bottomR;
+
+		int n = 1; // length of sides
+		int k = (n - 1) / 2, x, y, nn, xx, yy;
+
+		Set<Coord> set = new HashSet<Coord>();
+
+		for (int i = 1; i <= searchSize; i++) {
+			topL = new Coord(curr.xpos - i, curr.ypos - i);
+			bottomR = new Coord(curr.xpos + i, curr.ypos + i);
+			// north edge
+			x = topL.xpos;
+			y = topL.ypos;
+			nn = i + 2 * i;
+			for (xx = x; xx <= bottomR.xpos; xx++) {
+				set.add(new Coord(xx, y));
+				System.out.print(xx + "n" + y + " ");
+			}
+			System.out.println();
+			// east edge
+			x = bottomR.xpos;
+			y = topL.ypos + 1;
+			for (yy = y; yy <= bottomR.ypos; yy++) {
+				set.add(new Coord(x, yy));
+				System.out.print(x + "e" + yy + " ");
+			}
+			System.out.println();
+			// south edge
+			x = bottomR.xpos - 1;
+			y = bottomR.ypos;
+			for (xx = x; xx >= topL.xpos; xx--) {
+				set.add(new Coord(xx, y));
+				System.out.print(xx + "s" + y + " ");
+			}
+			System.out.println();
+			// west edge
+			x = topL.xpos;
+			y = bottomR.ypos - 1;
+			for (yy = y; yy > topL.ypos; yy--) {
+				set.add(new Coord(x, yy));
+				System.out.print(x + "w" + yy + " ");
+			}
+			System.out.println();
+		}
+
+		topL = new Coord(curr.xpos - searchSize, curr.ypos - searchSize);
+		bottomR = new Coord(curr.xpos + searchSize, curr.ypos + searchSize);
+
+		for (int j = topL.ypos; j <= bottomR.ypos; j++) {
+			for (int i = topL.xpos; i <= bottomR.xpos; i++) {
+
+				if(set.contains(new Coord(i, j))){
+					System.out.print("("+i+","+j+")");
+				}else{
+					System.out.print("  ");
+				}
+			}System.out.println();
+		}
+
+	}
+
+	// @Test
 	public void testGetF() throws Exception {
 		// TestSwarmServer ss = new TestSwarmServer();
 
@@ -78,7 +176,7 @@ public class Test__curr {
 		InABeeLine b = new InABeeLine();
 		Node goal = n33, start = n11, center = n11;
 		Node[] adjacents = { n00, n10, n20, n01, n21, n02, n12, n22 };
-		Map<Coord,Node> computedNodes = new HashMap<Coord,Node>();
+		Map<Coord, Node> computedNodes = new HashMap<Coord, Node>();
 
 		// set center's cost
 		b.setF(center, center, goal);
@@ -91,18 +189,16 @@ public class Test__curr {
 			computedNodes.put(node.coord, node);
 		}
 
-		
-		
 		// print out computed adjacents
 		Node nn;
 		System.out.println("computedNodes: ");
 		for (int j = 0; j < 3; j++) {
 			for (int i = 0; i < 3; i++) {
-				nn = computedNodes.get(new Coord(i,j));  
+				nn = computedNodes.get(new Coord(i, j));
 				System.out.println(nn);
-			}	
+			}
 		}
-		
+
 		// Rv_curr rv = new Rv_curr();
 
 		// ss.runServer("rv12_test.txt");

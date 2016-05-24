@@ -638,6 +638,18 @@ public class wk9_ks_ROVER_12 {
 		return socket;
 	}
 
+	private boolean isObsatacle(Coord focus) {
+		MapTile tile = mapTileLog.get(focus);
+		if (tile.getHasRover()
+				|| tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
 			int centerIndex) {
 		if (scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
@@ -1332,6 +1344,26 @@ public class wk9_ks_ROVER_12 {
 		return rd.nextInt(max + 1) + min;
 	}
 
+	public String pickADir(Coord from, Coord to) {
+
+		int dx = to.xpos - from.xpos;
+		int dy = to.ypos - from.ypos;
+
+		if (dx * dx > dy * dy) {
+			if (dx > 0) {
+				return "E";
+			} else {
+				return "W";
+			}
+		} else {
+			if (dy > 0) {
+				return "S";
+			} else {
+				return "N";
+			}
+		}
+	}
+
 	public String getFacingDirection() {
 		if (cardinals[0] == true) {
 			return "S";
@@ -1527,7 +1559,68 @@ public class wk9_ks_ROVER_12 {
 		}
 		return false;
 	}
+	
+	// return the nearest wall coord
+	public Coord outwardSpiralSearch(Coord curr) throws Exception {
+		
+		int searchSize = 3;
+		String[] directions = { "E", "S", "W", "N" };
+		Coord topL, bottomR;
+		int x, y, xx, yy;
 
+		for (int i = 1; i <= searchSize; i++) {
+			topL = new Coord(curr.xpos - i, curr.ypos - i);
+			bottomR = new Coord(curr.xpos + i, curr.ypos + i);
+			// north edge
+			x = topL.xpos;
+			y = topL.ypos;
+			for (xx = x; xx <= bottomR.xpos; xx++) {
+				set.add(new Coord(xx, y));
+				if
+
+			}
+			System.out.println();
+			// east edge
+			x = bottomR.xpos;
+			y = topL.ypos + 1;
+			for (yy = y; yy <= bottomR.ypos; yy++) {
+				set.add(new Coord(x, yy));
+				System.out.print(x + "e" + yy + " ");
+			}
+			System.out.println();
+			// south edge
+			x = bottomR.xpos - 1;
+			y = bottomR.ypos;
+			for (xx = x; xx >= topL.xpos; xx--) {
+				set.add(new Coord(xx, y));
+				System.out.print(xx + "s" + y + " ");
+			}
+			System.out.println();
+			// west edge
+			x = topL.xpos;
+			y = bottomR.ypos - 1;
+			for (yy = y; yy > topL.ypos; yy--) {
+				set.add(new Coord(x, yy));
+				System.out.print(x + "w" + yy + " ");
+			}
+			System.out.println();
+		}
+
+		topL = new Coord(curr.xpos - searchSize, curr.ypos - searchSize);
+		bottomR = new Coord(curr.xpos + searchSize, curr.ypos + searchSize);
+
+		for (int j = topL.ypos; j <= bottomR.ypos; j++) {
+			for (int i = topL.xpos; i <= bottomR.xpos; i++) {
+
+				if(set.contains(new Coord(i, j))){
+					System.out.print("("+i+","+j+")");
+				}else{
+					System.out.print("  ");
+				}
+			}System.out.println();
+		}
+
+	}
 	/**
 	 * Runs the client
 	 */
