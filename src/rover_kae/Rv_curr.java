@@ -585,7 +585,7 @@ public class Rv_curr {
 			cpu.getShortestPath(currentLoc, new Coord(3, 3));
 			System.out
 					.println("ROVER_12 ------------ bottom process control --------------");
-			Thread.sleep(sleepTime);
+			Thread.sleep(10000);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -619,24 +619,11 @@ public class Rv_curr {
 			targetLocation = requestTargetLoc(socket);
 			nextTarget = targetLocation.clone();
 
-			boolean firstItr = true;
-			Coord prevLoc = currentLoc.clone();
-			cardinals[1] = true;
-			int roverLogicSwitch = 0;
-			int numLogic = 3;
-
-			/**
-			 * #### Rover controller process loop ####
-			 */
-
 			loadScanMapFromSwarmServer();
-
-			debugPrintMapTileArray(mapTileLog);
-			cpu.getShortestPath(currentLoc, new Coord(3, 3));
-			System.out
-					.println("ROVER_12 ------------ bottom process control --------------");
-			Thread.sleep(sleepTime);
-
+			System.out.println("nearest obstacle: "
+					+ outwardSpiralSearch(currentLoc));
+			System.out.println(outwardSpiralSearch(currentLoc));
+			Thread.sleep(10000);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -650,7 +637,6 @@ public class Rv_curr {
 		}
 	}// END of test2()
 
-	
 	void debugSandAvoidanceMotion(MapTile[][] scanMapTiles, int centerIndex)
 			throws IOException, InterruptedException {
 
@@ -874,9 +860,9 @@ public class Rv_curr {
 	}
 
 	// sends a SCAN request to the server and puts the result in the scanMap
-	// array group12 - this raw JsonData should be used for our maptileLog?
+	// sets current location each time this function is called
 	public void loadScanMapFromSwarmServer() throws IOException {
-		// System.out.println("ROVER_12 method doScan()");
+
 		setCurrentLoc();
 		Coord scanLoc = new Coord(currentLoc.xpos, currentLoc.ypos);
 		Gson gson = new GsonBuilder().setPrettyPrinting()
@@ -1378,7 +1364,7 @@ public class Rv_curr {
 	}
 
 	// a check function to prevent IndexOutOfBounds exception
-	public boolean withinTheGrid(int i, int j, int arrayLength) {
+	public boolean isWithinTheGrid(int i, int j, int arrayLength) {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
 
@@ -1605,7 +1591,7 @@ public class Rv_curr {
 	// return the nearest wall coord
 	public Coord outwardSpiralSearch(Coord curr) throws Exception {
 
-		int searchSize = 3;
+		int searchSize = 10;
 		String[] directions = { "E", "S", "W", "N" };
 		Coord topL, bottomR, temp;
 		int x, y, xx, yy;
@@ -1613,14 +1599,14 @@ public class Rv_curr {
 		for (int i = 1; i <= searchSize; i++) {
 			topL = new Coord(curr.xpos - i, curr.ypos - i);
 			bottomR = new Coord(curr.xpos + i, curr.ypos + i);
-			
+
 			// north edge
 			x = topL.xpos;
 			y = topL.ypos;
 			for (xx = x; xx <= bottomR.xpos; xx++) {
-				
+
 				temp = new Coord(xx, y);
-				if (isObsatacle(temp)) {
+				if (isWithinTheGrid(xx, y, 50) && isObsatacle(temp)) {
 					return temp;
 				}
 			}
@@ -1628,9 +1614,9 @@ public class Rv_curr {
 			x = bottomR.xpos;
 			y = topL.ypos + 1;
 			for (yy = y; yy <= bottomR.ypos; yy++) {
-				
+
 				temp = new Coord(x, yy);
-				if (isObsatacle(temp)) {
+				if (isWithinTheGrid(x, yy, 50) && isObsatacle(temp)) {
 					return temp;
 				}
 			}
@@ -1638,19 +1624,19 @@ public class Rv_curr {
 			x = bottomR.xpos - 1;
 			y = bottomR.ypos;
 			for (xx = x; xx >= topL.xpos; xx--) {
-				
+
 				temp = new Coord(xx, y);
-				if (isObsatacle(temp)) {
+				if (isWithinTheGrid(xx, y, 50) && isObsatacle(temp)) {
 					return temp;
 				}
-			}			
+			}
 			// west edge
 			x = topL.xpos;
 			y = bottomR.ypos - 1;
 			for (yy = y; yy > topL.ypos; yy--) {
-				
+
 				temp = new Coord(x, yy);
-				if (isObsatacle(temp)) {
+				if (isWithinTheGrid(x, yy, 50) && isObsatacle(temp)) {
 					return temp;
 				}
 			}
@@ -1664,6 +1650,7 @@ public class Rv_curr {
 	 */
 	public static void main(String[] args) throws Exception {
 		Rv_curr client = new Rv_curr();
-		client.test();
+		client.test2(); // outward search test
+		// client.test();// astar test
 	}
 }

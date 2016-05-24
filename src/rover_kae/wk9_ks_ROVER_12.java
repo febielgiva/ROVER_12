@@ -640,8 +640,7 @@ public class wk9_ks_ROVER_12 {
 
 	private boolean isObsatacle(Coord focus) {
 		MapTile tile = mapTileLog.get(focus);
-		if (tile.getHasRover()
-				|| tile.getTerrain() == Terrain.ROCK
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
 				|| tile.getTerrain() == Terrain.NONE
 				|| tile.getTerrain() == Terrain.FLUID
 				|| tile.getTerrain() == Terrain.SAND) {
@@ -650,6 +649,7 @@ public class wk9_ks_ROVER_12 {
 			return false;
 		}
 	}
+
 	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
 			int centerIndex) {
 		if (scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
@@ -1559,68 +1559,69 @@ public class wk9_ks_ROVER_12 {
 		}
 		return false;
 	}
-	
+
 	// return the nearest wall coord
 	public Coord outwardSpiralSearch(Coord curr) throws Exception {
-		
-		int searchSize = 3;
+
+		int searchSize = 10;
 		String[] directions = { "E", "S", "W", "N" };
-		Coord topL, bottomR;
+		Coord topL, bottomR, temp;
 		int x, y, xx, yy;
 
 		for (int i = 1; i <= searchSize; i++) {
 			topL = new Coord(curr.xpos - i, curr.ypos - i);
 			bottomR = new Coord(curr.xpos + i, curr.ypos + i);
+
 			// north edge
 			x = topL.xpos;
 			y = topL.ypos;
 			for (xx = x; xx <= bottomR.xpos; xx++) {
-				set.add(new Coord(xx, y));
-				if
 
+				temp = new Coord(xx, y);
+				if (isWithinTheGrid(xx, y, 50) && isObsatacle(temp)) {
+					return temp;
+				}
 			}
-			System.out.println();
 			// east edge
 			x = bottomR.xpos;
 			y = topL.ypos + 1;
 			for (yy = y; yy <= bottomR.ypos; yy++) {
-				set.add(new Coord(x, yy));
-				System.out.print(x + "e" + yy + " ");
+
+				temp = new Coord(x, yy);
+				if (isWithinTheGrid(x, yy, 50) && isObsatacle(temp)) {
+					return temp;
+				}
 			}
-			System.out.println();
 			// south edge
 			x = bottomR.xpos - 1;
 			y = bottomR.ypos;
 			for (xx = x; xx >= topL.xpos; xx--) {
-				set.add(new Coord(xx, y));
-				System.out.print(xx + "s" + y + " ");
+
+				temp = new Coord(xx, y);
+				if (isWithinTheGrid(xx, y, 50) && isObsatacle(temp)) {
+					return temp;
+				}
 			}
-			System.out.println();
 			// west edge
 			x = topL.xpos;
 			y = bottomR.ypos - 1;
 			for (yy = y; yy > topL.ypos; yy--) {
-				set.add(new Coord(x, yy));
-				System.out.print(x + "w" + yy + " ");
-			}
-			System.out.println();
-		}
 
-		topL = new Coord(curr.xpos - searchSize, curr.ypos - searchSize);
-		bottomR = new Coord(curr.xpos + searchSize, curr.ypos + searchSize);
-
-		for (int j = topL.ypos; j <= bottomR.ypos; j++) {
-			for (int i = topL.xpos; i <= bottomR.xpos; i++) {
-
-				if(set.contains(new Coord(i, j))){
-					System.out.print("("+i+","+j+")");
-				}else{
-					System.out.print("  ");
+				temp = new Coord(x, yy);
+				if (isWithinTheGrid(x, yy, 50) && isObsatacle(temp)) {
+					return temp;
 				}
-			}System.out.println();
+			}
 		}
 
+		return null;
 	}
+
+	// a check function to prevent IndexOutOfBounds exception
+	public boolean isWithinTheGrid(int i, int j, int arrayLength) {
+		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
+	}
+
 	/**
 	 * Runs the client
 	 */
