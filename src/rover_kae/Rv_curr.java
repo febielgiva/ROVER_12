@@ -1672,7 +1672,7 @@ public class Rv_curr {
 	 */
 	public static void main(String[] args) throws Exception {
 		Rv_curr client = new Rv_curr();
-		client.test2(); // outward search test
-		// client.test();// astar test
+		// client.test2(); // outward search test
+		 client.test();// astar test
 	}
 }

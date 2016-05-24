@@ -53,6 +53,13 @@ public class Node {
 				+ ", cost=" + f + "]";
 	}
 
+	public Node clone(){
+		Node clone =  new Node(this.coord, this.parentNode, this.f);
+		clone.g = this.g;
+		clone.h = this.h;
+		return clone;
+	}
+	
 	public String str() {
 		return "[Node: coord=" + coord.xpos + "," + coord.ypos + "\th=" + h
 				+ ", g=" + g + ", f=" + f + "]";
