@@ -24,12 +24,12 @@ import controlServer.TestSwarmServer;
 
 public class Test__curr {
 
-	@Test
+	// @Test
 	public void testRunDiffMaps() throws Exception {
 		TestSwarmServer ss = new TestSwarmServer();
 		Rv_curr rv = new Rv_curr();
 
-//		ss.runServer("rv12_test.txt");
+		// ss.runServer("rv12_test.txt");
 		ss.runServer("simple_rv12_test.txt");
 	}
 
@@ -63,8 +63,8 @@ public class Test__curr {
 	@Test
 	public void testOutwardSearch1() throws Exception {
 	}
-	
-	//@Test
+
+	// @Test
 	public void testOutwardSearch0() throws Exception {
 		int searchSize = 3;
 		String[] directions = { "E", "S", "W", "N" };
@@ -119,12 +119,13 @@ public class Test__curr {
 		for (int j = topL.ypos; j <= bottomR.ypos; j++) {
 			for (int i = topL.xpos; i <= bottomR.xpos; i++) {
 
-				if(set.contains(new Coord(i, j))){
-					System.out.print("("+i+","+j+")");
-				}else{
+				if (set.contains(new Coord(i, j))) {
+					System.out.print("(" + i + "," + j + ")");
+				} else {
 					System.out.print("  ");
 				}
-			}System.out.println();
+			}
+			System.out.println();
 		}
 
 	}

@@ -1645,6 +1645,28 @@ public class Rv_curr {
 		return null;
 	}
 
+	// given two coordinates, pick a next move-direction 
+	public String pickADir(Coord from, Coord to) {
+
+		int dx = to.xpos - from.xpos;
+		int dy = to.ypos - from.ypos;
+
+		if (dx * dx > dy * dy) {
+			if (dx > 0) {
+				return "E";
+			} else {
+				return "W";
+			}
+		} else {
+			if (dy > 0) {
+				return "S";
+			} else {
+				return "N";
+			}
+		}
+	}
+
+	
 	/**
 	 * Runs the client
 	 */
