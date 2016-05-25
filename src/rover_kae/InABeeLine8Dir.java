@@ -135,13 +135,12 @@ public class InABeeLine8Dir {
 	public String coordToDir(Coord from, Coord to,
 			Map<Coord, MapTile> mapTileLog) {
 		StringBuffer sb = new StringBuffer();
-		// System.out
-		// .println("inside coordToDir()\nfrom: " + from + "\nto: " + to);
+		
 		int dx = to.xpos - from.xpos;
 		int dy = to.ypos - from.ypos;
 		int xCount = Math.abs(dx);
 		int yCount = Math.abs(dy);
-
+		
 		if (xCount > 1 || yCount > 1) {
 			// if more than one step implied
 			System.out.println("stop, stop, stop!");
