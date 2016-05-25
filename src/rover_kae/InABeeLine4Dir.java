@@ -13,18 +13,18 @@ import common.Coord;
 import common.MapTile;
 import enums.Terrain;
 
-public class InABeeLine {
+public class InABeeLine4Dir {
 	// get the shortest path based on A* algorithm
-	public String shortestPath;
+	public List<Node> shortestPath = new ArrayList<Node>();
 
-	public String getShortestPath(Coord start, Coord goal,
+	public List<Node> getShortestPath(Coord start, Coord goal,
 			Map<Coord, MapTile> mapTileLog) {
 
 		StringBuffer sb = new StringBuffer();
 		Map<Coord, Node> open = new HashMap<Coord, Node>();
-		Deque<Coord> closed = new ArrayDeque<>();
+		Deque<Node> closed = new ArrayDeque<>();
 		Map<Coord, Node> nodeComputed = new HashMap<Coord, Node>();
-		Coord cheapest;
+		Node cheapest;
 		Node s = new Node(start, null);
 		Node g = new Node(goal, null);
 		Node center;
@@ -35,7 +35,7 @@ public class InABeeLine {
 		if (!open.containsKey(start)) {
 			open.put(start, center);
 		}
-		closed.push(start);
+		closed.push(s);
 
 		int itrTracker = 0;
 		// until there are no more viable tiles
@@ -43,22 +43,92 @@ public class InABeeLine {
 			itrTracker++;
 			cheapest = computeAdjacents(center, s, g, nodeComputed, open,
 					closed, mapTileLog);
-			center = open.get(cheapest);
+			center = cheapest;
 			// debug p out
 			System.out.println("this itr[" + itrTracker + "]:\ncoord "
-					+ center.coord + "\ncheapest of open "
-					+ nodeComputed.get(cheapest) + "\nsize of open "
-					+ open.size() + "\ncurr center " + center.str());
+					+ center.coord + "\ncheapest of open " + cheapest
+					+ "\nsize of open " + open.size() + "\ncurr center "
+					+ center.str());
 
 			closed.push(cheapest);
 			open.remove(center);
 
 		}
-		
-		for (Coord coord : closed) {
-			System.out.println(coord);
+
+		for (Node node : closed) {
+			System.out.println("(close)" + node);
+			if (node.parentNode != null
+					&& !shortestPath.contains(node.parentNode)) {
+				shortestPath.add(node.parentNode);
+			}
+		}
+
+		for (Node node : shortestPath) {
+			System.out.println("(sp)" + node);
 		}
 		return shortestPath;
+	}
+
+	private String coordToDir(Coord from, Coord to,
+			Map<Coord, MapTile> mapTileLog) {
+		StringBuffer sb = new StringBuffer();
+
+		int dx = to.xpos - from.xpos;
+		int dy = to.ypos - from.ypos;
+		int xCount = Math.abs(dx);
+		int yCount = Math.abs(dy);
+
+		// horizontal motion
+		if (dy == 0) {
+			for (int i = 0; i < xCount; i++) {
+				if (dx > 0) {
+					sb.append("E");
+				} else {
+					sb.append("W");
+				}
+			}
+		}
+
+		// vertical motion
+		else if (dx == 0) {
+			for (int i = 0; i < xCount; i++) {
+				if (dy > 0) {
+					sb.append("S");
+				} else {
+					sb.append("E");
+				}
+			}
+		}
+
+		// diagonal motion
+		else if (dx == 0) {
+			// ne
+			if (dx < 0 && dy > 0) {
+				if (!isObsatacle(new Coord(from.xpos + 1, from.ypos),
+						mapTileLog)) {
+					sb.append("E");
+					sb.append("N");
+				}else{
+					sb.append("N");
+					sb.append("E");
+				}
+			}
+			// se
+			if (dx > 0 && dy > 0) {
+				if (!isObsatacle(new Coord(from.xpos + 1, from.ypos),
+						mapTileLog)) {
+					sb.append("E");
+					sb.append("S");
+				}
+			}
+			// nw
+			// sw
+
+		}
+
+		for (int i = 0; i < xCount; i++) {
+		}
+		return null;
 	}
 
 	private boolean hasAllTileInfo(int tlX, int tlY, int brX, int brY,
@@ -75,9 +145,9 @@ public class InABeeLine {
 	}
 
 	// get the least expensive adjacent
-	public Coord computeAdjacents(Node center, Node start, Node goal,
+	public Node computeAdjacents(Node center, Node start, Node goal,
 			Map<Coord, Node> nodesComputed, Map<Coord, Node> open,
-			Deque<Coord> closed, Map<Coord, MapTile> mapTileLog) {
+			Deque<Node> closed, Map<Coord, MapTile> mapTileLog) {
 
 		open.remove(center.coord);
 		System.out.println("inside computeAdjacents()\tcenter:" + center.str());
@@ -90,33 +160,25 @@ public class InABeeLine {
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, n);
 
-		Coord ne = new Coord(x + 1, y - 1);
-		examineThisAdjacent(center, goal, nodesComputed, open, closed,
-				mapTileLog, adjacents, ne);
+		
 
 		Coord e = new Coord(x + 1, y);
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, e);
 
-		Coord se = new Coord(x + 1, y + 1);
-		examineThisAdjacent(center, goal, nodesComputed, open, closed,
-				mapTileLog, adjacents, se);
+		
 
 		Coord s = new Coord(x, y + 1);
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, s);
 
-		Coord sw = new Coord(x - 1, y + 1);
-		examineThisAdjacent(center, goal, nodesComputed, open, closed,
-				mapTileLog, adjacents, sw);
+		
 
 		Coord w = new Coord(x - 1, y);
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, w);
 
-		Coord nw = new Coord(x - 1, y - 1);
-		examineThisAdjacent(center, goal, nodesComputed, open, closed,
-				mapTileLog, adjacents, nw);
+	
 
 		// debug print out
 		for (Node node : adjacents) {
@@ -131,7 +193,7 @@ public class InABeeLine {
 
 	private void examineThisAdjacent(Node center, Node goal,
 			Map<Coord, Node> nodesComputed, Map<Coord, Node> open,
-			Deque<Coord> closed, Map<Coord, MapTile> mapTileLog,
+			Deque<Node> closed, Map<Coord, MapTile> mapTileLog,
 			List<Node> adjacents, Coord adjacent) {
 
 		int thisG = -1;
@@ -248,14 +310,14 @@ public class InABeeLine {
 		return (focus.h + focus.g);
 	}
 
-	private Coord min(Map<Coord, Node> open) {
-		Coord min = new Coord(-1, -1);
+	private Node min(Map<Coord, Node> open) {
+		Node min = new Node();
 		int minVal = Integer.MAX_VALUE, thisVal = 0;
 
 		for (Node node : open.values()) {
 			thisVal = node.f;
 			if (minVal > thisVal) {
-				min = node.coord;
+				min = node;
 				minVal = thisVal;
 			}
 		}

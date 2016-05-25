@@ -54,8 +54,12 @@ public class Node {
 
 	@Override
 	public String toString() {
-		return "Node [coord=" + coord + ", parent=" + parentNode.coord
-				+ ", cost=" + f + "]";
+		if (parentNode != null) {
+			return "Node [coord=" + coord + ", parent=" + parentNode.coord
+					+ ", cost=" + f + "]";
+		} else {
+			return str();
+		}
 	}
 
 	public Node clone() {

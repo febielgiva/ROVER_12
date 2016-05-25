@@ -198,7 +198,7 @@ public class Test__curr {
 
 		Node goal = n33, start = n11, center = n11, focus = n12;
 
-		InABeeLine b = new InABeeLine();
+		InABeeLine8Dir b = new InABeeLine8Dir();
 		focus.setF(b.computeF(focus, center, start));
 		b.setG(center, focus);
 
@@ -257,7 +257,7 @@ public class Test__curr {
 		n22.setParent(n11);
 
 		Node goal = n33, start = n11, focus = n04;
-		InABeeLine b = new InABeeLine();
+		InABeeLine8Dir b = new InABeeLine8Dir();
 		b.setH(focus, goal);
 		System.out.println(focus.h);
 
@@ -311,7 +311,7 @@ public class Test__curr {
 		n02.setParent(n11);
 		n12.setParent(n11);
 		n22.setParent(n11);
-		InABeeLine b = new InABeeLine();
+		InABeeLine8Dir b = new InABeeLine8Dir();
 		Node goal = n33, start = n11, center = n11;
 		Node[] adjacents = { n00, n10, n20, n01, n21, n02, n12, n22 };
 		Map<Coord, Node> computedNodes = new HashMap<Coord, Node>();
@@ -382,7 +382,7 @@ public class Test__curr {
 		n02.setParent(n11);
 		n12.setParent(n11);
 		n22.setParent(n11);
-		InABeeLine b = new InABeeLine();
+		InABeeLine8Dir b = new InABeeLine8Dir();
 		Node goal = n33, start = n11, center = n11;
 		Node[] adjacents = { n00, n10, n20, n01, n21, n02, n12, n22 };
 		Map<Coord, Node> computedNodes = new HashMap<Coord, Node>();
@@ -453,7 +453,7 @@ public class Test__curr {
 		n02.setParent(n11);
 		n12.setParent(n11);
 		n22.setParent(n11);
-		InABeeLine b = new InABeeLine();
+		InABeeLine8Dir b = new InABeeLine8Dir();
 		Node goal = n33, start = n11, center = n11;
 		Node[] adjacents = { n00, n10, n20, n01, n21, n02, n12, n22 };
 		Map<Coord, Node> nodesComputed = new HashMap<Coord, Node>();
@@ -462,18 +462,18 @@ public class Test__curr {
 		Deque<Coord> closed = new ArrayDeque<Coord>();
 		closed.push(center.coord);
 
-		b.computeAdjacents(center, start, goal, nodesComputed, open, closed,
-				mapTileLog);
-
-		// print out computed adjacents
-		Node nn;
-		System.out.println("Done?: ");
-		for (int j = 0; j < 3; j++) {
-			for (int i = 0; i < 3; i++) {
-				nn = nodesComputed.get(new Coord(i, j));
-				System.out.println(nn);
-			}
-		}
+//		b.computeAdjacents(center, start, goal, nodesComputed, open, closed,
+//				mapTileLog);
+//
+//		// print out computed adjacents
+//		Node nn;
+//		System.out.println("Done?: ");
+//		for (int j = 0; j < 3; j++) {
+//			for (int i = 0; i < 3; i++) {
+//				nn = nodesComputed.get(new Coord(i, j));
+//				System.out.println(nn);
+//			}
+//		}
 	}
 
 	// @Test
@@ -520,7 +520,7 @@ public class Test__curr {
 		n02.setParent(n11);
 		n12.setParent(n11);
 		n22.setParent(n11);
-		InABeeLine b = new InABeeLine();
+		InABeeLine8Dir b = new InABeeLine8Dir();
 		Node goal = n33, start = n11, center = n11;
 		Node[] adjacents = { n00, n10, n20, n01, n21, n02, n12, n22 };
 		Map<Coord, Node> nodesComputed = new HashMap<Coord, Node>();
@@ -529,42 +529,43 @@ public class Test__curr {
 		Deque<Coord> closed = new ArrayDeque<Coord>();
 		closed.push(center.coord);
 
-		Coord nextCtr = b.computeAdjacents(center, start, goal, nodesComputed,
-				open, closed, mapTileLog);
-		System.out.println("\tcheapest 1: " + nextCtr);
-		closed.push(nextCtr);
-		System.out.println("\n\nafter first comp adj:");
-		b.debugPrintAdjacents(nodesComputed);
-		// nodesComputed.remove(nextCtr.coord);
-		System.out.println();
-
-		// ---- itr 2
-		Coord nextCtr2 = b.computeAdjacents(center, start, goal, nodesComputed,
-				open, closed, mapTileLog);
-		System.out.println("\tcheapest 2: " + nextCtr2);
-		closed.push(nextCtr2);
-		System.out.println("\n\nafter cecond comp adj:");
-		b.debugPrintAdjacents(nodesComputed);
-		// nodesComputed.remove(nextCtr2.coord);
-
-		// ---- itr 3
-		Coord nextCtr3 = b.computeAdjacents(center, start, goal, nodesComputed,
-				open, closed, mapTileLog);
-		System.out.println("\tcheapest 3: " + nextCtr3);
-		closed.push(nextCtr3);
-		// nodesComputed.remove(nextCtr3.coord);
-		System.out.println("\n\nafter first comp adj:");
-		b.debugPrintAdjacents(nodesComputed);
-
-		// print out computed adjacents
-		Node nn;
-		System.out.println("Done?: ");
-		for (int j = 0; j < 3; j++) {
-			for (int i = 0; i < 3; i++) {
-				nn = nodesComputed.get(new Coord(i, j));
-				System.out.println(nn);
-			}
-		}
+		
+//		Coord nextCtr = b.computeAdjacents(center, start, goal, nodesComputed,
+//				open, closed, mapTileLog);
+//		System.out.println("\tcheapest 1: " + nextCtr);
+//		closed.push(nextCtr);
+//		System.out.println("\n\nafter first comp adj:");
+//		b.debugPrintAdjacents(nodesComputed);
+//		// nodesComputed.remove(nextCtr.coord);
+//		System.out.println();
+//
+//		// ---- itr 2
+//		Coord nextCtr2 = b.computeAdjacents(center, start, goal, nodesComputed,
+//				open, closed, mapTileLog);
+//		System.out.println("\tcheapest 2: " + nextCtr2);
+//		closed.push(nextCtr2);
+//		System.out.println("\n\nafter cecond comp adj:");
+//		b.debugPrintAdjacents(nodesComputed);
+//		// nodesComputed.remove(nextCtr2.coord);
+//
+//		// ---- itr 3
+//		Coord nextCtr3 = b.computeAdjacents(center, start, goal, nodesComputed,
+//				open, closed, mapTileLog);
+//		System.out.println("\tcheapest 3: " + nextCtr3);
+//		closed.push(nextCtr3);
+//		// nodesComputed.remove(nextCtr3.coord);
+//		System.out.println("\n\nafter first comp adj:");
+//		b.debugPrintAdjacents(nodesComputed);
+//
+//		// print out computed adjacents
+//		Node nn;
+//		System.out.println("Done?: ");
+//		for (int j = 0; j < 3; j++) {
+//			for (int i = 0; i < 3; i++) {
+//				nn = nodesComputed.get(new Coord(i, j));
+//				System.out.println(nn);
+//			}
+//		}
 	}
 
 }

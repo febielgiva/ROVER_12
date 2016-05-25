@@ -554,7 +554,8 @@ public class Rv_curr {
 		ArrayList<String> equipment = new ArrayList<String>();
 		boolean beenToTargetLoc = false;
 		Socket socket = null;
-		InABeeLine cpu = new InABeeLine();
+		InABeeLine8Dir cpu8 = new InABeeLine8Dir();
+		InABeeLine4Dir cpu4 = new InABeeLine4Dir();
 
 		try {
 
@@ -582,7 +583,7 @@ public class Rv_curr {
 			loadScanMapFromSwarmServer();
 
 			debugPrintMapTileArray(mapTileLog);
-			cpu.getShortestPath(currentLoc, new Coord(7, 2),mapTileLog);
+			cpu8.getShortestPath(currentLoc, new Coord(7, 2),mapTileLog);
 			System.out
 					.println("ROVER_12 ------------ bottom process control --------------");
 			Thread.sleep(10000);
@@ -604,7 +605,7 @@ public class Rv_curr {
 		ArrayList<String> equipment = new ArrayList<String>();
 		boolean beenToTargetLoc = false;
 		Socket socket = null;
-		InABeeLine cpu = new InABeeLine();
+		InABeeLine8Dir cpu = new InABeeLine8Dir();
 
 		try {
 
