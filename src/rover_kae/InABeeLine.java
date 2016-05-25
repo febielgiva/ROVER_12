@@ -24,34 +24,41 @@ public class InABeeLine {
 		Map<Coord, Node> open = new HashMap<Coord, Node>();
 		Deque<Coord> closed = new ArrayDeque<>();
 		Map<Coord, Node> nodeComputed = new HashMap<Coord, Node>();
-
+		Coord cheapest;
 		Node s = new Node(start, null);
 		Node g = new Node(goal, null);
 		Node center;
 		s.setF(computeF(s, s, g));
 
-		// search area: corners[0]= top-left, corners[1] = bottom-right
-		// Coord[] corners = getSearchArea(start, goal, 0);
-		// int tlX = corners[0].xpos;
-		// int tlY = corners[0].ypos;
-		// int brX = corners[1].xpos;
-		// int brY = corners[1].ypos;
-
-		// TODO-may be more efficient this way
-		// if (!hasAllTileInfo(tlX, tlY, brX, brY,mapTileLog)) {
-		// return "not enough tile info given";
-		// }
-
 		// add start tile to closed
-		open.put(start, s);
-		// closed.offer(s.coord); // push
 		center = s.clone();
+		if (!open.containsKey(start)) {
+			open.put(start, center);
+		}
+		closed.push(start);
 
+		int itrTracker=0;
 		// until there are no more viable tiles
-		while (!center.coord.equals(goal) || !open.isEmpty()) {
+		while (!center.coord.equals(goal) && !open.isEmpty()) {
+			itrTracker++;
+			cheapest = computeAdjacents(center, s, g, nodeComputed, open, closed,
+					mapTileLog);
+			center = open.get(cheapest);
+			// debug p out
+			System.out.println("this itr["+itrTracker+"]:\ncoord " + center.coord
+					+ "\ncheapest of open " + nodeComputed.get(cheapest)
+					+ "\nsize of open " + open.size() + "\ncurr center "
+					+ center.str());
+			try {
+				Thread.sleep(4000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 
-			Node cheapest = computeAdjacents(s, s, g, nodeComputed, open,
-					closed, mapTileLog);
+			closed.push(cheapest);
+			open.remove(center);
+			
 
 		}
 		return shortestPath;
@@ -71,17 +78,16 @@ public class InABeeLine {
 	}
 
 	// get the least expensive adjacent
-	public Node computeAdjacents(Node center, Node start, Node goal,
+	public Coord computeAdjacents(Node center, Node start, Node goal,
 			Map<Coord, Node> nodesComputed, Map<Coord, Node> open,
 			Deque<Coord> closed, Map<Coord, MapTile> mapTileLog) {
+
+		open.remove(center.coord);
+		System.out.println("inside computeAdjacents()\tcenter:"+center.str());
 
 		List<Node> adjacents = new ArrayList<Node>();
 		int x = center.coord.xpos;
 		int y = center.coord.ypos;
-
-		start.setF(computeF(start, start, goal));
-
-		int cost = -1;
 
 		Coord n = new Coord(x, y - 1);
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
@@ -94,23 +100,23 @@ public class InABeeLine {
 		Coord e = new Coord(x + 1, y);
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, e);
-		
+
 		Coord se = new Coord(x + 1, y + 1);
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, se);
-		
+
 		Coord s = new Coord(x, y + 1);
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, s);
-		
+
 		Coord sw = new Coord(x - 1, y + 1);
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, sw);
-		
+
 		Coord w = new Coord(x - 1, y);
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, w);
-		
+
 		Coord nw = new Coord(x - 1, y - 1);
 		examineThisAdjacent(center, goal, nodesComputed, open, closed,
 				mapTileLog, adjacents, nw);
@@ -123,7 +129,7 @@ public class InABeeLine {
 		// debugPrintAdjacents(nodesComputed);
 		// System.out.println("\n\n\n\n");
 
-		return min(adjacents);
+		return min(open);
 	}
 
 	private void examineThisAdjacent(Node center, Node goal,
@@ -133,24 +139,45 @@ public class InABeeLine {
 
 		int thisG = -1;
 		Node thisAdj;
+		// debug print out
+		System.out.println("inside examineThisAdjacent(" + adjacent.xpos + ","
+				+ adjacent.ypos + ")\tcenter"+center.str());
+		
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// if this node is not an obstacle or the one in the closed list
 		if (!closed.contains(adjacent) && !isObsatacle(adjacent, mapTileLog)) {
+
+			// if this node has been examined already w/ a different center
 			if (nodesComputed.containsKey(adjacent)) {
-				// is the g already stored greater than g computed with
-				// reference to current center?
+
+				// is the stored g greater than newly computed g?
 				thisAdj = nodesComputed.get(adjacent);
 				thisG = computeG(center, thisAdj);
 				if (thisG < thisAdj.g) {
+					// if so,update the parent and g
 					thisAdj.setParent(center);
 					thisAdj.setG(thisG);
 				}
-
 			} else {
-				System.out.println("add N");
 				Node node = new Node(adjacent, center, -1);
-				computeF(node, center, goal);
+				node.setF(computeF(node, center, goal));
+				System.out.println("this adj: " + node.str());
+
+				// debug
+				// try {
+				// Thread.sleep(3000);
+				// } catch (InterruptedException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// }
 				adjacents.add(node);
 				nodesComputed.put(node.coord, node);
-
 				if (!open.containsKey(node.coord)) {
 					open.put(node.coord, node);
 				}
@@ -170,7 +197,7 @@ public class InABeeLine {
 		int dx = Math.abs(focus.coord.xpos - goal.coord.xpos);
 		int dy = Math.abs(focus.coord.ypos - goal.coord.ypos);
 
-		focus.h = dx + dy;
+		focus.h = (dx + dy) * 10;
 	}
 
 	// start -> goal distance
@@ -238,16 +265,26 @@ public class InABeeLine {
 		return (focus.h + focus.g);
 	}
 
-	private Node min(List<Node> adjacents) {
-		int minIdx = 0, minVal = Integer.MAX_VALUE, thisVal = 0;
-		for (int i = 0; i < adjacents.size(); i++) {
-			thisVal = adjacents.get(i).f;
+	private Coord min(Map<Coord, Node> open) {
+		Coord min = new Coord(-1, -1);
+		int minVal = Integer.MAX_VALUE, thisVal = 0;
+
+		for (Node node : open.values()) {
+			thisVal = node.f;
 			if (minVal > thisVal) {
-				minIdx = i;
+				min = node.coord;
 				minVal = thisVal;
 			}
 		}
-		return adjacents.get(minIdx);
+		// debug p out
+		System.out.println("inside min(), min is " + open.get(min).str());
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return min;
 	}
 
 	// expensive distance computation (Pythagorean)

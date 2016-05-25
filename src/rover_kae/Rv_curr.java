@@ -582,7 +582,7 @@ public class Rv_curr {
 			loadScanMapFromSwarmServer();
 
 			debugPrintMapTileArray(mapTileLog);
-			cpu.getShortestPath(currentLoc, new Coord(3, 3));
+			cpu.getShortestPath(currentLoc, new Coord(7, 2),mapTileLog);
 			System.out
 					.println("ROVER_12 ------------ bottom process control --------------");
 			Thread.sleep(10000);

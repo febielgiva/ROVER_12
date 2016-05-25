@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import supportTools.SwarmMapInit;
 import common.Coord;
+import common.MapTile;
 import common.PlanetMap;
 import common.RoverLocations;
 import common.ScienceLocations;
@@ -26,7 +27,7 @@ import controlServer.TestSwarmServer;
 
 public class Test__curr {
 
-	// @Test
+	@Test
 	public void testRunDiffMaps() throws Exception {
 		TestSwarmServer ss = new TestSwarmServer();
 		Rv_curr rv = new Rv_curr();
@@ -65,8 +66,19 @@ public class Test__curr {
 	// @Test
 	public void testNegation() {
 		boolean A = true, B = true;
-		System.out.println("!A & !B" + (!A && !B));
-		System.out.println("!(A || B)" + (!A && !B));
+		System.out.println("!A & !B: " + (!A && !B));
+		System.out.println("!(A || B): " + !(A || B));
+		System.out.println("!A || !B: " + (!A || !B));
+		System.out.println("!(A || B): " + (!A && !B));
+		boolean centerIsGoal = true;
+		boolean openIsEmpty = false;
+		boolean inClosed = false;
+		boolean isObstacle = true;
+		// while (!centerIsGoal || !openIsEmpty) {
+		while (!inClosed && !isObstacle) {
+			// while (!(centerIsGoal && openIsEmpty)) {
+			System.out.println("we are in");
+		}
 	}
 
 	// @Test
@@ -187,7 +199,7 @@ public class Test__curr {
 		Node goal = n33, start = n11, center = n11, focus = n12;
 
 		InABeeLine b = new InABeeLine();
-		b.setF(focus, center, start);
+		focus.setF(b.computeF(focus, center, start));
 		b.setG(center, focus);
 
 		System.out.println(start.g);
@@ -305,12 +317,12 @@ public class Test__curr {
 		Map<Coord, Node> computedNodes = new HashMap<Coord, Node>();
 
 		// set center's cost
-		b.setF(center, center, goal);
+		center.setF(b.computeF(center, center, start));
 
 		// set all adjacents' cost
 		for (Node node : adjacents) {
 			Node focus = node;
-			b.setF(focus, center, goal);
+			focus.setF(b.computeF(focus, center, start));
 			System.out.println(focus.str());
 			computedNodes.put(node.coord, node);
 		}
@@ -376,12 +388,12 @@ public class Test__curr {
 		Map<Coord, Node> computedNodes = new HashMap<Coord, Node>();
 
 		// set center's cost
-		b.setF(center, center, goal);
+		center.setF(b.computeF(center, center, start));
 
 		// set all adjacents' cost
 		for (Node node : adjacents) {
 			Node focus = node;
-			b.setF(focus, center, goal);
+			focus.setF(b.computeF(focus, center, start));
 			System.out.println(focus.str());
 			computedNodes.put(node.coord, node);
 		}
@@ -445,10 +457,13 @@ public class Test__curr {
 		Node goal = n33, start = n11, center = n11;
 		Node[] adjacents = { n00, n10, n20, n01, n21, n02, n12, n22 };
 		Map<Coord, Node> nodesComputed = new HashMap<Coord, Node>();
+		Map<Coord, Node> open = new HashMap<Coord, Node>();
+		Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
 		Deque<Coord> closed = new ArrayDeque<Coord>();
 		closed.push(center.coord);
 
-		b.computeAdjacents(center, start, goal, nodesComputed, closed);
+		b.computeAdjacents(center, start, goal, nodesComputed, open, closed,
+				mapTileLog);
 
 		// print out computed adjacents
 		Node nn;
@@ -461,7 +476,7 @@ public class Test__curr {
 		}
 	}
 
-	@Test
+	// @Test
 	public void testShiftFocus() throws Exception {
 		// TestSwarmServer ss = new TestSwarmServer();
 
@@ -509,32 +524,34 @@ public class Test__curr {
 		Node goal = n33, start = n11, center = n11;
 		Node[] adjacents = { n00, n10, n20, n01, n21, n02, n12, n22 };
 		Map<Coord, Node> nodesComputed = new HashMap<Coord, Node>();
+		Map<Coord, Node> open = new HashMap<Coord, Node>();
+		Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
 		Deque<Coord> closed = new ArrayDeque<Coord>();
 		closed.push(center.coord);
 
-		Node nextCtr = b.computeAdjacents(center, start, goal, nodesComputed,
-				closed);
+		Coord nextCtr = b.computeAdjacents(center, start, goal, nodesComputed,
+				open, closed, mapTileLog);
 		System.out.println("\tcheapest 1: " + nextCtr);
-		closed.push(nextCtr.coord);
+		closed.push(nextCtr);
 		System.out.println("\n\nafter first comp adj:");
 		b.debugPrintAdjacents(nodesComputed);
 		// nodesComputed.remove(nextCtr.coord);
 		System.out.println();
 
 		// ---- itr 2
-		Node nextCtr2 = b.computeAdjacents(nextCtr, start, goal, nodesComputed,
-				closed);
+		Coord nextCtr2 = b.computeAdjacents(center, start, goal, nodesComputed,
+				open, closed, mapTileLog);
 		System.out.println("\tcheapest 2: " + nextCtr2);
-		closed.push(nextCtr2.coord);
+		closed.push(nextCtr2);
 		System.out.println("\n\nafter cecond comp adj:");
 		b.debugPrintAdjacents(nodesComputed);
 		// nodesComputed.remove(nextCtr2.coord);
 
 		// ---- itr 3
-		Node nextCtr3 = b.computeAdjacents(nextCtr2, start, goal, nodesComputed,
-				closed);
+		Coord nextCtr3 = b.computeAdjacents(center, start, goal, nodesComputed,
+				open, closed, mapTileLog);
 		System.out.println("\tcheapest 3: " + nextCtr3);
-		closed.push(nextCtr3.coord);
+		closed.push(nextCtr3);
 		// nodesComputed.remove(nextCtr3.coord);
 		System.out.println("\n\nafter first comp adj:");
 		b.debugPrintAdjacents(nodesComputed);
