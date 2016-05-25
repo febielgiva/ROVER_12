@@ -1570,7 +1570,14 @@ public class ROVER_12_wk9 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		ROVER_12_wk9 client = new ROVER_12_wk9();
+		
+		// take in first input argument as a SERVER_ADDRESS value 
+		String serverAddress="";
+		for (String s : args) {
+			serverAddress = s;
+		}
+		
+		ROVER_12_wk9 client = new ROVER_12_wk9(serverAddress);
 		client.run();
 	}
 }
