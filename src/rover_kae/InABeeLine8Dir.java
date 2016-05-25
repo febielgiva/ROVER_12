@@ -18,7 +18,7 @@ public class InABeeLine8Dir {
 	// get the shortest path based on A* algorithm
 	public List<Node> shortestPath = new ArrayList<Node>();
 
-	public List<Node> getShortestPath(Coord start, Coord goal,
+	public String[] getShortestPath(Coord start, Coord goal,
 			Map<Coord, MapTile> mapTileLog) {
 
 		StringBuffer sb = new StringBuffer();
@@ -70,44 +70,84 @@ public class InABeeLine8Dir {
 		for (Node integer : shortestPath) {
 			System.out.println(integer + " ");
 		}
-		
+
 		Collections.reverse(shortestPath);
-		
+
 		System.out.println("\nreversed");
 		for (Node node : shortestPath) {
 			System.out.println(node + " ");
 		}
+		for (int i = 0; i < shortestPath.size(); i++) {
+			System.out.println("" + i + ": " + shortestPath.get(i).coord);
+		}
 
-		System.out.println("0: "+shortestPath.get(0).coord);
-		System.out.println("1: "+shortestPath.get(1).coord);
-		System.out.println("2: "+shortestPath.get(2).coord);
-
-//-----------------------
+		// -----------------------
+		String thisStr = "";
+		Coord prev = start.clone();
 		for (Node node : shortestPath) {
 
 			if (node.parentNode != null) {
-				System.out.println("(sp str build) FROM " + node.parentNode.coord + " TO " + node.coord);
-				sb.append(coordToDir(node.parentNode.coord,node.coord, 
-						mapTileLog));
+				System.out.println("(sp str build) FROM "
+						+ node.parentNode.coord + " TO " + node.coord);
+
+				// get the direction from the parent node to this node
+				thisStr = coordToDir(node.parentNode.coord, node.coord,
+						mapTileLog);
+
+				sb.append(thisStr);
 			}
+			prev = node.coord.clone();
 		}
-		System.out.println("(sp str build) FROM " + shortestPath.get(shortestPath.size()-1).parentNode.coord + " TO " + shortestPath.get(shortestPath.size()-1).coord);
-		System.out.println("(sp str build) FROM " + shortestPath.get(shortestPath.size()-1).coord + " TO " + goal);
-		sb.append(coordToDir(shortestPath.get(shortestPath.size()-1).parentNode.coord, shortestPath.get(shortestPath.size()-1).coord, mapTileLog));
-		sb.append(coordToDir(shortestPath.get(shortestPath.size()-1).coord, goal, mapTileLog));
-		System.out.println("direction string:" + sb.toString());
-		return shortestPath;
+		// System.out.println("(sp str build) FROM "
+		// + shortestPath.get(shortestPath.size() - 1).parentNode.coord
+		// + " TO " + shortestPath.get(shortestPath.size() - 1).coord);
+		// System.out.println("(sp str build) FROM "
+		// + shortestPath.get(shortestPath.size() - 1).coord + " TO "
+		// + goal);
+
+		// debug?
+		System.out.println("what's null? "
+				+ (shortestPath.get(shortestPath.size() - 1).parentNode));
+		if (shortestPath.get(shortestPath.size() - 1).parentNode != null) {
+			sb.append(coordToDir(
+					shortestPath.get(shortestPath.size() - 1).parentNode.coord,
+					shortestPath.get(shortestPath.size() - 1).coord, mapTileLog));
+			sb.append(coordToDir(
+					shortestPath.get(shortestPath.size() - 1).coord, goal,
+					mapTileLog));
+			System.out.println("direction string:" + sb.toString());
+		}
+		String[] aPath = new String[(sb.length()) + 1];
+		for (int i = 0; i < sb.length(); i++) {
+			thisStr = sb.substring(i, i + 1);
+			if (thisStr.equals("stop")) {
+				break;
+			}
+			aPath[i] = thisStr;
+			System.out.print("(" + i + ")" + aPath[i] + " ");
+		}
+		aPath[aPath.length - 1] = "end";
+		System.out.println("(" + (aPath.length - 1) + ")"
+				+ aPath[aPath.length - 1]);
+
+		return aPath;
 	}
 
 	public String coordToDir(Coord from, Coord to,
 			Map<Coord, MapTile> mapTileLog) {
 		StringBuffer sb = new StringBuffer();
-//		System.out
-//				.println("inside coordToDir()\nfrom: " + from + "\nto: " + to);
+		// System.out
+		// .println("inside coordToDir()\nfrom: " + from + "\nto: " + to);
 		int dx = to.xpos - from.xpos;
 		int dy = to.ypos - from.ypos;
 		int xCount = Math.abs(dx);
 		int yCount = Math.abs(dy);
+
+		if (xCount > 1 || yCount > 1) {
+			// if more than one step implied
+			System.out.println("stop, stop, stop!");
+			return "stop";
+		}
 
 		// horizontal motion
 		if (dy == 0) {

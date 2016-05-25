@@ -556,6 +556,8 @@ public class Rv_curr {
 		Socket socket = null;
 		InABeeLine8Dir cpu8 = new InABeeLine8Dir();
 		InABeeLine4Dir cpu4 = new InABeeLine4Dir();
+		String[] shortestPath;
+		boolean astar = true, wallL = false, wallR = false;
 
 		try {
 
@@ -579,14 +581,65 @@ public class Rv_curr {
 			/**
 			 * #### Rover controller process loop ####
 			 */
-
+			// --------------
 			loadScanMapFromSwarmServer();
-
 			debugPrintMapTileArray(mapTileLog);
-			cpu8.getShortestPath(currentLoc, new Coord(7, 4),mapTileLog);
+
+			boolean astarGo = false;
+			String[] aPath = { "end" };
+			int idx = 0;
+			Coord goal = new Coord(7, 4);			
+			
+			if (astar) {
+				aPath = cpu8.getShortestPath(currentLoc, goal, mapTileLog);
+				idx = 0;
+				astarGo = true;
+			}
+			boolean hasMoved = false;
+			while (astarGo) {
+
+				System.out.println("curr dir: " + aPath[idx]);
+				if (aPath[idx].equals("end")) {
+					astarGo = false;
+				} else {
+					hasMoved = move(aPath[idx]);
+					idx = hasMoved ? (idx += 1) : idx;
+				}
+				Thread.sleep(sleepTime+300);
+			}
+			// ----------------
+			loadScanMapFromSwarmServer();
+			debugPrintMapTileArray(mapTileLog);
+			idx = 0;
+			goal = new Coord(11, 0);
+			
+			// debug
+			aPath = cpu8.getShortestPath(new Coord(7,4), goal, mapTileLog);
+
+			
+			
+			
+			if (astar) {
+			//	aPath = cpu8.getShortestPath(currentLoc, goal, mapTileLog);
+				aPath = cpu8.getShortestPath(new Coord(7,4), goal, mapTileLog);
+				idx = 0;
+				astarGo = true;
+			}
+			hasMoved = false;
+			while (astarGo) {
+
+				if (aPath[idx].equals("end")) {
+					astarGo = false;
+				} else {
+					hasMoved = move(aPath[idx]);
+					idx = hasMoved ? (idx += 1) : idx;
+				}
+				Thread.sleep(sleepTime+300);
+			}
+			// ----------------
+
 			System.out
 					.println("ROVER_12 ------------ bottom process control --------------");
-			Thread.sleep(10000);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1646,7 +1699,7 @@ public class Rv_curr {
 		return null;
 	}
 
-	// given two coordinates, pick a next move-direction 
+	// given two coordinates, pick a next move-direction
 	public String pickADir(Coord from, Coord to) {
 
 		int dx = to.xpos - from.xpos;
@@ -1667,13 +1720,12 @@ public class Rv_curr {
 		}
 	}
 
-	
 	/**
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
 		Rv_curr client = new Rv_curr();
 		// client.test2(); // outward search test
-		 client.test();// astar test
+		client.test();// astar test
 	}
 }
