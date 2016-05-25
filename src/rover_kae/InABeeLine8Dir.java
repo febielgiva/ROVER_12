@@ -2,6 +2,7 @@ package rover_kae;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -60,19 +61,49 @@ public class InABeeLine8Dir {
 			if (node.parentNode != null
 					&& !shortestPath.contains(node.parentNode)) {
 				shortestPath.add(node.parentNode);
+
 			}
 		}
 
-		for (Node node : shortestPath) {
-			System.out.println("(sp)" + node);
+		// debug -----------------------
+		System.out.println("\n\n\n\noriginal");
+		for (Node integer : shortestPath) {
+			System.out.println(integer + " ");
 		}
+		
+		Collections.reverse(shortestPath);
+		
+		System.out.println("\nreversed");
+		for (Node node : shortestPath) {
+			System.out.println(node + " ");
+		}
+
+		System.out.println("0: "+shortestPath.get(0).coord);
+		System.out.println("1: "+shortestPath.get(1).coord);
+		System.out.println("2: "+shortestPath.get(2).coord);
+
+//-----------------------
+		for (Node node : shortestPath) {
+
+			if (node.parentNode != null) {
+				System.out.println("(sp str build) FROM " + node.parentNode.coord + " TO " + node.coord);
+				sb.append(coordToDir(node.parentNode.coord,node.coord, 
+						mapTileLog));
+			}
+		}
+		System.out.println("(sp str build) FROM " + shortestPath.get(shortestPath.size()-1).parentNode.coord + " TO " + shortestPath.get(shortestPath.size()-1).coord);
+		System.out.println("(sp str build) FROM " + shortestPath.get(shortestPath.size()-1).coord + " TO " + goal);
+		sb.append(coordToDir(shortestPath.get(shortestPath.size()-1).parentNode.coord, shortestPath.get(shortestPath.size()-1).coord, mapTileLog));
+		sb.append(coordToDir(shortestPath.get(shortestPath.size()-1).coord, goal, mapTileLog));
+		System.out.println("direction string:" + sb.toString());
 		return shortestPath;
 	}
 
-	private String coordToDir(Coord from, Coord to,
+	public String coordToDir(Coord from, Coord to,
 			Map<Coord, MapTile> mapTileLog) {
 		StringBuffer sb = new StringBuffer();
-
+//		System.out
+//				.println("inside coordToDir()\nfrom: " + from + "\nto: " + to);
 		int dx = to.xpos - from.xpos;
 		int dy = to.ypos - from.ypos;
 		int xCount = Math.abs(dx);
@@ -80,40 +111,37 @@ public class InABeeLine8Dir {
 
 		// horizontal motion
 		if (dy == 0) {
-			for (int i = 0; i < xCount; i++) {
-				if (dx > 0) {
-					sb.append("E");
-				} else {
-					sb.append("W");
-				}
+			if (dx > 0) {
+				System.out.println("e");
+				sb.append("E");
+			} else {
+				System.out.println("w");
+				sb.append("W");
 			}
 		}
 
 		// vertical motion
 		else if (dx == 0) {
-			for (int i = 0; i < xCount; i++) {
-				if (dy > 0) {
-					sb.append("S");
-				} else {
-					sb.append("E");
-				}
+			if (dy > 0) {
+				System.out.println("s");
+				sb.append("S");
+			} else {
+				System.out.println("e");
+				sb.append("E");
 			}
 		}
 
 		// diagonal motion
-		else if (dx == 0) {
+		else {
 			// ne
-			if (dx < 0 && dy > 0) {
-				if (isObsatacle(new Coord(from.xpos + 1, from.ypos), mapTileLog)
-						&& isObsatacle(new Coord(from.xpos, from.ypos - 1),
-								mapTileLog)) {
-					sb.append("d");
-				}
+			if (dx > 0 && dy < 0) {
 				if (!isObsatacle(new Coord(from.xpos + 1, from.ypos),
 						mapTileLog)) {
+					System.out.println("en");
 					sb.append("E");
 					sb.append("N");
 				} else {
+					System.out.println("ne");
 					sb.append("N");
 					sb.append("E");
 				}
@@ -122,9 +150,11 @@ public class InABeeLine8Dir {
 			else if (dx > 0 && dy > 0) {
 				if (!isObsatacle(new Coord(from.xpos + 1, from.ypos),
 						mapTileLog)) {
+					System.out.println("es");
 					sb.append("E");
 					sb.append("S");
 				} else {
+					System.out.println("se");
 					sb.append("S");
 					sb.append("E");
 				}
@@ -133,9 +163,11 @@ public class InABeeLine8Dir {
 			else if (dx < 0 && dy < 0) {
 				if (!isObsatacle(new Coord(from.xpos - 1, from.ypos),
 						mapTileLog)) {
+					System.out.println("wn");
 					sb.append("W");
 					sb.append("N");
 				} else {
+					System.out.println("nw");
 					sb.append("N");
 					sb.append("W");
 				}
@@ -144,19 +176,18 @@ public class InABeeLine8Dir {
 			else if (dx < 0 && dy > 0) {
 				if (!isObsatacle(new Coord(from.xpos - 1, from.ypos),
 						mapTileLog)) {
+					System.out.println("ws");
 					sb.append("W");
-					sb.append("N");
+					sb.append("S");
 				} else {
-					sb.append("N");
+					System.out.println("sw");
+					sb.append("S");
 					sb.append("W");
 				}
 			}
-
 		}
 
-		for (int i = 0; i < xCount; i++) {
-		}
-		return null;
+		return sb.toString();
 	}
 
 	private boolean hasAllTileInfo(int tlX, int tlY, int brX, int brY,
@@ -405,7 +436,13 @@ public class InABeeLine8Dir {
 
 	public boolean isObsatacle(Coord focus, Map<Coord, MapTile> mapTileLog) {
 		MapTile tile = mapTileLog.get(focus);
-		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+
+		// we don't have the log for this tile
+		if (tile == null) {
+			return true;
+		}
+
+		if (tile.getTerrain() == Terrain.ROCK
 				|| tile.getTerrain() == Terrain.NONE
 				|| tile.getTerrain() == Terrain.FLUID
 				|| tile.getTerrain() == Terrain.SAND) {

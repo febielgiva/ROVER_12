@@ -70,7 +70,11 @@ public class Node {
 	}
 
 	public String str() {
-		return "[Node: coord=" + coord.xpos + "," + coord.ypos + "\th=" + h
-				+ ", g=" + g + ", f=" + f + "]";
+		if (coord != null) {
+			return "[Node: coord=" + coord.xpos + "," + coord.ypos + "\th=" + h
+					+ ", g=" + g + ", f=" + f + "]";
+		} else {
+			return "null";
+		}
 	}
 }
