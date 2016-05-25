@@ -73,7 +73,7 @@ public class InABeeLine8Dir {
 
 		Collections.reverse(shortestPath);
 
-		System.out.println("\nreversed");
+		System.out.println("\nreversed ");
 		for (Node node : shortestPath) {
 			System.out.println(node + " ");
 		}
