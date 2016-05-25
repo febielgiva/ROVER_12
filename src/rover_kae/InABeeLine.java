@@ -37,29 +37,26 @@ public class InABeeLine {
 		}
 		closed.push(start);
 
-		int itrTracker=0;
+		int itrTracker = 0;
 		// until there are no more viable tiles
 		while (!center.coord.equals(goal) && !open.isEmpty()) {
 			itrTracker++;
-			cheapest = computeAdjacents(center, s, g, nodeComputed, open, closed,
-					mapTileLog);
+			cheapest = computeAdjacents(center, s, g, nodeComputed, open,
+					closed, mapTileLog);
 			center = open.get(cheapest);
 			// debug p out
-			System.out.println("this itr["+itrTracker+"]:\ncoord " + center.coord
-					+ "\ncheapest of open " + nodeComputed.get(cheapest)
-					+ "\nsize of open " + open.size() + "\ncurr center "
-					+ center.str());
-			try {
-				Thread.sleep(4000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			System.out.println("this itr[" + itrTracker + "]:\ncoord "
+					+ center.coord + "\ncheapest of open "
+					+ nodeComputed.get(cheapest) + "\nsize of open "
+					+ open.size() + "\ncurr center " + center.str());
 
 			closed.push(cheapest);
 			open.remove(center);
-			
 
+		}
+		
+		for (Coord coord : closed) {
+			System.out.println(coord);
 		}
 		return shortestPath;
 	}
@@ -83,7 +80,7 @@ public class InABeeLine {
 			Deque<Coord> closed, Map<Coord, MapTile> mapTileLog) {
 
 		open.remove(center.coord);
-		System.out.println("inside computeAdjacents()\tcenter:"+center.str());
+		System.out.println("inside computeAdjacents()\tcenter:" + center.str());
 
 		List<Node> adjacents = new ArrayList<Node>();
 		int x = center.coord.xpos;
@@ -141,14 +138,7 @@ public class InABeeLine {
 		Node thisAdj;
 		// debug print out
 		System.out.println("inside examineThisAdjacent(" + adjacent.xpos + ","
-				+ adjacent.ypos + ")\tcenter"+center.str());
-		
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+				+ adjacent.ypos + ")\tcenter" + center.str());
 
 		// if this node is not an obstacle or the one in the closed list
 		if (!closed.contains(adjacent) && !isObsatacle(adjacent, mapTileLog)) {
@@ -169,13 +159,6 @@ public class InABeeLine {
 				node.setF(computeF(node, center, goal));
 				System.out.println("this adj: " + node.str());
 
-				// debug
-				// try {
-				// Thread.sleep(3000);
-				// } catch (InterruptedException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// }
 				adjacents.add(node);
 				nodesComputed.put(node.coord, node);
 				if (!open.containsKey(node.coord)) {
@@ -276,14 +259,7 @@ public class InABeeLine {
 				minVal = thisVal;
 			}
 		}
-		// debug p out
-		System.out.println("inside min(), min is " + open.get(min).str());
-		try {
-			Thread.sleep(3000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		return min;
 	}
 
