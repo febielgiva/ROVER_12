@@ -105,9 +105,8 @@ public class InABeeLine8Dir {
 		// + shortestPath.get(shortestPath.size() - 1).coord + " TO "
 		// + goal);
 
-		// debug?
-		System.out.println("what's null? "
-				+ (shortestPath.get(shortestPath.size() - 1).parentNode));
+		
+		
 		if (shortestPath.get(shortestPath.size() - 1).parentNode != null) {
 			sb.append(coordToDir(
 					shortestPath.get(shortestPath.size() - 1).parentNode.coord,
