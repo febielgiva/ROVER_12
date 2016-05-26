@@ -38,6 +38,7 @@ import common.Communication;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
+import enums.RoverToolType;
 import enums.Science;
 import enums.Terrain;
 import supportTools.CommunicationUtil;
@@ -308,8 +309,11 @@ public class Rv_curr {
 		for (int i = 0; i < directions.length; i++) {
 			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 					directions[i])) {
+
 				System.out.println("(wall follower) move " + directions[i]);
 				hasMoved = move(directions[i]);
+				setCurrentLoc();
+
 				System.out.println("(WF) has moved? " + hasMoved);
 				if (hasMoved) {
 
@@ -544,8 +548,7 @@ public class Rv_curr {
 	void test() throws IOException, InterruptedException {
 		new ArrayList<String>();
 		Socket socket = null;
-		InABeeLine8Dir cpu8 = new InABeeLine8Dir();
-		new InABeeLine4Dir();
+		InABeeLine8Dir b = new InABeeLine8Dir();
 		boolean astar = true;
 
 		try {
@@ -559,8 +562,6 @@ public class Rv_curr {
 			rovergroupStartPosition = requestStartLoc(socket);
 			targetLocation = requestTargetLoc(socket);
 			nextTarget = targetLocation.clone();
-			
-			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 
 			currentLoc.clone();
 			cardinals[1] = true;
@@ -569,64 +570,90 @@ public class Rv_curr {
 			 */
 			// ------ itr 1 --------
 			loadScanMapFromSwarmServer();
+			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 			debugPrintMapTileArray(mapTileLog);
-
 			boolean astarGo = false;
-			String[] aPath = { "end" };
+			String[] thePath = { "end" };
 			int idx = 0;
 			Coord goal = new Coord(7, 4);
 
-			if (astar) {
-				aPath = cpu8.getShortestPath(currentLoc, goal, mapTileLog);
-				idx = 0;
-				astarGo = true;
-			}
+			thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			idx = 0;
+			astarGo = true;
+
 			boolean hasMoved = false;
 			while (astarGo) {
 
-				System.out.println("curr dir: " + aPath[idx]);
-				if (aPath[idx].equals("end")) {
+				loadScanMapFromSwarmServer();
+				System.out.println("curr dir: " + thePath[idx]);
+				if (thePath[idx].equals("end")) {
 					astarGo = false;
 				} else {
-					hasMoved = move(aPath[idx]);
+					hasMoved = move(thePath[idx]);
 					idx = hasMoved ? (idx += 1) : idx;
 				}
 				Thread.sleep(sleepTime + 300);
 			}
+
 			// ------- itr 2 ---------
 			loadScanMapFromSwarmServer();
 			debugPrintMapTileArray(mapTileLog);
 			idx = 0;
 			goal = new Coord(11, 0);
 
-			if (astar) {
-				// aPath = cpu8.getShortestPath(currentLoc, goal, mapTileLog);
-				aPath = cpu8.getShortestPath(new Coord(7, 4), goal, mapTileLog);
-				idx = 0;
-				astarGo = true;
-			}
-			hasMoved = false;
-			while (astarGo) {
+			thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			astarGo = true;
 
-				if (aPath[idx].equals("end")) {
-					astarGo = false;
+			hasMoved = false;
+			while (!thePath[idx].equals("end")) {
+
+				loadScanMapFromSwarmServer();
+				hasMoved = move(thePath[idx]);
+				if (hasMoved) {
+					idx++;
 				} else {
-					hasMoved = move(aPath[idx]);
-					if (hasMoved) {
-						idx++;
-					} else {
-						loadScanMapFromSwarmServer();
-					}
+					loadScanMapFromSwarmServer();
 				}
 				Thread.sleep(sleepTime + 300);
 			}
-			// ------- itr 3 ---------
-			boolean followWall=true;
-			while(followWall){
-				
+
+			// ------- itr 3 wall follower ---------
+			setCurrentLoc();
+			boolean followWall = true;
+			Coord aWall = outwardSpiralSearch(currentLoc);
+
+			while (followWall) {
+
+				pathMap.add(currentLoc);
+				if (wallFollwerGoingInCircle()) {
+					break;
+				}
+				stayToTheWall(b, centerIndex, thePath, idx);
+				loadScanMapFromSwarmServer();
 				followLhsWall(scanMap.getScanMap(), centerIndex);
+				Thread.sleep(sleepTime + 300);
 			}
-			// ----------------
+			// ----------- itr 4 astar only -----
+			loadScanMapFromSwarmServer();
+			debugPrintMapTileArray(mapTileLog);
+			idx = 0;
+			setAstarGoal(goal);
+
+			thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			astarGo = true;
+
+			hasMoved = false;
+			while (!thePath[idx].equals("end")) {
+
+				loadScanMapFromSwarmServer();
+				hasMoved = move(thePath[idx]);
+				if (hasMoved) {
+					idx++;
+				} else {
+					loadScanMapFromSwarmServer();
+				}
+				Thread.sleep(sleepTime + 300);
+			}
 
 			System.out
 					.println("ROVER_12 ------------ bottom process control --------------");
@@ -644,10 +671,128 @@ public class Rv_curr {
 		}
 	}// END of test()
 
+	private void setAstarGoal(Coord thisGoal) {
+
+		switch (getTargetDirStr(targetLocation)) {
+		case "E":
+			thisGoal = new Coord(currentLoc.xpos + 5, currentLoc.ypos);
+
+		case "S":
+			thisGoal = new Coord(currentLoc.xpos, currentLoc.ypos + 5);
+
+		case "W":
+			thisGoal = new Coord(currentLoc.xpos - 5, currentLoc.ypos);
+
+		case "N":
+			thisGoal = new Coord(currentLoc.xpos, currentLoc.ypos - 5);
+
+		case "NE":
+			thisGoal = new Coord(currentLoc.xpos + 5, currentLoc.ypos - 5);
+
+		case "SE":
+			thisGoal = new Coord(currentLoc.xpos + 5, currentLoc.ypos + 5);
+
+		case "NW":
+			thisGoal = new Coord(currentLoc.xpos - 5, currentLoc.ypos - 5);
+
+		case "SW":
+			thisGoal = new Coord(currentLoc.xpos - 5, currentLoc.ypos + 5);
+
+		default:
+			break;
+		}
+	}
+
+	private String getTargetDirStr(Coord target) {
+
+		int dx = currentLoc.xpos - target.xpos;
+		int dy = currentLoc.ypos - target.ypos;
+
+		// n
+		if (dx == 0 && dy < 0) {
+			return "N";
+		}
+
+		// s
+		if (dx == 0 && dy > 0) {
+			return "S";
+		}
+
+		// e
+		if (dx > 0 && dy == 0) {
+			return "E";
+		}
+
+		// w
+		if (dx < 0 && dy == 0) {
+			return "W";
+		}
+
+		// ne
+		if (dx > 0 && dy < 0) {
+			return "NE";
+		}
+
+		// nw
+		if (dx < 0 && dy < 0) {
+			return "NW";
+		}
+
+		// se
+		if (dx > 0 && dy > 0) {
+			return "SE";
+		}
+
+		// sw
+		if (dx < 0 && dy > 0) {
+			return "SW";
+		}
+
+		return "E";
+	}
+
+	private boolean wallFollwerGoingInCircle() {
+
+		if (pathMap.size() < 5) {
+			return false;
+		}
+		if (pathMap.get(pathMap.size() - 1).equals(
+				pathMap.get(pathMap.size() - 5))) {
+			return true;
+		}
+		return false;
+	}
+
+	private void stayToTheWall(InABeeLine8Dir b, int centerIndex,
+			String[] thePath, int idx) throws Exception, IOException,
+			InterruptedException {
+
+		boolean hasMoved;
+		if (!isAllDirOpen(scanMap.getScanMap(), centerIndex)) {
+
+			// find a nearest wall, and set as the goal
+			Coord aWall = outwardSpiralSearch(currentLoc);
+			String wallDir = b.coordToDir(currentLoc, aWall, mapTileLog);
+
+			while (!thePath[idx].equals("end")) {
+
+				loadScanMapFromSwarmServer();
+				hasMoved = move(thePath[idx]);
+				if (hasMoved) {
+					idx++;
+				} else {
+					loadScanMapFromSwarmServer();
+				}
+
+				Thread.sleep(sleepTime + 300);
+			}
+		}
+	}
+
 	void test2() throws IOException, InterruptedException {
 		new ArrayList<String>();
 		Socket socket = null;
-		new InABeeLine8Dir();
+		InABeeLine8Dir b = new InABeeLine8Dir();
 
 		try {
 
@@ -751,6 +896,9 @@ public class Rv_curr {
 
 	public boolean isObsatacle(Coord focus) {
 		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			return true;
+		}
 		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
 				|| tile.getTerrain() == Terrain.NONE
 				|| tile.getTerrain() == Terrain.FLUID

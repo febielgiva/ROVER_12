@@ -100,7 +100,7 @@ public class InABeeLine8Dir {
 			prev = node.coord.clone();
 		}
 
-		if (shortestPath.get(shortestPath.size() - 1).parentNode != null) {
+		if (shortestPath != null && shortestPath.get(shortestPath.size() - 1).parentNode != null) {
 //			sb.append(coordToDir(
 //					shortestPath.get(shortestPath.size() - 1).parentNode.coord,
 //					shortestPath.get(shortestPath.size() - 1).coord, mapTileLog));
