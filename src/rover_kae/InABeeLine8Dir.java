@@ -20,7 +20,7 @@ public class InABeeLine8Dir {
 
 	public String[] getShortestPath(Coord start, Coord goal,
 			Map<Coord, MapTile> mapTileLog) {
-
+		shortestPath.clear();
 		StringBuffer sb = new StringBuffer();
 		Map<Coord, Node> open = new HashMap<Coord, Node>();
 		Deque<Node> closed = new ArrayDeque<>();
@@ -71,6 +71,7 @@ public class InABeeLine8Dir {
 			System.out.println(integer + " ");
 		}
 
+		// THIS NEEDS TO BE KEPT!
 		Collections.reverse(shortestPath);
 
 		System.out.println("\nreversed ");
@@ -98,19 +99,11 @@ public class InABeeLine8Dir {
 			}
 			prev = node.coord.clone();
 		}
-		// System.out.println("(sp str build) FROM "
-		// + shortestPath.get(shortestPath.size() - 1).parentNode.coord
-		// + " TO " + shortestPath.get(shortestPath.size() - 1).coord);
-		// System.out.println("(sp str build) FROM "
-		// + shortestPath.get(shortestPath.size() - 1).coord + " TO "
-		// + goal);
 
-		
-		
 		if (shortestPath.get(shortestPath.size() - 1).parentNode != null) {
-			sb.append(coordToDir(
-					shortestPath.get(shortestPath.size() - 1).parentNode.coord,
-					shortestPath.get(shortestPath.size() - 1).coord, mapTileLog));
+//			sb.append(coordToDir(
+//					shortestPath.get(shortestPath.size() - 1).parentNode.coord,
+//					shortestPath.get(shortestPath.size() - 1).coord, mapTileLog));
 			sb.append(coordToDir(
 					shortestPath.get(shortestPath.size() - 1).coord, goal,
 					mapTileLog));
@@ -135,17 +128,11 @@ public class InABeeLine8Dir {
 	public String coordToDir(Coord from, Coord to,
 			Map<Coord, MapTile> mapTileLog) {
 		StringBuffer sb = new StringBuffer();
-		
+		System.out.println("(coordToDir())get the dir from " + from + " to " + to);
 		int dx = to.xpos - from.xpos;
 		int dy = to.ypos - from.ypos;
 		int xCount = Math.abs(dx);
 		int yCount = Math.abs(dy);
-		
-		if (xCount > 1 || yCount > 1) {
-			// if more than one step implied
-			System.out.println("stop, stop, stop!");
-			return "stop";
-		}
 
 		// horizontal motion
 		if (dy == 0) {

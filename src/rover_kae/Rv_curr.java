@@ -90,7 +90,7 @@ public class Rv_curr {
 		// SERVER_ADDRESS = "192.168.1.106";
 		SERVER_ADDRESS = "localhost";
 		// this should be a safe but slow timer value
-		sleepTime = 500; // in milliseconds - smaller is faster, but the server
+		sleepTime = 700; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
 
@@ -483,8 +483,7 @@ public class Rv_curr {
 	}
 
 	void run() throws IOException, InterruptedException {
-		ArrayList<String> equipment = new ArrayList<String>();
-		boolean beenToTargetLoc = false;
+		new ArrayList<String>();
 		Socket socket = null;
 
 		try {
@@ -492,23 +491,15 @@ public class Rv_curr {
 			// ***** connect to server ******
 			socket = connectToSwarmServer();
 
-			// ***** get equipments ******
-			equipment = getEquipment();
+			getEquipment();
 
 			// ***** initialize critical locations ******
 			rovergroupStartPosition = requestStartLoc(socket);
 			targetLocation = requestTargetLoc(socket);
 			nextTarget = targetLocation.clone();
 
-			/**
-			 * #### Rover controller process loop ####
-			 */
-			boolean firstItr = true;
-			Coord prevLoc = currentLoc.clone();
+			currentLoc.clone();
 			cardinals[1] = true;
-			int roverLogicSwitch = 0;
-			int numLogic = 3;
-
 			while (true) {
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
@@ -551,45 +542,40 @@ public class Rv_curr {
 	}// END of run()
 
 	void test() throws IOException, InterruptedException {
-		ArrayList<String> equipment = new ArrayList<String>();
-		boolean beenToTargetLoc = false;
+		new ArrayList<String>();
 		Socket socket = null;
 		InABeeLine8Dir cpu8 = new InABeeLine8Dir();
-		InABeeLine4Dir cpu4 = new InABeeLine4Dir();
-		String[] shortestPath;
-		boolean astar = true, wallL = false, wallR = false;
+		new InABeeLine4Dir();
+		boolean astar = true;
 
 		try {
 
 			// ***** connect to server ******
 			socket = connectToSwarmServer();
 
-			// ***** get equipments ******
-			equipment = getEquipment();
+			getEquipment();
 
 			// ***** initialize critical locations ******
 			rovergroupStartPosition = requestStartLoc(socket);
 			targetLocation = requestTargetLoc(socket);
 			nextTarget = targetLocation.clone();
+			
+			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 
-			boolean firstItr = true;
-			Coord prevLoc = currentLoc.clone();
+			currentLoc.clone();
 			cardinals[1] = true;
-			int roverLogicSwitch = 0;
-			int numLogic = 3;
-
 			/**
 			 * #### Rover controller process loop ####
 			 */
-			// --------------
+			// ------ itr 1 --------
 			loadScanMapFromSwarmServer();
 			debugPrintMapTileArray(mapTileLog);
 
 			boolean astarGo = false;
 			String[] aPath = { "end" };
 			int idx = 0;
-			Coord goal = new Coord(7, 4);			
-			
+			Coord goal = new Coord(7, 4);
+
 			if (astar) {
 				aPath = cpu8.getShortestPath(currentLoc, goal, mapTileLog);
 				idx = 0;
@@ -605,23 +591,17 @@ public class Rv_curr {
 					hasMoved = move(aPath[idx]);
 					idx = hasMoved ? (idx += 1) : idx;
 				}
-				Thread.sleep(sleepTime+300);
+				Thread.sleep(sleepTime + 300);
 			}
-			// ----------------
+			// ------- itr 2 ---------
 			loadScanMapFromSwarmServer();
 			debugPrintMapTileArray(mapTileLog);
 			idx = 0;
 			goal = new Coord(11, 0);
-			
-			// debug
-			aPath = cpu8.getShortestPath(new Coord(7,4), goal, mapTileLog);
 
-			
-			
-			
 			if (astar) {
-			//	aPath = cpu8.getShortestPath(currentLoc, goal, mapTileLog);
-				aPath = cpu8.getShortestPath(new Coord(7,4), goal, mapTileLog);
+				// aPath = cpu8.getShortestPath(currentLoc, goal, mapTileLog);
+				aPath = cpu8.getShortestPath(new Coord(7, 4), goal, mapTileLog);
 				idx = 0;
 				astarGo = true;
 			}
@@ -632,9 +612,19 @@ public class Rv_curr {
 					astarGo = false;
 				} else {
 					hasMoved = move(aPath[idx]);
-					idx = hasMoved ? (idx += 1) : idx;
+					if (hasMoved) {
+						idx++;
+					} else {
+						loadScanMapFromSwarmServer();
+					}
 				}
-				Thread.sleep(sleepTime+300);
+				Thread.sleep(sleepTime + 300);
+			}
+			// ------- itr 3 ---------
+			boolean followWall=true;
+			while(followWall){
+				
+				followLhsWall(scanMap.getScanMap(), centerIndex);
 			}
 			// ----------------
 
@@ -655,18 +645,16 @@ public class Rv_curr {
 	}// END of test()
 
 	void test2() throws IOException, InterruptedException {
-		ArrayList<String> equipment = new ArrayList<String>();
-		boolean beenToTargetLoc = false;
+		new ArrayList<String>();
 		Socket socket = null;
-		InABeeLine8Dir cpu = new InABeeLine8Dir();
+		new InABeeLine8Dir();
 
 		try {
 
 			// ***** connect to server ******
 			socket = connectToSwarmServer();
 
-			// ***** get equipments ******
-			equipment = getEquipment();
+			getEquipment();
 
 			// ***** initialize critical locations ******
 			rovergroupStartPosition = requestStartLoc(socket);
@@ -1301,8 +1289,6 @@ public class Rv_curr {
 	public void sendPost(JSONObject jsonObj) throws Exception {
 
 		String url = "http://23.251.155.186:3000/api";
-		String corp_secret = "0FSj7Pn23t";
-
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		String USER_AGENT = "ROVER 12";
@@ -1342,37 +1328,54 @@ public class Rv_curr {
 
 		MapTile[][] scanMapTiles = scanMap.getScanMap();
 		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		Coord prevLoc = currentLoc.clone();
 
 		switch (dir) {
 		case "E":
 			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 					"E")) {
 				moveEast();
-				System.out.println("moved east, return true");
-				return true;
+				setCurrentLoc();
+				if (prevLoc.equals(currentLoc)) {
+					return false;
+				} else {
+					return true;
+				}
 			}
 		case "W":
 			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 					"W")) {
 				moveWest();
-				System.out.println("moved west, return true");
-				return true;
+				setCurrentLoc();
+				if (prevLoc.equals(currentLoc)) {
+					return false;
+				} else {
+					return true;
+				}
 			}
 			break;
 		case "N":
 			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 					"N")) {
 				moveNorth();
-				System.out.println("moved north, return true");
-				return true;
+				setCurrentLoc();
+				if (prevLoc.equals(currentLoc)) {
+					return false;
+				} else {
+					return true;
+				}
 			}
 			break;
 		case "S":
 			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 					"S")) {
 				moveSouth();
-				System.out.println("moved south, return true");
-				return true;
+				setCurrentLoc();
+				if (prevLoc.equals(currentLoc)) {
+					return false;
+				} else {
+					return true;
+				}
 			}
 			break;
 		default:
@@ -1646,7 +1649,6 @@ public class Rv_curr {
 	public Coord outwardSpiralSearch(Coord curr) throws Exception {
 
 		int searchSize = 10;
-		String[] directions = { "E", "S", "W", "N" };
 		Coord topL, bottomR, temp;
 		int x, y, xx, yy;
 
@@ -1724,8 +1726,14 @@ public class Rv_curr {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		Rv_curr client = new Rv_curr();
-		// client.test2(); // outward search test
-		client.test();// astar test
+
+		// take in first input argument as a SERVER_ADDRESS value
+		String serverAddress = "";
+		for (String s : args) {
+			serverAddress = s;
+		}
+
+		Rv_curr client = new Rv_curr(serverAddress);
+		client.test();
 	}
 }

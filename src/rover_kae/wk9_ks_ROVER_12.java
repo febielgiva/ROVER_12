@@ -1626,7 +1626,14 @@ public class wk9_ks_ROVER_12 {
 	 * Runs the client
 	 */
 	public static void main(String[] args) throws Exception {
-		wk9_ks_ROVER_12 client = new wk9_ks_ROVER_12();
+
+		// take in first input argument as a SERVER_ADDRESS value 
+		String serverAddress="";
+		for (String s : args) {
+			serverAddress = s;
+		}
+		
+		wk9_ks_ROVER_12 client = new wk9_ks_ROVER_12(serverAddress);
 		client.run();
 	}
 }
