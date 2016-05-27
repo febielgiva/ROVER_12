@@ -19,7 +19,7 @@ public class InABeeLine8Dir {
 	public List<Node> shortestPath = new ArrayList<Node>();
 
 	public String[] getShortestPath(Coord start, Coord goal,
-			Map<Coord, MapTile> mapTileLog) {
+			Map<Coord, MapTile> mapTileLog) throws Exception {
 		shortestPath.clear();
 		StringBuffer sb = new StringBuffer();
 		Map<Coord, Node> open = new HashMap<Coord, Node>();
@@ -39,12 +39,23 @@ public class InABeeLine8Dir {
 		closed.push(s);
 
 		int itrTracker = 0;
+		
+		if (center == null || open == null) {
+			System.out.println("NULLNULLNULL");
+			String[] aPath = { "no solution" };
+			return aPath;
+		}
+		
+		System.out.println("CENTER.COORD:" + center.coord + "OPEN:" + open);
+		Thread.sleep(3000);
 		// until there are no more viable tiles
+
 		while (!center.coord.equals(goal) && !open.isEmpty()) {
 			itrTracker++;
 			cheapest = computeAdjacents(center, s, g, nodeComputed, open,
 					closed, mapTileLog);
 			center = cheapest;
+
 			// debug p out
 			System.out.println("this itr[" + itrTracker + "]:\ncoord "
 					+ center.coord + "\ncheapest of open " + cheapest
@@ -53,7 +64,11 @@ public class InABeeLine8Dir {
 
 			closed.push(cheapest);
 			open.remove(center);
-
+			if (cheapest == null || center == null || open == null) {
+				System.out.println("NULLNULLNULL");
+				String[] aPath = { "no solution" };
+				return aPath;
+			}
 		}
 
 		for (Node node : closed) {
@@ -100,10 +115,11 @@ public class InABeeLine8Dir {
 			prev = node.coord.clone();
 		}
 
-		if (shortestPath != null && shortestPath.get(shortestPath.size() - 1).parentNode != null) {
-//			sb.append(coordToDir(
-//					shortestPath.get(shortestPath.size() - 1).parentNode.coord,
-//					shortestPath.get(shortestPath.size() - 1).coord, mapTileLog));
+		if (shortestPath != null
+				&& shortestPath.get(shortestPath.size() - 1).parentNode != null) {
+			// sb.append(coordToDir(
+			// shortestPath.get(shortestPath.size() - 1).parentNode.coord,
+			// shortestPath.get(shortestPath.size() - 1).coord, mapTileLog));
 			sb.append(coordToDir(
 					shortestPath.get(shortestPath.size() - 1).coord, goal,
 					mapTileLog));
@@ -128,7 +144,8 @@ public class InABeeLine8Dir {
 	public String coordToDir(Coord from, Coord to,
 			Map<Coord, MapTile> mapTileLog) {
 		StringBuffer sb = new StringBuffer();
-		System.out.println("(coordToDir())get the dir from " + from + " to " + to);
+		System.out.println("(coordToDir())get the dir from " + from + " to "
+				+ to);
 		int dx = to.xpos - from.xpos;
 		int dy = to.ypos - from.ypos;
 		int xCount = Math.abs(dx);
@@ -467,7 +484,7 @@ public class InABeeLine8Dir {
 			return true;
 		}
 
-		if (tile.getTerrain() == Terrain.ROCK
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
 				|| tile.getTerrain() == Terrain.NONE
 				|| tile.getTerrain() == Terrain.FLUID
 				|| tile.getTerrain() == Terrain.SAND) {

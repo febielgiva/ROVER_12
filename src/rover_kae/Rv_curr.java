@@ -100,7 +100,7 @@ public class Rv_curr {
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
 		SERVER_ADDRESS = serverAddress;
-		sleepTime = 500; // in milliseconds - smaller is faster, but the server
+		sleepTime = 600; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
 
@@ -568,81 +568,93 @@ public class Rv_curr {
 			/**
 			 * #### Rover controller process loop ####
 			 */
-			// ------ itr 1 --------
+			// // ------ itr 1 --------
 			loadScanMapFromSwarmServer();
 			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 			debugPrintMapTileArray(mapTileLog);
 			boolean astarGo = false;
 			String[] thePath = { "end" };
 			int idx = 0;
-			Coord goal = new Coord(7, 4);
-
-			thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
-			idx = 0;
-			astarGo = true;
-
-			boolean hasMoved = false;
-			while (astarGo) {
-
-				loadScanMapFromSwarmServer();
-				System.out.println("curr dir: " + thePath[idx]);
-				if (thePath[idx].equals("end")) {
-					astarGo = false;
-				} else {
-					hasMoved = move(thePath[idx]);
-					idx = hasMoved ? (idx += 1) : idx;
-				}
-				Thread.sleep(sleepTime + 300);
-			}
-
-			// ------- itr 2 ---------
-			loadScanMapFromSwarmServer();
-			debugPrintMapTileArray(mapTileLog);
-			idx = 0;
-			goal = new Coord(11, 0);
-
-			thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
-			astarGo = true;
-
-			hasMoved = false;
-			while (!thePath[idx].equals("end")) {
-
-				loadScanMapFromSwarmServer();
-				hasMoved = move(thePath[idx]);
-				if (hasMoved) {
-					idx++;
-				} else {
-					loadScanMapFromSwarmServer();
-				}
-				Thread.sleep(sleepTime + 300);
-			}
-
-			// ------- itr 3 wall follower ---------
-			setCurrentLoc();
-			boolean followWall = true;
-			Coord aWall = outwardSpiralSearch(currentLoc);
-
-			while (followWall) {
-
-				pathMap.add(currentLoc);
-				if (wallFollwerGoingInCircle()) {
-					break;
-				}
-				stayToTheWall(b, centerIndex, thePath, idx);
-				loadScanMapFromSwarmServer();
-				followLhsWall(scanMap.getScanMap(), centerIndex);
-				Thread.sleep(sleepTime + 300);
-			}
+			// Coord goal = new Coord(7, 4);
+			//
+			// thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			// idx = 0;
+			// astarGo = true;
+			//
+			// boolean hasMoved = false;
+			// while (astarGo) {
+			//
+			// loadScanMapFromSwarmServer();
+			// System.out.println("curr dir: " + thePath[idx]);
+			// if (thePath[idx].equals("end")) {
+			// astarGo = false;
+			// } else {
+			// hasMoved = move(thePath[idx]);
+			// idx = hasMoved ? (idx += 1) : idx;
+			// }
+			// Thread.sleep(sleepTime + 300);
+			// }
+			//
+			// // ------- itr 2 ---------
+			// loadScanMapFromSwarmServer();
+			// debugPrintMapTileArray(mapTileLog);
+			// idx = 0;
+			// goal = new Coord(11, 0);
+			//
+			// thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			// astarGo = true;
+			//
+			// hasMoved = false;
+			// while (!thePath[idx].equals("end")) {
+			//
+			// loadScanMapFromSwarmServer();
+			// hasMoved = move(thePath[idx]);
+			// if (hasMoved) {
+			// idx++;
+			// } else {
+			// loadScanMapFromSwarmServer();
+			// }
+			// Thread.sleep(sleepTime + 300);
+			// }
+			//
+			// // ------- itr 3 wall follower ---------
+			// setCurrentLoc();
+			// boolean followWall = true;
+			// Coord aWall = outwardSpiralSearch(currentLoc);
+			//
+			// while (followWall) {
+			//
+			// pathMap.add(currentLoc);
+			// if (wallFollwerGoingInCircle()) {
+			// break;
+			// }
+			// stayToTheWall(b, centerIndex, thePath, idx);
+			// loadScanMapFromSwarmServer();
+			// followLhsWall(scanMap.getScanMap(), centerIndex);
+			// Thread.sleep(sleepTime + 300);
+			// }
 			// ----------- itr 4 astar only -----
 			loadScanMapFromSwarmServer();
 			debugPrintMapTileArray(mapTileLog);
 			idx = 0;
-			setAstarGoal(goal);
+			Coord goal = setAstarGoal();
+			System.out.println("this goal: " + goal);
 
 			thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			
+			if(thePath[0].equals("no solution")){
+				goal = new Coord(currentLoc.xpos,currentLoc.ypos+5);
+				thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			}
+			
+			if(thePath[0].equals("no solution")){
+				goal = new Coord(currentLoc.xpos-5,currentLoc.ypos+5);
+				thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			}
+			
+			
 			astarGo = true;
-
-			hasMoved = false;
+			boolean hasMoved = false;
 			while (!thePath[idx].equals("end")) {
 
 				loadScanMapFromSwarmServer();
@@ -671,42 +683,42 @@ public class Rv_curr {
 		}
 	}// END of test()
 
-	private void setAstarGoal(Coord thisGoal) {
+	private Coord setAstarGoal() {
 
 		switch (getTargetDirStr(targetLocation)) {
 		case "E":
-			thisGoal = new Coord(currentLoc.xpos + 5, currentLoc.ypos);
+			return new Coord(currentLoc.xpos + 5, currentLoc.ypos);
 
 		case "S":
-			thisGoal = new Coord(currentLoc.xpos, currentLoc.ypos + 5);
+			return new Coord(currentLoc.xpos, currentLoc.ypos + 5);
 
 		case "W":
-			thisGoal = new Coord(currentLoc.xpos - 5, currentLoc.ypos);
+			return new Coord(currentLoc.xpos - 5, currentLoc.ypos);
 
 		case "N":
-			thisGoal = new Coord(currentLoc.xpos, currentLoc.ypos - 5);
+			return new Coord(currentLoc.xpos, currentLoc.ypos - 5);
 
 		case "NE":
-			thisGoal = new Coord(currentLoc.xpos + 5, currentLoc.ypos - 5);
+			return new Coord(currentLoc.xpos + 5, currentLoc.ypos - 5);
 
 		case "SE":
-			thisGoal = new Coord(currentLoc.xpos + 5, currentLoc.ypos + 5);
+			return new Coord(currentLoc.xpos + 5, currentLoc.ypos + 5);
 
 		case "NW":
-			thisGoal = new Coord(currentLoc.xpos - 5, currentLoc.ypos - 5);
+			return new Coord(currentLoc.xpos - 5, currentLoc.ypos - 5);
 
 		case "SW":
-			thisGoal = new Coord(currentLoc.xpos - 5, currentLoc.ypos + 5);
+			return new Coord(currentLoc.xpos - 5, currentLoc.ypos + 5);
 
 		default:
-			break;
+			return targetLocation;
 		}
 	}
 
 	private String getTargetDirStr(Coord target) {
 
-		int dx = currentLoc.xpos - target.xpos;
-		int dy = currentLoc.ypos - target.ypos;
+		int dx = target.xpos - currentLoc.xpos;
+		int dy = currentLoc.ypos - currentLoc.ypos;
 
 		// n
 		if (dx == 0 && dy < 0) {
@@ -783,8 +795,6 @@ public class Rv_curr {
 				} else {
 					loadScanMapFromSwarmServer();
 				}
-
-				Thread.sleep(sleepTime + 300);
 			}
 		}
 	}
@@ -810,7 +820,6 @@ public class Rv_curr {
 			System.out.println("nearest obstacle: "
 					+ outwardSpiralSearch(currentLoc));
 			System.out.println(outwardSpiralSearch(currentLoc));
-			Thread.sleep(10000);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
