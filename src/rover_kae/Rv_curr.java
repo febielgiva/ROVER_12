@@ -91,7 +91,7 @@ public class Rv_curr {
 		// SERVER_ADDRESS = "192.168.1.106";
 		SERVER_ADDRESS = "localhost";
 		// this should be a safe but slow timer value
-		sleepTime = 700; // in milliseconds - smaller is faster, but the server
+		sleepTime = 600; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
 
@@ -148,8 +148,9 @@ public class Rv_curr {
 									centerIndex)) {
 								move("E");
 							} else {
-								cardinals = randomPickMotion(cardinals,
-										centerIndex, scanMapTiles);
+								randomStep(scanMapTiles, centerIndex);
+								//								cardinals = randomPickMotion(cardinals,
+//										centerIndex, scanMapTiles);
 								// cardinals = moveUsingPastPath(cardinals,
 								// currentXPos, currentYPos);
 							}
@@ -183,8 +184,9 @@ public class Rv_curr {
 						if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
 							move("W");
 						} else {
-							cardinals = randomPickMotion(cardinals,
-									centerIndex, scanMapTiles);
+//							cardinals = randomPickMotion(cardinals,
+//									centerIndex, scanMapTiles);
+							randomStep(scanMapTiles, centerIndex);
 
 							// cardinals = moveUsingPastPath(cardinals,
 							// currentXPos, currentYPos);
@@ -219,9 +221,9 @@ public class Rv_curr {
 						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
 							move("S");
 						} else {
-							cardinals = randomPickMotion(cardinals,
-									centerIndex, scanMapTiles);
-
+//							cardinals = randomPickMotion(cardinals,
+//									centerIndex, scanMapTiles);
+randomStep(scanMapTiles, centerIndex);
 							// cardinals = moveUsingPastPath(cardinals,
 							// currentXPos, currentYPos);
 						}
@@ -255,9 +257,9 @@ public class Rv_curr {
 						if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 							move("N");
 						} else {
-							cardinals = randomPickMotion(cardinals,
-									centerIndex, scanMapTiles);
-
+//							cardinals = randomPickMotion(cardinals,
+//									centerIndex, scanMapTiles);
+							randomStep(scanMapTiles, centerIndex);
 							// cardinals = moveUsingPastPath(cardinals,
 							// currentXPos, currentYPos);
 						}
@@ -469,13 +471,7 @@ public class Rv_curr {
 		System.out.println("is north blocked? "
 				+ isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 						"N"));
-		// debu
-		// try {
-		// Thread.sleep(4000);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+		
 		return isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex, "E")
 				&& isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 						"S")
@@ -487,6 +483,11 @@ public class Rv_curr {
 	}
 
 	void run() throws IOException, InterruptedException {
+
+		String url = "http://23.251.155.186:3000/api";
+		String corp_secret = "0FSj7Pn23t";
+		Communication com = new Communication(url, rovername, corp_secret);
+
 		new ArrayList<String>();
 		Socket socket = null;
 		boolean astarGo = false;
@@ -518,16 +519,19 @@ public class Rv_curr {
 
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-
-				astarGo = (pedometer % 20 == 0) ? true : false;
+				com.postScanMapTiles(currentLoc, scanMapTiles);
+				
+				astarGo = (/*pedometer > 80 &&*/ pedometer % 40 == 1) ? true
+						: false;
 
 				// debug
-				System.out.println("PED: "+pedometer);
-				if (pedometer % 20 == 19) {
-					System.out.println("go astar!");
-					astarGo = true;
-					astar();
-				
+				//System.out.println("PED: " + pedometer);
+				if (pedometer > 95 && pedometer % 35 == 1) {
+					if (mapTileLog.get(targetLocation) == null) {
+						System.out.println("go astar!");
+						astarGo = true;
+						astar();
+					}
 				}
 
 				previousLoc = currentLoc.clone();
@@ -540,24 +544,15 @@ public class Rv_curr {
 				if (!astarGo) {
 					roverMotionLogic(cardinals, scanMapTiles, centerIndex,
 							currentLoc.xpos, currentLoc.ypos);
-					
+
 					// astar();
 				} else {
-					System.out.println("really going astar now");
-					Thread.sleep(3000);
 					astar();
 				}
 
 				setCurrentLoc();
 				pedometer++;
-
-				System.out
-						.println("ROVER_12 ------------ bottom process control --------------");
-				Thread.sleep(sleepTime);
-
-				setCurrentLoc(); // AFTER this iteration
-				System.out.println("AFTER: " + currentLoc);
-
+				
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
 				Thread.sleep(sleepTime);
@@ -581,11 +576,11 @@ public class Rv_curr {
 		for (int i = 0; i < 3; i++) {
 
 			loadScanMapFromSwarmServer();
-			debugPrintMapTileArray(mapTileLog);
+			//debugPrintMapTileArray(mapTileLog);
 			int idx = 0;
 			Coord goal = setAstarGoal();
 			InABeeLine8Dir b = new InABeeLine8Dir();
-			System.out.println("this goal: " + goal);
+		//	System.out.println("this goal: " + goal);
 
 			String[] thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
 
@@ -602,7 +597,9 @@ public class Rv_curr {
 			// astarGo = true;
 
 			boolean hasMoved = false;
-			while (!thePath[idx].equals("end")) {
+
+			System.out.println("thePath length: " + thePath.length);
+			for (int j = 0; j < thePath.length; j++) {
 
 				loadScanMapFromSwarmServer();
 				hasMoved = move(thePath[idx]);
@@ -622,7 +619,7 @@ public class Rv_curr {
 		InABeeLine8Dir b = new InABeeLine8Dir();
 		boolean astar = true;
 		System.out.println(requestTimeRemaining(socket));
-		Thread.sleep(4000);
+		
 		try {
 
 			// ***** connect to server ******
@@ -643,72 +640,13 @@ public class Rv_curr {
 			// // ------ itr 1 --------
 			loadScanMapFromSwarmServer();
 			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-			debugPrintMapTileArray(mapTileLog);
+			//debugPrintMapTileArray(mapTileLog);
 			boolean astarGo = false;
 			String[] thePath = { "end" };
 			int idx = 0;
-			// Coord goal = new Coord(7, 4);
-			//
-			// thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
-			// idx = 0;
-			// astarGo = true;
-			//
-			// boolean hasMoved = false;
-			// while (astarGo) {
-			//
-			// loadScanMapFromSwarmServer();
-			// System.out.println("curr dir: " + thePath[idx]);
-			// if (thePath[idx].equals("end")) {
-			// astarGo = false;
-			// } else {
-			// hasMoved = move(thePath[idx]);
-			// idx = hasMoved ? (idx += 1) : idx;
-			// }
-			// Thread.sleep(sleepTime + 300);
-			// }
-			//
-			// // ------- itr 2 ---------
-			// loadScanMapFromSwarmServer();
-			// debugPrintMapTileArray(mapTileLog);
-			// idx = 0;
-			// goal = new Coord(11, 0);
-			//
-			// thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
-			// astarGo = true;
-			//
-			// hasMoved = false;
-			// while (!thePath[idx].equals("end")) {
-			//
-			// loadScanMapFromSwarmServer();
-			// hasMoved = move(thePath[idx]);
-			// if (hasMoved) {
-			// idx++;
-			// } else {
-			// loadScanMapFromSwarmServer();
-			// }
-			// Thread.sleep(sleepTime + 300);
-			// }
-			//
-			// // ------- itr 3 wall follower ---------
-			// setCurrentLoc();
-			// boolean followWall = true;
-			// Coord aWall = outwardSpiralSearch(currentLoc);
-			//
-			// while (followWall) {
-			//
-			// pathMap.add(currentLoc);
-			// if (wallFollwerGoingInCircle()) {
-			// break;
-			// }
-			// stayToTheWall(b, centerIndex, thePath, idx);
-			// loadScanMapFromSwarmServer();
-			// followLhsWall(scanMap.getScanMap(), centerIndex);
-			// Thread.sleep(sleepTime + 300);
-			// }
-			// ----------- itr 4 astar only -----
-
+			
 			loadScanMapFromSwarmServer();
-			debugPrintMapTileArray(mapTileLog);
+		//	debugPrintMapTileArray(mapTileLog);
 			idx = 0;
 			Coord goal = setAstarGoal();
 			System.out.println("this goal: " + goal);
@@ -1770,8 +1708,9 @@ public class Rv_curr {
 
 	boolean[] randomPickMotion(boolean[] cardinals, int centerIndex,
 			MapTile[][] scanMapTiles) {
-		int randomNumber = randomNum(0, 3);
+
 		try {
+			int randomNumber = randomNum(0, 3);
 			if (cardinals[randomNumber] == true) {
 				randomPickMotion(cardinals, centerIndex, scanMapTiles);
 			} else {

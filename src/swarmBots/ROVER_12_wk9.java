@@ -71,14 +71,6 @@ public class ROVER_12_wk9 {
 			targetLocation = null;
 
 	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	private HashMap<Coord, Path> visitCounts = new HashMap<Coord, Path>();// manage
-																			// this
-																			// only
-	// after targetLoc has
-	// been
-	// visited
-	// private Map<Coord, Path> pathMap = new HashMap<Coord, Path>();
-	// private Deque<Coord> pathStack = new ArrayDeque<Coord>();
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 
 	private Random rd = new Random();
@@ -847,71 +839,14 @@ public class ROVER_12_wk9 {
 	}
 
 	void run() throws IOException, InterruptedException {
+		String url = "http://23.251.155.186:3000/api";
+		String corp_secret = "0FSj7Pn23t";
+		Communication com = new Communication(url, rovername, corp_secret);
+
 		new ArrayList<String>();
 		Socket socket = null;
-		String[] thePath;
-		Coord goal;
-		InABeeLine8Dir b = new InABeeLine8Dir();
 		boolean astarGo = false;
-		int idx = 0, stuckCount = 0;
-
-		try {
-
-			// ***** connect to server ******
-			socket = connectToSwarmServer();
-
-			getEquipment();
-
-			// ***** initialize critical locations ******
-			rovergroupStartPosition = requestStartLoc(socket);
-			targetLocation = requestTargetLoc(socket);
-			nextTarget = targetLocation.clone();
-
-			while (true) {
-
-				setCurrentLoc();
-				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
-
-				// ***** do a SCAN ******
-				loadScanMapFromSwarmServer();
-
-				MapTile[][] scanMapTiles = scanMap.getScanMap();
-				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-
-				previousLoc = currentLoc;
-
-				if (!astarGo) {
-					roverMotionLogic(cardinals, scanMapTiles, centerIndex,
-							currentLoc.xpos, currentLoc.ypos);
-				} else {
-					astar();
-				}
-
-				setCurrentLoc();
-
-				System.out
-						.println("ROVER_12 ------------ bottom process control --------------");
-				Thread.sleep(sleepTime);
-
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (socket != null) {
-				try {
-					socket.close();
-				} catch (IOException e) {
-					System.out.println("ROVER_12 problem closing socket");
-				}
-			}
-		}
-	}// END of run()
-
-	void test() throws IOException, InterruptedException {
-		new ArrayList<String>();
-		Socket socket = null;
-		InABeeLine8Dir b = new InABeeLine8Dir();
-		boolean astar = true;
+		int pedometer = 0;
 
 		try {
 
@@ -927,205 +862,43 @@ public class ROVER_12_wk9 {
 
 			currentLoc.clone();
 			cardinals[1] = true;
-			/**
-			 * #### Rover controller process loop ####
-			 */
-			// // ------ itr 1 --------
-			loadScanMapFromSwarmServer();
-			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-			debugPrintMapTileArray(mapTileLog);
-			boolean astarGo = false;
-			String[] thePath = { "end" };
-			int idx = 0;
-			// Coord goal = new Coord(7, 4);
-			//
-			// thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
-			// idx = 0;
-			// astarGo = true;
-			//
-			// boolean hasMoved = false;
-			// while (astarGo) {
-			//
-			// loadScanMapFromSwarmServer();
-			// System.out.println("curr dir: " + thePath[idx]);
-			// if (thePath[idx].equals("end")) {
-			// astarGo = false;
-			// } else {
-			// hasMoved = move(thePath[idx]);
-			// idx = hasMoved ? (idx += 1) : idx;
-			// }
-			// Thread.sleep(sleepTime + 300);
-			// }
-			//
-			// // ------- itr 2 ---------
-			// loadScanMapFromSwarmServer();
-			// debugPrintMapTileArray(mapTileLog);
-			// idx = 0;
-			// goal = new Coord(11, 0);
-			//
-			// thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
-			// astarGo = true;
-			//
-			// hasMoved = false;
-			// while (!thePath[idx].equals("end")) {
-			//
-			// loadScanMapFromSwarmServer();
-			// hasMoved = move(thePath[idx]);
-			// if (hasMoved) {
-			// idx++;
-			// } else {
-			// loadScanMapFromSwarmServer();
-			// }
-			// Thread.sleep(sleepTime + 300);
-			// }
-			//
-			// // ------- itr 3 wall follower ---------
-			// setCurrentLoc();
-			// boolean followWall = true;
-			// Coord aWall = outwardSpiralSearch(currentLoc);
-			//
-			// while (followWall) {
-			//
-			// pathMap.add(currentLoc);
-			// if (wallFollwerGoingInCircle()) {
-			// break;
-			// }
-			// stayToTheWall(b, centerIndex, thePath, idx);
-			// loadScanMapFromSwarmServer();
-			// followLhsWall(scanMap.getScanMap(), centerIndex);
-			// Thread.sleep(sleepTime + 300);
-			// }
-			// ----------- itr 4 astar only -----
-			loadScanMapFromSwarmServer();
-			debugPrintMapTileArray(mapTileLog);
-			idx = 0;
-			Coord goal = setAstarGoal();
-			System.out.println("this goal: " + goal);
-
-			thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
-
-			if (thePath[0].equals("no solution")) {
-				goal = new Coord(currentLoc.xpos, currentLoc.ypos + 5);
-				thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
-			}
-
-			if (thePath[0].equals("no solution")) {
-				goal = new Coord(currentLoc.xpos - 5, currentLoc.ypos + 5);
-				thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
-			}
-
-			astarGo = true;
-			boolean hasMoved = false;
-			while (!thePath[idx].equals("end")) {
-
-				loadScanMapFromSwarmServer();
-				hasMoved = move(thePath[idx]);
-				if (hasMoved) {
-					idx++;
-				} else {
-					loadScanMapFromSwarmServer();
-				}
-				Thread.sleep(sleepTime + 300);
-			}
-
-			System.out
-					.println("ROVER_12 ------------ bottom process control --------------");
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (socket != null) {
-				try {
-					socket.close();
-				} catch (IOException e) {
-					System.out.println("ROVER_12 problem closing socket");
-				}
-			}
-		}
-	}// END of test()
-
-	private void run0() throws IOException, InterruptedException {
-
-		// String url = "http://23.251.155.186:3000/api";
-		// String url = "http://192.168.1.104:3000/api";
-		// String corp_secret = "0FSj7Pn23t";
-		// Communication com = new Communication(url, rovername, corp_secret);
-
-		// if(targetReached)
-
-		ArrayList<String> equipment = new ArrayList<String>();
-		boolean beenToTargetLoc = false;
-		Socket socket = null;
-
-		try {
-
-			// ***** connect to server ******
-			socket = connectToSwarmServer();
-
-			// ***** get equipments ******
-			equipment = getEquipment();
-
-			// ***** initialize critical locations ******
-			rovergroupStartPosition = requestStartLoc(socket);
-			targetLocation = requestTargetLoc(socket);
-			nextTarget = targetLocation.clone();
-
-			/**
-			 * #### Rover controller process loop ####
-			 */
-			boolean firstItr = true;
-			Coord prevLoc = currentLoc.clone();
-			cardinals[1] = true;
-			int roverLogicSwitch = 0;
-			int numLogic = 3;
-
 			while (true) {
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 				System.out.println("BEFORE: " + currentLoc + " | facing "
 						+ getFacingDirection());
-				int numSteps = pathMap.size();
 
 				// ***** do a SCAN ******
 				loadScanMapFromSwarmServer();
 
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-				// com.postScanMapTiles(currentLoc, scanMapTiles);
+				com.postScanMapTiles(currentLoc, scanMapTiles);
+				
+				astarGo = (pedometer > 95 && pedometer % 35 == 1) ? true
+						: false;
 
-				// ***** under construction ******
-				// if(roverLogicSwitch % numLogics == 0){
+				
+				if (pedometer > 95 && pedometer % 35 == 1) {
+					if (mapTileLog.get(targetLocation) == null) {
+						System.out.println("go astar!");
+						astarGo = true;
+						astar();
+					}
+				}
 
-				// }else if(roverLogicSwitch % numLogics == 1){
-				// followLhsWall(scanMapTiles, centerIndex);
-				// }else if(roverLogicSwitch % numLogics == 2){
-				// followRhsWall(scanMapTiles, centerIndex);
-				// }
-				// if (countUnvisited(currentLoc, 11) < 1) {
-				// System.out.println("number of unvisited: "
-				// + countUnvisited(currentLoc, 11));
-				// roverLogicSwitch++;
-				// System.out.println("logic switch flipped ("
-				// + roverLogicSwitch + ")");
-				// //Thread.sleep(3000);
-				// }
+					roverMotionLogic(cardinals, scanMapTiles, centerIndex,
+							currentLoc.xpos, currentLoc.ypos);
+				
 
-				previousLoc = currentLoc;
-				roverMotionLogic(cardinals, scanMapTiles, centerIndex,
-						currentLoc.xpos, currentLoc.ypos);
-				// followLhsWall(scanMapTiles, centerIndex);
-				// headEast(scanMapTiles, centerIndex);
-				// headWest(scanMapTiles, centerIndex);
-
-				setCurrentLoc(); // AFTER this iteration
-				System.out.println("AFTER: " + currentLoc);
-
+				setCurrentLoc();
+				pedometer++;
+			
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
 				Thread.sleep(sleepTime);
 
-			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -1280,7 +1053,6 @@ public class ROVER_12_wk9 {
 		if (line.startsWith("LOC")) {
 			// loc = line.substring(4);
 			currentLoc = extractLocationFromString(line);
-
 		}
 	}
 
@@ -1339,10 +1111,6 @@ public class ROVER_12_wk9 {
 			return aPath;
 		}
 
-		System.out.println("CENTER.COORD:" + center.coord + "OPEN:" + open);
-		Thread.sleep(3000);
-		// until there are no more viable tiles
-
 		while (!center.coord.equals(goal) && !open.isEmpty()) {
 			itrTracker++;
 			cheapest = computeAdjacents(center, s, g, nodeComputed, open,
@@ -1371,12 +1139,6 @@ public class ROVER_12_wk9 {
 				shortestPath.add(node.parentNode);
 
 			}
-		}
-
-		// debug -----------------------
-		System.out.println("\n\n\n\noriginal");
-		for (Node integer : shortestPath) {
-			System.out.println(integer + " ");
 		}
 
 		// THIS NEEDS TO BE KEPT!
@@ -1586,10 +1348,6 @@ public class ROVER_12_wk9 {
 		for (Node node : adjacents) {
 			System.out.println("adj " + node);
 		}
-		// System.out.println("debug print inside in a bee line class :D ");
-		// debugPrintAdjacents(nodesComputed);
-		// System.out.println("\n\n\n\n");
-
 		return min(open);
 	}
 
@@ -1600,10 +1358,7 @@ public class ROVER_12_wk9 {
 
 		int thisG = -1;
 		Node thisAdj;
-		// debug print out
-		System.out.println("inside examineThisAdjacent(" + adjacent.xpos + ","
-				+ adjacent.ypos + ")\tcenter" + center.str());
-
+		
 		// if this node is not an obstacle or the one in the closed list
 		if (!closed.contains(adjacent) && !isObsatacle(adjacent, mapTileLog)) {
 

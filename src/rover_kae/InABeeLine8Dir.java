@@ -47,7 +47,7 @@ public class InABeeLine8Dir {
 		}
 		
 		System.out.println("CENTER.COORD:" + center.coord + "OPEN:" + open);
-		Thread.sleep(3000);
+		
 		// until there are no more viable tiles
 
 		while (!center.coord.equals(goal) && !open.isEmpty()) {
@@ -55,10 +55,11 @@ public class InABeeLine8Dir {
 			cheapest = computeAdjacents(center, s, g, nodeComputed, open,
 					closed, mapTileLog);
 			center = cheapest;
-			if (cheapest == null || center.coord == null || open == null) {
+
+			if(itrTracker > 40){String[] aPath = { "no solution" };return aPath;}
+			if (cheapest == null || center == null || open == null) {
 				System.out.println("NULLNULLNULL");
 				String[] aPath = { "no solution" };
-				//break;
 				return aPath;
 			}
 			// debug p out
@@ -67,9 +68,10 @@ public class InABeeLine8Dir {
 					+ "\nsize of open " + open.size() + "\ncurr center "
 					+ center.str());
 
+			
+			
 			closed.push(cheapest);
 			open.remove(center);
-			
 		}
 
 		for (Node node : closed) {
