@@ -95,16 +95,10 @@ public class MethodStorage_ks {
 		cardinals[2] = "E";
 		cardinals[3] = "N";
 
-		try {
-			setCurrentLoc(currentLoc);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 		if (previousLoc != null && isStuck(currentLoc, previousLoc)) {
-			doThisWhenStuck(currentLoc, scanMapTiles);
+			sinusoidal_RtoL(cardinals,waveLength,waveHeight);
 		}
-
+		
 		previousLoc = currentLoc;
 
 		for (int i = 0; i < cardinals.length; i++) {
@@ -117,8 +111,13 @@ public class MethodStorage_ks {
 			}
 
 			for (int j = 0; j < steps; j++) {
-				move(currentDir);
-				Thread.sleep(700);
+				
+				setCurrentLoc();
+				hasMoved = move(currentDir);
+				if (!hasMoved) {
+					trackNoMove++;
+				}
+				Thread.sleep(sleeptime);
 			}
 		}
 	}
@@ -149,15 +148,10 @@ public class MethodStorage_ks {
 		cardinals[2] = "E";
 		cardinals[3] = "N";
 
-		try {
-			setCurrentLoc(currentLoc);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 		if (previousLoc != null && isStuck(currentLoc, previousLoc)) {
-			doThisWhenStuck(currentLoc, scanMapTiles);
+			sinusoidal_RtoL(cardinals,waveLength,waveHeight);
 		}
+		
 		previousLoc = currentLoc;
 
 		for (int i = 0; i < cardinals.length; i++) {
@@ -176,7 +170,7 @@ public class MethodStorage_ks {
 				if (!hasMoved) {
 					trackNoMove++;
 				}
-				Thread.sleep(700);
+				Thread.sleep(sleeptime);
 			}
 		}
 	}

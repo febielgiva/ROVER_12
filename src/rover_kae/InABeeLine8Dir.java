@@ -55,7 +55,12 @@ public class InABeeLine8Dir {
 			cheapest = computeAdjacents(center, s, g, nodeComputed, open,
 					closed, mapTileLog);
 			center = cheapest;
-
+			if (cheapest == null || center.coord == null || open == null) {
+				System.out.println("NULLNULLNULL");
+				String[] aPath = { "no solution" };
+				//break;
+				return aPath;
+			}
 			// debug p out
 			System.out.println("this itr[" + itrTracker + "]:\ncoord "
 					+ center.coord + "\ncheapest of open " + cheapest
@@ -64,11 +69,7 @@ public class InABeeLine8Dir {
 
 			closed.push(cheapest);
 			open.remove(center);
-			if (cheapest == null || center == null || open == null) {
-				System.out.println("NULLNULLNULL");
-				String[] aPath = { "no solution" };
-				return aPath;
-			}
+			
 		}
 
 		for (Node node : closed) {

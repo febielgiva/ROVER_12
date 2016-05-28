@@ -489,6 +489,8 @@ public class Rv_curr {
 	void run() throws IOException, InterruptedException {
 		new ArrayList<String>();
 		Socket socket = null;
+		boolean astarGo = false;
+		int pedometer = 0;
 
 		try {
 
@@ -517,12 +519,41 @@ public class Rv_curr {
 				MapTile[][] scanMapTiles = scanMap.getScanMap();
 				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
 
-				previousLoc = currentLoc;
-				roverMotionLogic(cardinals, scanMapTiles, centerIndex,
-						currentLoc.xpos, currentLoc.ypos);
-				// followLhsWall(scanMapTiles, centerIndex);
-				// headEast(scanMapTiles, centerIndex);
-				// headWest(scanMapTiles, centerIndex);
+				astarGo = (pedometer % 20 == 0) ? true : false;
+
+				// debug
+				System.out.println("PED: "+pedometer);
+				if (pedometer % 20 == 19) {
+					System.out.println("go astar!");
+					astarGo = true;
+					astar();
+				
+				}
+
+				previousLoc = currentLoc.clone();
+				if (previousLoc.equals(currentLoc)) {
+					//
+
+					astarGo = false;
+				}
+
+				if (!astarGo) {
+					roverMotionLogic(cardinals, scanMapTiles, centerIndex,
+							currentLoc.xpos, currentLoc.ypos);
+					
+					// astar();
+				} else {
+					System.out.println("really going astar now");
+					Thread.sleep(3000);
+					astar();
+				}
+
+				setCurrentLoc();
+				pedometer++;
+
+				System.out
+						.println("ROVER_12 ------------ bottom process control --------------");
+				Thread.sleep(sleepTime);
 
 				setCurrentLoc(); // AFTER this iteration
 				System.out.println("AFTER: " + currentLoc);
@@ -545,12 +576,53 @@ public class Rv_curr {
 		}
 	}// END of run()
 
+	private void astar() throws Exception {
+
+		for (int i = 0; i < 3; i++) {
+
+			loadScanMapFromSwarmServer();
+			debugPrintMapTileArray(mapTileLog);
+			int idx = 0;
+			Coord goal = setAstarGoal();
+			InABeeLine8Dir b = new InABeeLine8Dir();
+			System.out.println("this goal: " + goal);
+
+			String[] thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+
+			// if(thePath[0].equals("no solution")){
+			// goal = new Coord(currentLoc.xpos,currentLoc.ypos+5);
+			// thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			// }
+			//
+			// if(thePath[0].equals("no solution")){
+			// goal = new Coord(currentLoc.xpos-5,currentLoc.ypos+5);
+			// thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			// }
+
+			// astarGo = true;
+
+			boolean hasMoved = false;
+			while (!thePath[idx].equals("end")) {
+
+				loadScanMapFromSwarmServer();
+				hasMoved = move(thePath[idx]);
+				if (hasMoved) {
+					idx++;
+				} else {
+					loadScanMapFromSwarmServer();
+				}
+				Thread.sleep(sleepTime + 300);
+			}
+		}
+	}
+
 	void test() throws IOException, InterruptedException {
 		new ArrayList<String>();
 		Socket socket = null;
 		InABeeLine8Dir b = new InABeeLine8Dir();
 		boolean astar = true;
-
+		System.out.println(requestTimeRemaining(socket));
+		Thread.sleep(4000);
 		try {
 
 			// ***** connect to server ******
@@ -634,6 +706,7 @@ public class Rv_curr {
 			// Thread.sleep(sleepTime + 300);
 			// }
 			// ----------- itr 4 astar only -----
+
 			loadScanMapFromSwarmServer();
 			debugPrintMapTileArray(mapTileLog);
 			idx = 0;
@@ -641,18 +714,17 @@ public class Rv_curr {
 			System.out.println("this goal: " + goal);
 
 			thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
-			
-			if(thePath[0].equals("no solution")){
-				goal = new Coord(currentLoc.xpos,currentLoc.ypos+5);
+
+			if (thePath[0].equals("no solution")) {
+				goal = new Coord(currentLoc.xpos, currentLoc.ypos + 5);
 				thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
 			}
-			
-			if(thePath[0].equals("no solution")){
-				goal = new Coord(currentLoc.xpos-5,currentLoc.ypos+5);
+
+			if (thePath[0].equals("no solution")) {
+				goal = new Coord(currentLoc.xpos - 5, currentLoc.ypos + 5);
 				thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
 			}
-			
-			
+
 			astarGo = true;
 			boolean hasMoved = false;
 			while (!thePath[idx].equals("end")) {
@@ -1891,6 +1963,6 @@ public class Rv_curr {
 		}
 
 		Rv_curr client = new Rv_curr(serverAddress);
-		client.test();
+		client.run();
 	}
 }
