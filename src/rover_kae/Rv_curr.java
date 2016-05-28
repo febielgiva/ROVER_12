@@ -149,7 +149,7 @@ public class Rv_curr {
 								move("E");
 							} else {
 								randomStep(scanMapTiles, centerIndex);
-								//								cardinals = randomPickMotion(cardinals,
+								//	/							cardinals = randomPickMotion(cardinals,
 //										centerIndex, scanMapTiles);
 								// cardinals = moveUsingPastPath(cardinals,
 								// currentXPos, currentYPos);
