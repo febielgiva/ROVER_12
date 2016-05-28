@@ -1711,7 +1711,7 @@ randomStep(scanMapTiles, centerIndex);
 
 		try {
 			int randomNumber = randomNum(0, 3);
-			if (cardinals[randomNumber] == true) {
+			if (cardinals[randomNumber] == true) {// this part causes stack overflow if surrounded by obstaccles in three directions
 				randomPickMotion(cardinals, centerIndex, scanMapTiles);
 			} else {
 				switch (randomNumber) {
