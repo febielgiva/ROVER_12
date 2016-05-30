@@ -1,3 +1,4 @@
+
 package rover_febi;
 
 import java.io.BufferedReader;
@@ -430,6 +431,7 @@ public class ROVER_12 {
 					cardinals = moveSouth(cardinals);
 				}
 				break;
+
 			}
 
 			}

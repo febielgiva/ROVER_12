@@ -84,7 +84,96 @@ public class MethodStorage_ks {
 		sleepTime = 200; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
+	private void sinusoidal_LtoR(String[] cardinals, int waveLength,
+			int waveHeight) throws InterruptedException, IOException {
+		int steps;
 
+		steps = waveLength;
+		String currentDir;
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "E";
+		cardinals[3] = "N";
+
+		if (previousLoc != null && isStuck(currentLoc, previousLoc)) {
+			sinusoidal_RtoL(cardinals,waveLength,waveHeight);
+		}
+		
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < cardinals.length; i++) {
+
+			currentDir = cardinals[i];
+			if (currentDir.equals("E") || currentDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+				
+				setCurrentLoc();
+				hasMoved = move(currentDir);
+				if (!hasMoved) {
+					trackNoMove++;
+				}
+				Thread.sleep(sleeptime);
+			}
+		}
+	}
+
+	private void random(String[] cardinals) throws InterruptedException,
+			IOException {
+		int rdNum;
+		String currentDir;
+		for (int i = 0; i < 5; i++) {
+			rdNum = randomNum(0, 3);
+			currentDir = cardinals[rdNum];
+
+			for (int j = 0; j < 3; j++) {
+				move(currentDir);
+				Thread.sleep(300);
+			}
+		}
+	}
+
+	private void sinusoidal_RtoL(String[] cardinals, int waveLength,
+			int waveHeight) throws InterruptedException, IOException {
+		int steps, trackNoMove;
+
+		steps = waveLength;
+		String currentDir;
+		cardinals[0] = "E";
+		cardinals[1] = "S";
+		cardinals[2] = "E";
+		cardinals[3] = "N";
+
+		if (previousLoc != null && isStuck(currentLoc, previousLoc)) {
+			sinusoidal_RtoL(cardinals,waveLength,waveHeight);
+		}
+		
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < cardinals.length; i++) {
+
+			currentDir = cardinals[i];
+			if (currentDir.equals("E") || currentDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+				
+				setCurrentLoc();
+				hasMoved = move(currentDir);
+				if (!hasMoved) {
+					trackNoMove++;
+				}
+				Thread.sleep(sleeptime);
+			}
+		}
+	}
 	/**
 	 * Connects to the server then enters the processing loop.
 	 */
