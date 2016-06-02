@@ -507,6 +507,16 @@ public class Rv_curr {
 					getUndiscoveredArea(searchSize);
 				}
 
+				//---- working logic 01 ------------
+				//this logic works well, covers a relatively wide area without encountering exceptions
+				if (isAWallAround()) {
+					followRhsWall(scanMapTiles, centerIndex);
+				} else {
+					move(getFacingDirection());
+				}
+				//--------------------------------
+
+				
 				if (isAWallAround()) {
 					followRhsWall(scanMapTiles, centerIndex);
 					// }
