@@ -488,11 +488,13 @@ public class Rv_curr {
 
 			loadScanMapFromSwarmServer();
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
-			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+			int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize = 10;
+			
 
 			currentLoc.clone();
 			cardinals[1] = true;
 			while (true) {
+
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
@@ -502,11 +504,20 @@ public class Rv_curr {
 				// ***** do a SCAN ******
 				if (pedometer % 4 == 3) {
 					loadScanMapFromSwarmServer();
+					getUndiscoveredArea(searchSize);
 				}
 
-				//if (isAWallAround()) {
+				if (isAWallAround()) {
 					followRhsWall(scanMapTiles, centerIndex);
-				//}
+					// }
+					// else if (isWallOnNorthWest()) {
+					// followLhsWall(scanMapTiles, centerIndex);
+				} else {
+//					roverMotionLogic(cardinals, scanMapTiles, centerIndex,
+//							currentLoc.xpos, currentLoc.ypos);
+					//takeAStepTowradsCurrGoal(nextTarget);
+					move(getFacingDirection());
+				}
 
 				// com.postScanMapTiles(currentLoc, scanMapTiles);
 
@@ -515,7 +526,8 @@ public class Rv_curr {
 				previousLoc = currentLoc.clone();
 
 				System.out
-						.println("ROVER_12 ------------ bottom process control --------------");
+						.println("ROVER_12 ------------ bottom process control pedometer@[ "
+								+ pedometer + " ]--------------");
 				Thread.sleep(sleepTime);
 
 			}
@@ -531,6 +543,66 @@ public class Rv_curr {
 			}
 		}
 	}// END of run()
+
+	// a check function to prevent IndexOutOfBounds exception
+	public boolean withinTheGrid(int x, int y, int lengthX, int lengthY) {
+		return x >= 0 && y >= 0 && x < lengthX && y < lengthY;
+	}
+
+	private Coord getUndiscoveredArea(int searchSize) {
+
+		int threshold = (searchSize * searchSize) / 2, halfSize = searchSize / 2;
+		Coord tempPos;
+		// debug -- comment back in when done debugging
+		// if (mapTileLog.get(targetLocation) == null) {
+		// return targetLocation;
+		// }
+		int numReturned = 0;
+		for (int j = targetLocation.ypos - halfSize; j > halfSize; j -= searchSize) {
+			for (int i = targetLocation.xpos - halfSize; i > halfSize; i -= searchSize) {
+				tempPos = new Coord(i, j);
+				if ((numReturned = countUndiscoveredTiles(tempPos, searchSize)) >= threshold) {
+					// debug
+					System.out.println("numReturned @(" + i + ", " + j + "): "
+							+ numReturned);
+//					try {
+//						Thread.sleep(10000);
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+					return tempPos;
+				}
+			}
+		}
+
+		return new Coord(targetLocation.xpos, 0);
+	}
+
+	private int countUndiscoveredTiles(Coord loc, int searchSize) {
+
+		int halfSize = searchSize / 2, counter = 0;
+
+		for (int j = loc.ypos - halfSize; j < loc.ypos + halfSize; j++) {
+			for (int i = loc.xpos - halfSize; i < loc.xpos + halfSize; i++) {
+				if (withinTheGrid(i, j, targetLocation.xpos,
+						targetLocation.ypos)
+						&& mapTileLog.get(new Coord(i, j)) == null) {
+					counter++;
+				}
+			}
+		}
+		// debug
+		debugPrintMapTileArrayWithCurrPos(mapTileLog, loc);
+		System.out.println("loc:" + loc + "\tcounter:" + counter);
+//		try {
+//			Thread.sleep(5000);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
+		return counter;
+
+	}
 
 	private void astar() throws Exception {
 
@@ -574,20 +646,88 @@ public class Rv_curr {
 		}
 	}
 
-	public boolean isAWallAround() throws IOException {
+	// if wall is on rv's north, west, north east, north west (lhs wall
+	// follower)
+	public boolean isWallOnNorthWest() throws Exception {
+		int currX = currentLoc.xpos, currY = currentLoc.ypos;
+		// west
+		if (isObsatacle(new Coord(currX - 1, currY))) {
+			// System.out.println("wall detected on my e");
+			// Thread.sleep(3000);
+			return true;
+		}
+		// north
+		if (isObsatacle(new Coord(currX, currY - 1))) {
+			// System.out.println("wall detected on my s");
+			// Thread.sleep(3000);
+			return true;
+		}
+		// north east
+		if (isObsatacle(new Coord(currX + 1, currY - 1))) {
+			return true;
+		}
+		// north west
+		if (isObsatacle(new Coord(currX - 1, currY - 1))) {
+			return true;
+		}
+		return false;
+	}
+
+	// if wall is on rv's south, south east, south west, or east (rhs wall
+	// follower)
+	public boolean isWallOnSouthOrEast() throws Exception {
 		int currX = currentLoc.xpos, currY = currentLoc.ypos;
 		// east
-		if (isObsatacle(new Coord(currX + 1, currY)))
+		if (isObsatacle(new Coord(currX + 1, currY))) {
+			// System.out.println("wall detected on my e");
+			// Thread.sleep(3000);
 			return true;
+		}
 		// south
-		if (isObsatacle(new Coord(currX, currY + 1)))
+		if (isObsatacle(new Coord(currX, currY + 1))) {
+			// System.out.println("wall detected on my s");
+			// Thread.sleep(3000);
 			return true;
+		}
+		// south east
+		if (isObsatacle(new Coord(currX + 1, currY + 1))) {
+			return true;
+		}
+		// south west
+		if (isObsatacle(new Coord(currX - 1, currY + 1))) {
+			return true;
+		}
+
+		return false;
+	}
+
+	// debug - remove debug p out
+	public boolean isAWallAround() throws Exception {
+		int currX = currentLoc.xpos, currY = currentLoc.ypos;
+		// east
+		if (isObsatacle(new Coord(currX + 1, currY))) {
+			// System.out.println("wall detected on my e");
+			// Thread.sleep(3000);
+			return true;
+		}
+		// south
+		if (isObsatacle(new Coord(currX, currY + 1))) {
+			// System.out.println("wall detected on my s");
+			// Thread.sleep(3000);
+			return true;
+		}
 		// west
-		if (isObsatacle(new Coord(currX - 1, currY)))
+		if (isObsatacle(new Coord(currX - 1, currY))) {
+			// System.out.println("wall detected on my w");
+			// Thread.sleep(3000);
 			return true;
+		}
 		// north
-		if (isObsatacle(new Coord(currX, currY - 1)))
+		if (isObsatacle(new Coord(currX, currY - 1))) {
+			// System.out.println("wall detected on my n");
+			// Thread.sleep(3000);
 			return true;
+		}
 		return false;
 	}
 
@@ -907,6 +1047,80 @@ public class Rv_curr {
 			return false;
 		}
 	}
+	
+	public boolean isEastObsatacle(Coord focusIn) throws IOException {
+
+		Coord focus = new Coord(focusIn.xpos+1,focusIn.ypos);
+		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
+		}
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean isWestObsatacle(Coord focusIn) throws IOException {
+
+		Coord focus = new Coord(focusIn.xpos-1,focusIn.ypos);
+		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
+		}
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean isNorthObsatacle(Coord focusIn) throws IOException {
+
+		Coord focus = new Coord(focusIn.xpos,focusIn.ypos-1);
+		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
+		}
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean isSouthObsatacle(Coord focusIn) throws IOException {
+
+		Coord focus = new Coord(focusIn.xpos,focusIn.ypos+1);
+		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
+		}
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+
 
 	boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
 		if (scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
@@ -1399,8 +1613,93 @@ public class Rv_curr {
 		System.out.print("\n");
 	}
 
-	void recordPath() {
+	public void takeAStepTowradsCurrGoal(Coord currTarget) throws IOException {
+		int dx = currTarget.xpos - currentLoc.xpos;
+		int dy = currTarget.ypos - currentLoc.ypos;
+		
+		// prioritize horizontal dir
+		if(dx > 0 && !isEastObsatacle(currentLoc)){
+			move("E");
+		}else if(dx < 0 && !isWestObsatacle(currentLoc)){
+			move("W");
+		}else if(dy > 0 && !isSouthObsatacle(currentLoc)){
+			move("S");
+		}else if(dy < 0 && !isNorthObsatacle(currentLoc)){
+			move("N");
+		}
+	}
 
+	public void debugPrintMapTileArrayWithCurrPos(
+			Map<Coord, MapTile> globalMapCopy, Coord loc) {
+
+		// FIXME
+		int edgeSizeX = 100, edgeSizeY = 60;
+
+		System.out.println("edge size: " + edgeSizeY);
+		for (int k = 0; k < edgeSizeY + 2; k++) {
+			System.out.print("--");
+		}
+
+		System.out.print("\n");
+
+		for (int j = 0; j < edgeSizeY; j++) {
+
+			// System.out.print("j=" + j + "\t");
+
+			System.out.print("| ");
+			for (int i = 0; i < edgeSizeX; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					System.out.print("nn");
+				}// if this tile is the focus
+				else if (new Coord(i, j).equals(loc)) {
+					System.out.print("oo");
+				}
+				// check and print edge of map has first priority
+				else if (mapTileLog.get(new Coord(i, j)).getTerrain()
+						.toString().equals("NONE")) {
+					System.out.print("XX");
+
+					// next most important - print terrain and/or science
+					// locations
+					// terrain and science
+				} else if (!(mapTileLog.get(new Coord(i, j)).getTerrain()
+						.toString().equals("SOIL"))
+						&& !(mapTileLog.get(new Coord(i, j)).getScience()
+								.toString().equals("NONE"))) {
+					// both terrain and science
+
+					System.out.print(mapTileLog.get(new Coord(i, j))
+							.getTerrain().toString().substring(0, 1)
+							+ mapTileLog.get(new Coord(i, j)).getScience()
+									.getSciString());
+					// just terrain
+				} else if (!(mapTileLog.get(new Coord(i, j)).getTerrain()
+						.toString().equals("SOIL"))) {
+					System.out.print(mapTileLog.get(new Coord(i, j))
+							.getTerrain().toString().substring(0, 1)
+							+ " ");
+					// just science
+				} else if (!(mapTileLog.get(new Coord(i, j)).getScience()
+						.toString().equals("NONE"))) {
+					System.out.print(" "
+							+ mapTileLog.get(new Coord(i, j)).getScience()
+									.getSciString());
+
+					// if still empty check for rovers and print them
+				} else if (mapTileLog.get(new Coord(i, j)).getHasRover()) {
+					System.out.print("[]");
+
+					// nothing here so print nothing
+				} else {
+					System.out.print("  ");
+				}
+			}
+			System.out.print(" |\n");
+		}
+		for (int k = 0; k < edgeSizeY + 2; k++) {
+			System.out.print("--");
+		}
+		System.out.print("\n");
 	}
 
 	void loadMapTilesOntoGlobalMapLog(MapTile[][] ptrScanMap, Coord scanLoc) {
@@ -1680,22 +1979,6 @@ public class Rv_curr {
 			}
 			Thread.sleep(sleepTime + 300);
 		}
-	}
-
-	public int countUnvisited(Coord currLoc, int searchSize) {
-		// searchSize should be an even number
-		int numUnvisited = 0;
-
-		for (int j = currLoc.ypos - searchSize / 2; j < currLoc.ypos
-				+ searchSize / 2; j++) {
-			for (int i = currLoc.xpos - searchSize / 2; i < currLoc.ypos
-					+ searchSize / 2; i++) {
-				if (!mapTileLog.containsKey(new Coord(i, j))) {
-					numUnvisited++;
-				}
-			}
-		}
-		return numUnvisited;
 	}
 
 	public boolean visited(Coord pos) {
