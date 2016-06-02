@@ -148,11 +148,9 @@ public class Rv_curr {
 									centerIndex)) {
 								move("E");
 							} else {
-								randomStep(scanMapTiles, centerIndex);
-								//	/							cardinals = randomPickMotion(cardinals,
-//										centerIndex, scanMapTiles);
-								// cardinals = moveUsingPastPath(cardinals,
-								// currentXPos, currentYPos);
+								randomStep();
+								cardinals = randomPickMotion(cardinals,
+										centerIndex, scanMapTiles);
 							}
 
 						} else {
@@ -184,9 +182,9 @@ public class Rv_curr {
 						if (isTowardsEastIsObsatacle(scanMapTiles, centerIndex)) {
 							move("W");
 						} else {
-//							cardinals = randomPickMotion(cardinals,
-//									centerIndex, scanMapTiles);
-							randomStep(scanMapTiles, centerIndex);
+							cardinals = randomPickMotion(cardinals,
+									centerIndex, scanMapTiles);
+							randomStep();
 
 							// cardinals = moveUsingPastPath(cardinals,
 							// currentXPos, currentYPos);
@@ -221,11 +219,10 @@ public class Rv_curr {
 						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
 							move("S");
 						} else {
-//							cardinals = randomPickMotion(cardinals,
-//									centerIndex, scanMapTiles);
-randomStep(scanMapTiles, centerIndex);
-							// cardinals = moveUsingPastPath(cardinals,
-							// currentXPos, currentYPos);
+							// cardinals = randomPickMotion(cardinals,
+							// centerIndex, scanMapTiles);
+							randomStep();
+
 						}
 					} else {
 						move("E");
@@ -257,11 +254,9 @@ randomStep(scanMapTiles, centerIndex);
 						if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 							move("N");
 						} else {
-//							cardinals = randomPickMotion(cardinals,
-//									centerIndex, scanMapTiles);
-							randomStep(scanMapTiles, centerIndex);
-							// cardinals = moveUsingPastPath(cardinals,
-							// currentXPos, currentYPos);
+							// cardinals = randomPickMotion(cardinals,
+							// centerIndex, scanMapTiles);
+							randomStep();
 						}
 					} else {
 						move("E");
@@ -278,12 +273,56 @@ randomStep(scanMapTiles, centerIndex);
 		}
 	}
 
+	void followLhsWall(MapTile[][] scanMapTiles, int centerIndex)
+			throws IOException {
+
+		String[] directions = { "N", "E", "S", "W" };
+		switch (getFacingDirection()) {
+		case "E":
+			directions[0] = "N";
+			directions[1] = "E";
+			directions[2] = "S";
+			directions[3] = "W";
+			break;
+		case "S":
+			directions[0] = "E";
+			directions[1] = "S";
+			directions[2] = "W";
+			directions[3] = "N";
+			break;
+		case "W":
+			directions[0] = "S";
+			directions[1] = "W";
+			directions[2] = "N";
+			directions[3] = "E";
+			break;
+		case "N":
+			directions[0] = "W";
+			directions[1] = "N";
+			directions[2] = "E";
+			directions[3] = "S";
+			break;
+		default:
+			break;
+		}
+
+		for (int i = 0; i < directions.length; i++) {
+			if (move(directions[i])) {
+				return;
+			}
+		}
+	}
+
 	void followRhsWall(MapTile[][] scanMapTiles, int centerIndex)
 			throws IOException {
 
 		String[] directions = { "S", "E", "N", "W" };
 		switch (getFacingDirection()) {
 		case "E":
+			directions[0] = "S";
+			directions[1] = "E";
+			directions[2] = "N";
+			directions[3] = "W";
 			break;
 		case "S":
 			directions[0] = "W";
@@ -307,22 +346,9 @@ randomStep(scanMapTiles, centerIndex);
 			break;
 		}
 
-		boolean hasMoved = false;
 		for (int i = 0; i < directions.length; i++) {
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					directions[i])) {
-
-				System.out.println("(wall follower) move " + directions[i]);
-				hasMoved = move(directions[i]);
-				setCurrentLoc();
-
-				System.out.println("(WF) has moved? " + hasMoved);
-				if (hasMoved) {
-
-					return;
-				} else {
-					System.out.println("chose another direction.");
-				}
+			if (move(directions[i])) {
+				return;
 			}
 		}
 	}
@@ -413,51 +439,6 @@ randomStep(scanMapTiles, centerIndex);
 		}
 	}
 
-	void followLhsWall(MapTile[][] scanMapTiles, int centerIndex)
-			throws IOException {
-
-		String[] directions = { "N", "E", "S", "W" };
-		switch (getFacingDirection()) {
-		case "E":
-			break;
-		case "S":
-			directions[0] = "E";
-			directions[1] = "S";
-			directions[2] = "W";
-			directions[3] = "N";
-			break;
-		case "W":
-			directions[0] = "S";
-			directions[1] = "W";
-			directions[2] = "N";
-			directions[3] = "E";
-			break;
-		case "N":
-			directions[0] = "W";
-			directions[1] = "N";
-			directions[2] = "E";
-			directions[3] = "S";
-			break;
-		default:
-			break;
-		}
-
-		boolean hasMoved = false;
-		for (int i = 0; i < directions.length; i++) {
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					directions[i])) {
-				System.out.println("(wall follower) move " + directions[i]);
-				hasMoved = move(directions[i]);
-				System.out.println("(WF) has moved? " + hasMoved);
-				if (hasMoved) {
-					return;
-				} else {
-					System.out.println("chose another direction.");
-				}
-			}
-		}
-	}
-
 	boolean isAllDirOpen(MapTile[][] scanMapTiles, int centerIndex) {
 		System.out.println("is east blocked? "
 				+ isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
@@ -471,7 +452,7 @@ randomStep(scanMapTiles, centerIndex);
 		System.out.println("is north blocked? "
 				+ isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 						"N"));
-		
+
 		return isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex, "E")
 				&& isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 						"S")
@@ -505,6 +486,10 @@ randomStep(scanMapTiles, centerIndex);
 			targetLocation = requestTargetLoc(socket);
 			nextTarget = targetLocation.clone();
 
+			loadScanMapFromSwarmServer();
+			MapTile[][] scanMapTiles = scanMap.getScanMap();
+			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+
 			currentLoc.clone();
 			cardinals[1] = true;
 			while (true) {
@@ -515,44 +500,20 @@ randomStep(scanMapTiles, centerIndex);
 						+ getFacingDirection());
 
 				// ***** do a SCAN ******
-				loadScanMapFromSwarmServer();
-
-				MapTile[][] scanMapTiles = scanMap.getScanMap();
-				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-				com.postScanMapTiles(currentLoc, scanMapTiles);
-				
-				astarGo = (/*pedometer > 80 &&*/ pedometer % 40 == 1) ? true
-						: false;
-
-				// debug
-				//System.out.println("PED: " + pedometer);
-				if (pedometer > 95 && pedometer % 35 == 1) {
-					if (mapTileLog.get(targetLocation) == null) {
-						System.out.println("go astar!");
-						astarGo = true;
-						astar();
-					}
+				if (pedometer % 4 == 3) {
+					loadScanMapFromSwarmServer();
 				}
 
-				previousLoc = currentLoc.clone();
-				if (previousLoc.equals(currentLoc)) {
-					//
+				//if (isAWallAround()) {
+					followRhsWall(scanMapTiles, centerIndex);
+				//}
 
-					astarGo = false;
-				}
-
-				if (!astarGo) {
-					roverMotionLogic(cardinals, scanMapTiles, centerIndex,
-							currentLoc.xpos, currentLoc.ypos);
-
-					// astar();
-				} else {
-					astar();
-				}
+				// com.postScanMapTiles(currentLoc, scanMapTiles);
 
 				setCurrentLoc();
 				pedometer++;
-				
+				previousLoc = currentLoc.clone();
+
 				System.out
 						.println("ROVER_12 ------------ bottom process control --------------");
 				Thread.sleep(sleepTime);
@@ -576,11 +537,11 @@ randomStep(scanMapTiles, centerIndex);
 		for (int i = 0; i < 3; i++) {
 
 			loadScanMapFromSwarmServer();
-			//debugPrintMapTileArray(mapTileLog);
+			// debugPrintMapTileArray(mapTileLog);
 			int idx = 0;
 			Coord goal = setAstarGoal();
 			InABeeLine8Dir b = new InABeeLine8Dir();
-		//	System.out.println("this goal: " + goal);
+			// System.out.println("this goal: " + goal);
 
 			String[] thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
 
@@ -613,13 +574,30 @@ randomStep(scanMapTiles, centerIndex);
 		}
 	}
 
+	public boolean isAWallAround() throws IOException {
+		int currX = currentLoc.xpos, currY = currentLoc.ypos;
+		// east
+		if (isObsatacle(new Coord(currX + 1, currY)))
+			return true;
+		// south
+		if (isObsatacle(new Coord(currX, currY + 1)))
+			return true;
+		// west
+		if (isObsatacle(new Coord(currX - 1, currY)))
+			return true;
+		// north
+		if (isObsatacle(new Coord(currX, currY - 1)))
+			return true;
+		return false;
+	}
+
 	void test() throws IOException, InterruptedException {
 		new ArrayList<String>();
 		Socket socket = null;
 		InABeeLine8Dir b = new InABeeLine8Dir();
 		boolean astar = true;
 		System.out.println(requestTimeRemaining(socket));
-		
+
 		try {
 
 			// ***** connect to server ******
@@ -640,13 +618,13 @@ randomStep(scanMapTiles, centerIndex);
 			// // ------ itr 1 --------
 			loadScanMapFromSwarmServer();
 			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-			//debugPrintMapTileArray(mapTileLog);
+			// debugPrintMapTileArray(mapTileLog);
 			boolean astarGo = false;
 			String[] thePath = { "end" };
 			int idx = 0;
-			
+
 			loadScanMapFromSwarmServer();
-		//	debugPrintMapTileArray(mapTileLog);
+			// debugPrintMapTileArray(mapTileLog);
 			idx = 0;
 			Coord goal = setAstarGoal();
 			System.out.println("this goal: " + goal);
@@ -858,7 +836,7 @@ randomStep(scanMapTiles, centerIndex);
 				|| currentLoc.xpos >= 14 && currentLoc.xpos <= 15) {
 
 			System.out.println("move random");
-			randomStep(scanMapTiles, centerIndex);
+			randomStep();
 
 		} else if (!isTowardsThisDirectionIsObsatacle(scanMapTiles,
 				centerIndex, "E")) {
@@ -913,10 +891,12 @@ randomStep(scanMapTiles, centerIndex);
 		return false;
 	}
 
-	public boolean isObsatacle(Coord focus) {
+	public boolean isObsatacle(Coord focus) throws IOException {
+
 		MapTile tile = mapTileLog.get(focus);
 		if (tile == null) {
-			return true;
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
 		}
 		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
 				|| tile.getTerrain() == Terrain.NONE
@@ -1492,15 +1472,17 @@ randomStep(scanMapTiles, centerIndex);
 	}
 
 	boolean move(String dir) throws IOException {
-
-		MapTile[][] scanMapTiles = scanMap.getScanMap();
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+		//
+		// MapTile[][] scanMapTiles = scanMap.getScanMap();
+		// int centerIndex = (scanMap.getEdgeSize() - 1) / 2,
+		int currX = currentLoc.xpos, currY = currentLoc.ypos;
 		Coord prevLoc = currentLoc.clone();
 
+		System.out.print("direction taken in the argument: " + dir + "\t");
 		switch (dir) {
 		case "E":
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					"E")) {
+			if (!isObsatacle(new Coord(currX + 1, currY))) {
+				System.out.println("(1)in move(), go east");
 				moveEast();
 				setCurrentLoc();
 				if (prevLoc.equals(currentLoc)) {
@@ -1509,9 +1491,10 @@ randomStep(scanMapTiles, centerIndex);
 					return true;
 				}
 			}
+			break;
 		case "W":
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					"W")) {
+			if (!isObsatacle(new Coord(currX - 1, currY))) {
+				System.out.println("(2)in move(), go west");
 				moveWest();
 				setCurrentLoc();
 				if (prevLoc.equals(currentLoc)) {
@@ -1522,8 +1505,8 @@ randomStep(scanMapTiles, centerIndex);
 			}
 			break;
 		case "N":
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					"N")) {
+			if (!isObsatacle(new Coord(currX, currY - 1))) {
+				System.out.println("(3)in move(), go north");
 				moveNorth();
 				setCurrentLoc();
 				if (prevLoc.equals(currentLoc)) {
@@ -1534,8 +1517,8 @@ randomStep(scanMapTiles, centerIndex);
 			}
 			break;
 		case "S":
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					"S")) {
+			if (!isObsatacle(new Coord(currX, currY + 1))) {
+				System.out.println("(4)in move(), go south");
 				moveSouth();
 				setCurrentLoc();
 				if (prevLoc.equals(currentLoc)) {
@@ -1648,8 +1631,11 @@ randomStep(scanMapTiles, centerIndex);
 	}
 
 	// take a random step (just one step) to break the pattern
-	void randomStep(MapTile[][] scanMapTiles, int centerIndex)
-			throws InterruptedException, IOException {
+	void randomStep() throws InterruptedException, IOException {
+
+		if (mapTileLog.get(currentLoc) == null) {
+			loadScanMapFromSwarmServer();
+		}
 
 		String currDir = getFacingDirection();
 		String[] directions = { "N", "E", "S", "W" };
@@ -1661,7 +1647,38 @@ randomStep(scanMapTiles, centerIndex);
 				move(thisDir);
 				return;
 			}
+		}
+	}
 
+	// take a random step (just one step) to break the pattern
+	void randomlyStepOut() throws Exception {
+
+		int idx = 0;
+		Coord goal = null;
+
+		// pick a random nearby cell
+		do {
+			goal = new Coord(
+					randomNum(currentLoc.xpos - 5, currentLoc.xpos + 5),
+					randomNum(currentLoc.ypos - 5, currentLoc.ypos + 5));
+		} while (mapTileLog.get(goal) == null || isObsatacle(goal));
+
+		InABeeLine8Dir b = new InABeeLine8Dir();
+		String[] thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+
+		boolean hasMoved = false;
+
+		System.out.println("thePath length: " + thePath.length);
+		for (int j = 0; j < thePath.length; j++) {
+
+			loadScanMapFromSwarmServer();
+			hasMoved = move(thePath[idx]);
+			if (hasMoved) {
+				idx++;
+			} else {
+				loadScanMapFromSwarmServer();
+			}
+			Thread.sleep(sleepTime + 300);
 		}
 	}
 
@@ -1711,7 +1728,10 @@ randomStep(scanMapTiles, centerIndex);
 
 		try {
 			int randomNumber = randomNum(0, 3);
-			if (cardinals[randomNumber] == true) {// this part causes stack overflow if surrounded by obstaccles in three directions
+			if (cardinals[randomNumber] == true) {// this part causes stack
+													// overflow if surrounded by
+													// obstaccles in three
+													// directions
 				randomPickMotion(cardinals, centerIndex, scanMapTiles);
 			} else {
 				switch (randomNumber) {
@@ -1811,6 +1831,123 @@ randomStep(scanMapTiles, centerIndex);
 			}
 		}
 		return false;
+	}
+
+	private void sinusoidalLeft(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+		int steps, sleeptime = 900;
+
+		steps = waveLength;
+		String currentDir;
+		String[] dir = { "W", "S", "W", "N" };
+
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < dir.length; i++) {
+
+			currentDir = dir[i];
+			if (currentDir.equals("W")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+
+				setCurrentLoc();
+				move(currentDir);
+
+				Thread.sleep(sleeptime);
+			}
+		}
+	}
+
+	private void sinusoidalRight(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+		int steps, sleeptime = 900;
+
+		steps = waveLength;
+		String goDir;
+		String[] dir = { "E", "S", "E", "N" };
+
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < dir.length; i++) {
+
+			goDir = dir[i];
+
+			if (goDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+
+				setCurrentLoc();
+				move(goDir);
+
+				Thread.sleep(sleeptime);
+			}
+		}
+	}
+
+	private void sinusoidalDown(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+		int steps, sleeptime = 900;
+
+		steps = waveLength;
+		String currentDir;
+		String[] dir = { "W", "S", "E", "S" };
+
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < dir.length; i++) {
+
+			currentDir = dir[i];
+			if (currentDir.equals("S")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+
+				setCurrentLoc();
+				move(currentDir);
+
+				Thread.sleep(sleeptime);
+			}
+		}
+	}
+
+	private void sinusoidalUp(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+		int steps, sleeptime = 900;
+
+		steps = waveLength;
+		String currentDir;
+		String[] dir = { "W", "N", "E", "N" };
+
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < dir.length; i++) {
+
+			currentDir = dir[i];
+			if (currentDir.equals("N")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+
+				setCurrentLoc();
+				move(currentDir);
+
+				Thread.sleep(sleeptime);
+			}
+		}
 	}
 
 	// return the nearest wall coord

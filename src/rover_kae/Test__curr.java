@@ -34,8 +34,8 @@ public class Test__curr {
 		TestSwarmServer ss = new TestSwarmServer();
 		Rv_curr rv = new Rv_curr();
 
-		// ss.runServer("rv12_test.txt");
-		ss.runServer("simple_rv12_test.txt");
+		 ss.runServer("rv12_test.txt");
+		//ss.runServer("simple_rv12_test.txt");
 	}
 	//@Test
 	public void testReverseList() throws Exception {
