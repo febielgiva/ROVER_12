@@ -69,9 +69,9 @@ public class Rv_curr {
 			targetLocation = null;
 
 	Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	HashMap<Coord, Path> visitCounts = new HashMap<Coord, Path>();// manage
-																	// this
-																	// only
+	HashMap<Coord, Integer> visitCounts = new HashMap<Coord, Integer>();// manage
+	// this
+	// only
 	// after targetLoc has
 	// been
 	// visited
@@ -273,8 +273,7 @@ public class Rv_curr {
 		}
 	}
 
-	void followLhsWall(MapTile[][] scanMapTiles, int centerIndex)
-			throws IOException {
+	void followLhsWall() throws IOException {
 
 		String[] directions = { "N", "E", "S", "W" };
 		switch (getFacingDirection()) {
@@ -313,8 +312,7 @@ public class Rv_curr {
 		}
 	}
 
-	void followRhsWall(MapTile[][] scanMapTiles, int centerIndex)
-			throws IOException {
+	void followRhsWall() throws IOException {
 
 		String[] directions = { "S", "E", "N", "W" };
 		switch (getFacingDirection()) {
@@ -471,7 +469,7 @@ public class Rv_curr {
 
 		new ArrayList<String>();
 		Socket socket = null;
-		boolean astarGo = false;
+		boolean astarGo = false, hasHitTheNorthWall=false;
 		int pedometer = 0;
 
 		try {
@@ -488,13 +486,13 @@ public class Rv_curr {
 
 			loadScanMapFromSwarmServer();
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
-			int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize = 10;
-			
+			int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize = 10, waveLength = 3, waveHeight = 2;
 
+			
+			
 			currentLoc.clone();
 			cardinals[1] = true;
 			while (true) {
-
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
@@ -507,31 +505,53 @@ public class Rv_curr {
 					getUndiscoveredArea(searchSize);
 				}
 
-				//---- working logic 01 ------------
-				//this logic works well, covers a relatively wide area without encountering exceptions
-				if (isAWallAround()) {
-					followRhsWall(scanMapTiles, centerIndex);
-				} else {
-					move(getFacingDirection());
+				// every 10 steps, take a random step if no obstacles around
+				if (pedometer % 10 == 0 && !isAWallAround()) {
+					randomlyStepOut();
 				}
-				//--------------------------------
 
-				
-				if (isAWallAround()) {
-					followRhsWall(scanMapTiles, centerIndex);
-					// }
-					// else if (isWallOnNorthWest()) {
-					// followLhsWall(scanMapTiles, centerIndex);
-				} else {
-//					roverMotionLogic(cardinals, scanMapTiles, centerIndex,
-//							currentLoc.xpos, currentLoc.ypos);
-					//takeAStepTowradsCurrGoal(nextTarget);
-					move(getFacingDirection());
-				}
+				// ---- working logic 01 ------------
+				// this logic works well, covers a relatively wide area without
+				// encountering exceptions
+				// if (isAWallAround()) {
+				// followRhsWall(scanMapTiles, centerIndex);
+				// } else {
+				// move(getFacingDirection());
+				// }
+				// --------------------------------
+
+				// mediocre
+//				if (visitCounts.get(currentLoc) != null
+//						&& visitCounts.get(currentLoc) > 5) {
+//					outOfMaze();
+//				} else if (!move("E")) {
+//					outOfMaze();
+//				}
 
 				// com.postScanMapTiles(currentLoc, scanMapTiles);
 
+				
+				// go along the perimeter
+				if(!hasHitTheNorthWall && !isNorthObsatacle(currentLoc)){					
+					move("N");
+				}else{
+					 if (isAWallAround()) {
+							followRhsWall();
+					followLhsWall();
+				}
+				
 				setCurrentLoc();
+
+//				// count how many times the rover visited this tile
+//				if (visitCounts.get(currentLoc) != null) {
+//					visitCounts.put(currentLoc,
+//							(visitCounts.get(currentLoc) + 1));
+//				}else{
+//					visitCounts.put(currentLoc,1);
+//				}
+				
+				
+				
 				pedometer++;
 				previousLoc = currentLoc.clone();
 
@@ -554,9 +574,76 @@ public class Rv_curr {
 		}
 	}// END of run()
 
+	private void outOfMaze() throws Exception, IOException {
+
+		while (true) {
+
+			if (isAWallAround()) {
+				followRhsWall();
+			}else {
+				move(getFacingDirection());
+				// sinusoidalRandom(waveLength, waveHeight);
+			}
+			setCurrentLoc();
+			
+			// count how many times the rover visited this tile
+			if (visitCounts.get(currentLoc) != null) {
+				visitCounts.put(currentLoc,
+						(visitCounts.get(currentLoc) + 1));
+			}else{
+				visitCounts.put(currentLoc,1);
+			}
+			
+			Thread.sleep(sleepTime);
+		}
+	}
+
 	// a check function to prevent IndexOutOfBounds exception
 	public boolean withinTheGrid(int x, int y, int lengthX, int lengthY) {
 		return x >= 0 && y >= 0 && x < lengthX && y < lengthY;
+	}
+
+	public void sinusoidal(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+
+		switch (getFacingDirection()) {
+		case "E":
+			sinusoidalRight(waveLength, waveHeight);
+			break;
+		case "S":
+			sinusoidalDown(waveLength, waveHeight);
+			break;
+		case "W":
+			sinusoidalLeft(waveLength, waveHeight);
+			break;
+		case "N":
+			sinusoidalUp(waveLength, waveHeight);
+			break;
+		default:
+			break;
+		}
+	}
+
+	public void sinusoidalRandom(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+
+		int rand = randomNum(0, 3);
+		switch (rand) {
+		case 0:
+			sinusoidalRight(waveLength, waveHeight);
+			break;
+		case 1:
+			sinusoidalDown(waveLength, waveHeight);
+			break;
+		case 2:
+			sinusoidalLeft(waveLength, waveHeight);
+			break;
+		case 3:
+			sinusoidalUp(waveLength, waveHeight);
+			break;
+		default:
+			break;
+		}
 	}
 
 	private Coord getUndiscoveredArea(int searchSize) {
@@ -575,12 +662,12 @@ public class Rv_curr {
 					// debug
 					System.out.println("numReturned @(" + i + ", " + j + "): "
 							+ numReturned);
-//					try {
-//						Thread.sleep(10000);
-//					} catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
+					// try {
+					// Thread.sleep(10000);
+					// } catch (InterruptedException e) {
+					// // TODO Auto-generated catch block
+					// e.printStackTrace();
+					// }
 					return tempPos;
 				}
 			}
@@ -605,11 +692,11 @@ public class Rv_curr {
 		// debug
 		debugPrintMapTileArrayWithCurrPos(mapTileLog, loc);
 		System.out.println("loc:" + loc + "\tcounter:" + counter);
-//		try {
-//			Thread.sleep(5000);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
+		// try {
+		// Thread.sleep(5000);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
 		return counter;
 
 	}
@@ -1057,10 +1144,10 @@ public class Rv_curr {
 			return false;
 		}
 	}
-	
+
 	public boolean isEastObsatacle(Coord focusIn) throws IOException {
 
-		Coord focus = new Coord(focusIn.xpos+1,focusIn.ypos);
+		Coord focus = new Coord(focusIn.xpos + 1, focusIn.ypos);
 		MapTile tile = mapTileLog.get(focus);
 		if (tile == null) {
 			loadScanMapFromSwarmServer();
@@ -1078,7 +1165,7 @@ public class Rv_curr {
 
 	public boolean isWestObsatacle(Coord focusIn) throws IOException {
 
-		Coord focus = new Coord(focusIn.xpos-1,focusIn.ypos);
+		Coord focus = new Coord(focusIn.xpos - 1, focusIn.ypos);
 		MapTile tile = mapTileLog.get(focus);
 		if (tile == null) {
 			loadScanMapFromSwarmServer();
@@ -1093,10 +1180,10 @@ public class Rv_curr {
 			return false;
 		}
 	}
-	
+
 	public boolean isNorthObsatacle(Coord focusIn) throws IOException {
 
-		Coord focus = new Coord(focusIn.xpos,focusIn.ypos-1);
+		Coord focus = new Coord(focusIn.xpos, focusIn.ypos - 1);
 		MapTile tile = mapTileLog.get(focus);
 		if (tile == null) {
 			loadScanMapFromSwarmServer();
@@ -1111,10 +1198,10 @@ public class Rv_curr {
 			return false;
 		}
 	}
-	
+
 	public boolean isSouthObsatacle(Coord focusIn) throws IOException {
 
-		Coord focus = new Coord(focusIn.xpos,focusIn.ypos+1);
+		Coord focus = new Coord(focusIn.xpos, focusIn.ypos + 1);
 		MapTile tile = mapTileLog.get(focus);
 		if (tile == null) {
 			loadScanMapFromSwarmServer();
@@ -1129,8 +1216,6 @@ public class Rv_curr {
 			return false;
 		}
 	}
-
-
 
 	boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
 		if (scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
@@ -1626,15 +1711,15 @@ public class Rv_curr {
 	public void takeAStepTowradsCurrGoal(Coord currTarget) throws IOException {
 		int dx = currTarget.xpos - currentLoc.xpos;
 		int dy = currTarget.ypos - currentLoc.ypos;
-		
+
 		// prioritize horizontal dir
-		if(dx > 0 && !isEastObsatacle(currentLoc)){
+		if (dx > 0 && !isEastObsatacle(currentLoc)) {
 			move("E");
-		}else if(dx < 0 && !isWestObsatacle(currentLoc)){
+		} else if (dx < 0 && !isWestObsatacle(currentLoc)) {
 			move("W");
-		}else if(dy > 0 && !isSouthObsatacle(currentLoc)){
+		} else if (dy > 0 && !isSouthObsatacle(currentLoc)) {
 			move("S");
-		}else if(dy < 0 && !isNorthObsatacle(currentLoc)){
+		} else if (dy < 0 && !isNorthObsatacle(currentLoc)) {
 			move("N");
 		}
 	}
