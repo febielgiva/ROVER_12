@@ -582,6 +582,8 @@ public class Rv_curr {
 						// }
 						// Thread.sleep(5000);
 						isDonePerimeterWalk = true;
+					}if(!isAWallAround()){
+						isDonePerimeterWalk = true;
 					}
 				} else {
 					
@@ -591,7 +593,7 @@ public class Rv_curr {
 					System.out
 							.println("(fl)has not visited?"
 									+ (visitedOnAParimeterWalk.get(currentLoc) == null));
-					Thread.sleep(2000);
+					//Thread.sleep(2000);
 					if (isAWallInThe4Adj()
 							&& visitedOnAParimeterWalk.get(currentLoc) == null) {
 						System.out
