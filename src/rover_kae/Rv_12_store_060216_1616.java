@@ -51,7 +51,7 @@ import supportTools.RoverMotionUtil;
  * publishing their code examples
  */
 
-public class Rv_curr {
+public class Rv_12_store_060216_1616 {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -84,7 +84,7 @@ public class Rv_curr {
 	boolean isTargetLocReached = false;
 	Coord nextTarget;
 
-	public Rv_curr() {
+	public Rv_12_store_060216_1616() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -95,7 +95,7 @@ public class Rv_curr {
 							// will cut connection if it is too small
 	}
 
-	public Rv_curr(String serverAddress) {
+	public Rv_12_store_060216_1616(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -490,10 +490,20 @@ public class Rv_curr {
 
 			currentLoc.clone();
 			cardinals[1] = true;
-
-			getToTheNorthWall();
-			hasHitTheNorthWall = true;
-
+			
+			
+			// debug
+			move("N");
+			Thread.sleep(900);
+			move("N");
+			Thread.sleep(900);
+			move("N");
+			Thread.sleep(900);
+			move("N");
+			Thread.sleep(900);
+			
+			
+			
 			while (true) {
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
@@ -507,6 +517,29 @@ public class Rv_curr {
 					getUndiscoveredArea(searchSize);
 				}
 
+				// every 10 steps, take a random step if no obstacles around
+//				if (pedometer % 10 == 0 && !isAWallAround()) {
+//					randomlyStepOut();
+//				}
+
+				// ---- working logic 01 ------------
+				// this logic works well, covers a relatively wide area without
+				// encountering exceptions
+				// if (isAWallAround()) {
+				// followRhsWall(scanMapTiles, centerIndex);
+				// } else {
+				// move(getFacingDirection());
+				// }
+				// --------------------------------
+
+				// mediocre
+				// if (visitCounts.get(currentLoc) != null
+				// && visitCounts.get(currentLoc) > 5) {
+				// outOfMaze();
+				// } else if (!move("E")) {
+				// outOfMaze();
+				// }
+
 				// com.postScanMapTiles(currentLoc, scanMapTiles);
 
 				// go along the perimeter
@@ -518,6 +551,14 @@ public class Rv_curr {
 					}
 				}
 				setCurrentLoc();
+
+				// // count how many times the rover visited this tile
+				// if (visitCounts.get(currentLoc) != null) {
+				// visitCounts.put(currentLoc,
+				// (visitCounts.get(currentLoc) + 1));
+				// }else{
+				// visitCounts.put(currentLoc,1);
+				// }
 
 				pedometer++;
 				previousLoc = currentLoc.clone();
@@ -540,58 +581,6 @@ public class Rv_curr {
 			}
 		}
 	}// END of run()
-
-	private void getToTheNorthWall() throws IOException, InterruptedException {
-		boolean hasHitTheNorthWall = false, hasMoved = false;
-		int northBlockedCounter = 0;
-
-		while (!hasHitTheNorthWall) {
-
-			hasMoved = false;
-			hasMoved = move("N");
-			Thread.sleep(800);
-
-			if (hasMoved) {
-
-				System.out.println("moved n, increment the counter to ["
-						+ northBlockedCounter + "]");
-			} else {
-				northBlockedCounter++;
-			}
-
-			if (northBlockedCounter > 4) {
-				System.out
-						.println("now the counter is > 4, turn on the \'hasHitThe...\'switch");
-				hasHitTheNorthWall = true;
-			}
-		}
-
-		hasHitTheNorthWall = false;
-		northBlockedCounter = 0;
-
-//		while (!hasHitTheNorthWall) {
-//
-//			hasMoved = false;
-//			hasMoved = move("W");
-//			Thread.sleep(800);
-//
-//			if (hasMoved) {
-//
-//				System.out.println("moved n, increment the counter to ["
-//						+ northBlockedCounter + "]");
-//			} else {
-//				northBlockedCounter++;
-//			}
-//
-//			if (northBlockedCounter > 4) {
-//				System.out
-//						.println("now the counter is > 4, turn on the \'hasHitThe...\'switch");
-//				hasHitTheNorthWall = true;
-//			}
-//		}
-
-		calibrateFacingDir();
-	}
 
 	private void outOfMaze() throws Exception, IOException {
 
@@ -639,60 +628,6 @@ public class Rv_curr {
 			break;
 		default:
 			break;
-		}
-	}
-
-	/*
-	 * after hitting the wall, the facing direction needs to be adjusted with
-	 * this function for the wall follwer (for rhs wall follwerS only)
-	 */
-	public void calibrateFacingDir() {
-
-		String currFacingDir = getFacingDirection();
-
-		switch (getFacingDirection()) {
-		case "N":
-			// face west
-			cardinals[0] = false; // S
-			cardinals[1] = false; // E
-			cardinals[2] = false; // N
-			cardinals[3] = true; // W
-			break;
-		case "W":
-			// face south
-			cardinals[0] = true; // S
-			cardinals[1] = false; // E
-			cardinals[2] = false; // N
-			cardinals[3] = false; // W
-			break;
-		case "S":
-			// face east
-			cardinals[0] = false; // S
-			cardinals[1] = true; // E
-			cardinals[2] = false; // N
-			cardinals[3] = false; // W
-			break;
-		case "E":
-			// face north
-			cardinals[0] = false; // S
-			cardinals[1] = true; // E
-			cardinals[2] = false; // N
-			cardinals[3] = false; // W
-			break;
-
-		default:
-			break;
-		}
-		if (currFacingDir.equals("N")) {
-			// face west
-		} else if (currFacingDir.equals("N")) {
-			// face west
-		}
-		if (currFacingDir.equals("N")) {
-			// face west
-		}
-		if (currFacingDir.equals("N")) {
-			// face west
 		}
 	}
 
@@ -2496,7 +2431,7 @@ public class Rv_curr {
 			serverAddress = s;
 		}
 
-		Rv_curr client = new Rv_curr(serverAddress);
+		Rv_12_store_060216_1616 client = new Rv_12_store_060216_1616(serverAddress);
 		client.run();
 	}
 }
