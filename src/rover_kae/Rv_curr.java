@@ -565,13 +565,17 @@ public class Rv_curr {
 				// --------- current -------------
 
 				if (!isDonePerimeterWalk) {
+					
+					//debug
+					System.out.println("(wf)");
+					
 					doTheWallIslandPerimeterWalk();
 					visitedOnAParimeterWalk.put(new Coord(currentLoc.xpos,
 							currentLoc.ypos), true);
 					if (currentLoc.equals(startLocPerimeterFollowing)) {
 						// debug
 						System.out
-								.println("we are done with the perimeter walk for now");
+								.println("(wf)we are done with the perimeter walk for now");
 						// for (Map.Entry<Coord, Boolean> tile :
 						// visitedOnAParimeterWalk.entrySet()) {
 						// System.out.println("pw visited:"+tile.getKey());
@@ -580,22 +584,23 @@ public class Rv_curr {
 						isDonePerimeterWalk = true;
 					}
 				} else {
-					// roverMotionLogic(cardinals, scanMapTiles, centerIndex,
-					// currentLoc.xpos, currentLoc.ypos);
+					
 					followFebiLogic();
-					System.out.println("wall present?" + isAWallInThe4Adj());
+					System.out.println("(fl)wall present?" + isAWallInThe4Adj());
 
 					System.out
-							.println("has not visited?"
+							.println("(fl)has not visited?"
 									+ (visitedOnAParimeterWalk.get(currentLoc) == null));
 					Thread.sleep(2000);
 					if (isAWallInThe4Adj()
 							&& visitedOnAParimeterWalk.get(currentLoc) == null) {
 						System.out
-								.println("switch from rml to w-follower (curr loc: "
+								.println("(fl)switch from rml to w-follower (curr loc: "
 										+ currentLoc + ")");
 
 						isDonePerimeterWalk = false;
+						startLocPerimeterFollowing = currentLoc.clone();
+						calibrateFacingDir();
 					}
 				}
 				setCurrentLoc();
@@ -1070,17 +1075,17 @@ public class Rv_curr {
 		}
 
 		// south
-		if (isObsatacle(new Coord(currX, currY + 1))) {
+		if (isAWall(new Coord(currX, currY + 1))) {
 			return true;
 		}
 
 		// west
-		if (isObsatacle(new Coord(currX - 1, currY))) {
+		if (isAWall(new Coord(currX - 1, currY))) {
 			return true;
 		}
 
 		// north
-		if (isObsatacle(new Coord(currX, currY - 1))) {
+		if (isAWall(new Coord(currX, currY - 1))) {
 			return true;
 		}
 
@@ -1397,6 +1402,25 @@ public class Rv_curr {
 		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
 				|| tile.getTerrain() == Terrain.NONE
 				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean isAWall(Coord focus) throws IOException {
+
+		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
+		}
+		if(focus.xpos==0 || focus.ypos == 0){
+			return true;
+		}
+		if (tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
 				|| tile.getTerrain() == Terrain.SAND) {
 			return true;
 		} else {
