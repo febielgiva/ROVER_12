@@ -502,11 +502,12 @@ public class Rv_12_store_060216_1616 {
 			move("N");
 			Thread.sleep(900);
 			
-			
+			int stuckCount=0;
 			
 			while (true) {
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
+				previousLoc = currentLoc.clone();
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 				System.out.println("BEFORE: " + currentLoc + " | facing "
 						+ getFacingDirection());

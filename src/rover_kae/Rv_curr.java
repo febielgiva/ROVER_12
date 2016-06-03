@@ -565,13 +565,14 @@ public class Rv_curr {
 				// --------- current -------------
 
 				if (!isDonePerimeterWalk) {
-					
-					//debug
+
+					// debug
 					System.out.println("(wf)");
-					
+
 					doTheWallIslandPerimeterWalk();
 					visitedOnAParimeterWalk.put(new Coord(currentLoc.xpos,
 							currentLoc.ypos), true);
+
 					if (currentLoc.equals(startLocPerimeterFollowing)) {
 						// debug
 						System.out
@@ -582,18 +583,45 @@ public class Rv_curr {
 						// }
 						// Thread.sleep(5000);
 						isDonePerimeterWalk = true;
-					}if(!isAWallAround()){
+					}
+					if (!isAWallAround()) {
 						isDonePerimeterWalk = true;
 					}
 				} else {
-					
+
 					followFebiLogic();
-					System.out.println("(fl)wall present?" + isAWallInThe4Adj());
+
+					if (isEastObsatacle(currentLoc)
+							&& isNorthObsatacle(currentLoc)
+							&& isSouthObsatacle(currentLoc)) {
+						// doTheWallFollowingHack(5);
+						move("W");
+						setCurrentLoc();
+						Thread.sleep(900);
+						if (!move("S")) {
+							Thread.sleep(900);
+							move("N");
+							setCurrentLoc();
+							move("N");
+							setCurrentLoc();
+							move("N");
+							setCurrentLoc();
+						} else {
+							move("S");
+							setCurrentLoc();
+							move("S");
+							setCurrentLoc();
+							move("S");
+							setCurrentLoc();
+						}
+					}
+					System.out
+							.println("(fl)wall present?" + isAWallInThe4Adj());
 
 					System.out
 							.println("(fl)has not visited?"
 									+ (visitedOnAParimeterWalk.get(currentLoc) == null));
-					//Thread.sleep(2000);
+					// Thread.sleep(2000);
 					if (isAWallInThe4Adj()
 							&& visitedOnAParimeterWalk.get(currentLoc) == null) {
 						System.out
@@ -655,6 +683,32 @@ public class Rv_curr {
 			}
 		}
 	}// END of run()
+
+	private void doTheWallFollowingHack(int numSteps) throws IOException,
+			Exception {
+
+		for (int i = 0; i < numSteps; i++) {
+
+			if (isAWallAround()) {
+				followRhsWall();
+			} else {
+				move(getFacingDirection());
+			}
+			setCurrentLoc();
+
+			visitedOnAParimeterWalk.put(new Coord(currentLoc.xpos,
+					currentLoc.ypos), true);
+			pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
+
+			if (visitCounts.get(currentLoc) != null) {
+				visitCounts.put(currentLoc, visitCounts.get(currentLoc) + 1);
+			} else {
+				visitCounts.put(currentLoc, 1);
+			}
+
+		}
+
+	}
 
 	private void doPerimeterWalk(boolean hasHitTheNorthWall) throws Exception,
 			IOException {
@@ -1035,35 +1089,35 @@ public class Rv_curr {
 	public boolean isAWallAround() throws Exception {
 		int currX = currentLoc.xpos, currY = currentLoc.ypos;
 		// 1 east
-		if (isObsatacle(new Coord(currX + 1, currY))) {
+		if (isAWall(new Coord(currX + 1, currY))) {
 			return true;
 		}
 		// 2 southeast
-		if (isObsatacle(new Coord(currX + 1, currY + 1))) {
+		if (isAWall(new Coord(currX + 1, currY + 1))) {
 			return true;
 		}
 		// 3 south
-		if (isObsatacle(new Coord(currX, currY + 1))) {
+		if (isAWall(new Coord(currX, currY + 1))) {
 			return true;
 		}
 		// 4 southwest
-		if (isObsatacle(new Coord(currX - 1, currY + 1))) {
+		if (isAWall(new Coord(currX - 1, currY + 1))) {
 			return true;
 		}
 		// 5 west
-		if (isObsatacle(new Coord(currX - 1, currY))) {
+		if (isAWall(new Coord(currX - 1, currY))) {
 			return true;
 		}
 		// 6 northwest
-		if (isObsatacle(new Coord(currX - 1, currY - 1))) {
+		if (isAWall(new Coord(currX - 1, currY - 1))) {
 			return true;
 		}
 		// 7 north
-		if (isObsatacle(new Coord(currX, currY - 1))) {
+		if (isAWall(new Coord(currX, currY - 1))) {
 			return true;
 		}
 		// 8 northeast
-		if (isObsatacle(new Coord(currX + 1, currY - 1))) {
+		if (isAWall(new Coord(currX + 1, currY - 1))) {
 			return true;
 		}
 		return false;
@@ -1410,7 +1464,7 @@ public class Rv_curr {
 			return false;
 		}
 	}
-	
+
 	public boolean isAWall(Coord focus) throws IOException {
 
 		MapTile tile = mapTileLog.get(focus);
@@ -1418,7 +1472,7 @@ public class Rv_curr {
 			loadScanMapFromSwarmServer();
 			tile = mapTileLog.get(focus);
 		}
-		if(focus.xpos==0 || focus.ypos == 0){
+		if (focus.xpos == 0 || focus.ypos == 0) {
 			return true;
 		}
 		if (tile.getTerrain() == Terrain.ROCK
