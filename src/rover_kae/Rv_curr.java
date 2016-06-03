@@ -69,7 +69,9 @@ public class Rv_curr {
 			targetLocation = null;
 
 	Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	HashMap<Coord, Integer> visitCounts = new HashMap<Coord, Integer>();// manage
+	Map<Coord, Boolean> visited = new HashMap<Coord, Boolean>();
+	
+	//HashMap<Coord, Integer> visitCounts = new HashMap<Coord, Integer>();// manage
 	// this
 	// only
 	// after targetLoc has
@@ -491,7 +493,8 @@ public class Rv_curr {
 			currentLoc.clone();
 			cardinals[1] = true;
 
-			getToTheNorthWall();
+			//getToTheNorthWall();
+			getToTheWall("S");
 			hasHitTheNorthWall = true;
 
 			while (true) {
@@ -520,7 +523,7 @@ public class Rv_curr {
 				setCurrentLoc();
 
 				pedometer++;
-				previousLoc = currentLoc.clone();
+				visited.put(new Coord(currentLoc.xpos, currentLoc.ypos),true);
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control pedometer@[ "
@@ -569,6 +572,37 @@ public class Rv_curr {
 		hasHitTheNorthWall = false;
 		northBlockedCounter = 0;
 
+		calibrateFacingDir();
+	}
+
+	private void getToTheWall(String dir) throws IOException, InterruptedException {
+		boolean hasHitTheNorthWall = false, hasMoved = false;
+		int northBlockedCounter = 0;
+
+		while (!hasHitTheNorthWall) {
+
+			hasMoved = false;
+			hasMoved = move(dir);
+			Thread.sleep(800);
+
+			if (hasMoved) {
+
+				System.out.println("moved n, increment the counter to ["
+						+ northBlockedCounter + "]");
+			} else {
+				northBlockedCounter++;
+			}
+
+			if (northBlockedCounter > 4) {
+				System.out
+						.println("now the counter is > 4, turn on the \'hasHitThe...\'switch");
+				hasHitTheNorthWall = true;
+			}
+		}
+
+		hasHitTheNorthWall = false;
+		northBlockedCounter = 0;
+
 //		while (!hasHitTheNorthWall) {
 //
 //			hasMoved = false;
@@ -593,6 +627,7 @@ public class Rv_curr {
 		calibrateFacingDir();
 	}
 
+	
 	private void outOfMaze() throws Exception, IOException {
 
 		while (true) {
@@ -621,6 +656,7 @@ public class Rv_curr {
 		return x >= 0 && y >= 0 && x < lengthX && y < lengthY;
 	}
 
+	
 	public void sinusoidal(int waveLength, int waveHeight)
 			throws InterruptedException, IOException {
 
