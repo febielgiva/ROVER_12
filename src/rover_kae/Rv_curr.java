@@ -69,9 +69,10 @@ public class Rv_curr {
 			targetLocation = null;
 
 	Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	Map<Coord, Boolean> visited = new HashMap<Coord, Boolean>();
-	
-	//HashMap<Coord, Integer> visitCounts = new HashMap<Coord, Integer>();// manage
+	Map<Coord, Boolean> visitedOnAParimeterWalk = new HashMap<Coord, Boolean>();
+
+	HashMap<Coord, Integer> visitCounts = new HashMap<Coord, Integer>();//
+	// manage
 	// this
 	// only
 	// after targetLoc has
@@ -353,6 +354,45 @@ public class Rv_curr {
 		}
 	}
 
+	void followFebiLogic() throws IOException {
+
+		String[] directions = { "N", "E", "S", "W" };
+		switch (getFacingDirection()) {
+		case "E":
+			directions[0] = "E";
+			directions[1] = "N";
+			directions[2] = "S";
+			directions[3] = "E";
+			break;
+		case "S":
+			directions[0] = "S";
+			directions[1] = "E";
+			directions[2] = "W";
+			directions[3] = "S";
+			break;
+		case "W":
+			directions[0] = "W";
+			directions[1] = "N";
+			directions[2] = "S";
+			directions[3] = "W";
+			break;
+		case "N":
+			directions[0] = "N";
+			directions[1] = "E";
+			directions[2] = "W";
+			directions[3] = "N";
+			break;
+		default:
+			break;
+		}
+
+		for (int i = 0; i < directions.length; i++) {
+			if (move(directions[i])) {
+				return;
+			}
+		}
+	}
+
 	void headEast(MapTile[][] scanMapTiles, int centerIndex) throws IOException {
 
 		String[] directions = { "E", "S", "N" };
@@ -471,7 +511,7 @@ public class Rv_curr {
 
 		new ArrayList<String>();
 		Socket socket = null;
-		boolean astarGo = false, hasHitTheNorthWall = false;
+		boolean astarGo = false, hasHitTheNorthWall = false, isDonePerimeterWalk = false, isNoWallsAround = true;
 		int pedometer = 0;
 
 		try {
@@ -489,14 +529,24 @@ public class Rv_curr {
 			loadScanMapFromSwarmServer();
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
 			int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize = 10, waveLength = 3, waveHeight = 2;
+			Coord startLocPerimeterFollowing;
 
 			currentLoc.clone();
 			cardinals[1] = true;
 
-			//getToTheNorthWall();
+			// getToTheNorthWall();
 			getToTheWall("S");
 			hasHitTheNorthWall = true;
 
+			// record where it started the perimeter-walk
+			setCurrentLoc();
+			startLocPerimeterFollowing = currentLoc.clone();
+			// debug
+			System.out.println("sarting pos recorded: "
+					+ startLocPerimeterFollowing);
+
+			// debug --- remove it
+			isNoWallsAround = true;
 			while (true) {
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
@@ -512,25 +562,80 @@ public class Rv_curr {
 
 				// com.postScanMapTiles(currentLoc, scanMapTiles);
 
-				// go along the perimeter
-				if (hasHitTheNorthWall) {
-					if (isAWallAround()) {
-						followRhsWall();
-					} else {
-						move(getFacingDirection());
+				// --------- current -------------
+
+				if (!isDonePerimeterWalk) {
+					doTheWallIslandPerimeterWalk();
+					visitedOnAParimeterWalk.put(new Coord(currentLoc.xpos,
+							currentLoc.ypos), true);
+					if (currentLoc.equals(startLocPerimeterFollowing)) {
+						// debug
+						System.out
+								.println("we are done with the perimeter walk for now");
+						// for (Map.Entry<Coord, Boolean> tile :
+						// visitedOnAParimeterWalk.entrySet()) {
+						// System.out.println("pw visited:"+tile.getKey());
+						// }
+						// Thread.sleep(5000);
+						isDonePerimeterWalk = true;
+					}
+				} else {
+					// roverMotionLogic(cardinals, scanMapTiles, centerIndex,
+					// currentLoc.xpos, currentLoc.ypos);
+					followFebiLogic();
+					System.out.println("wall present?" + isAWallInThe4Adj());
+
+					System.out
+							.println("has not visited?"
+									+ (visitedOnAParimeterWalk.get(currentLoc) == null));
+					Thread.sleep(2000);
+					if (isAWallInThe4Adj()
+							&& visitedOnAParimeterWalk.get(currentLoc) == null) {
+						System.out
+								.println("switch from rml to w-follower (curr loc: "
+										+ currentLoc + ")");
+
+						isDonePerimeterWalk = false;
 					}
 				}
 				setCurrentLoc();
-
 				pedometer++;
-				visited.put(new Coord(currentLoc.xpos, currentLoc.ypos),true);
+				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
+
+				if (visitCounts.get(currentLoc) != null) {
+					visitCounts
+							.put(currentLoc, visitCounts.get(currentLoc) + 1);
+				} else {
+					visitCounts.put(currentLoc, 1);
+				}
+
+				// ------------------------------------
+
+				// --------- final version draft -------------
+				// if (!isDonePerimeterWalk) {
+				// doPerimeterWalk(hasHitTheNorthWall);
+				// }else if(isNoWallsAround){
+				// roverMotionLogic(cardinals, scanMapTiles, centerIndex,
+				// currentLoc.xpos, currentLoc.ypos);
+				// if(isAWallAround()){
+				// calibrateFacingDir();
+				// startLocPerimeterFollowing = currentLoc.clone();
+				// }
+				// }else{
+				//
+				// followRhsWall();
+				// if(currentLoc.equals(startLocPerimeterFollowing)){
+				// isNoWallsAround = true;
+				// }
+				// }
+				// ------------------------------------
 
 				System.out
 						.println("ROVER_12 ------------ bottom process control pedometer@[ "
 								+ pedometer + " ]--------------");
 				Thread.sleep(sleepTime);
 
-			}
+			}// end while loop
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -543,6 +648,27 @@ public class Rv_curr {
 			}
 		}
 	}// END of run()
+
+	private void doPerimeterWalk(boolean hasHitTheNorthWall) throws Exception,
+			IOException {
+		// go along the perimeter
+		if (hasHitTheNorthWall) {
+			if (isAWallAround()) {
+				followRhsWall();
+			} else {
+				move(getFacingDirection());
+			}
+		}
+	}
+
+	private void doTheWallIslandPerimeterWalk() throws Exception, IOException {
+
+		if (isAWallAround()) {
+			followRhsWall();
+		} else {
+			move(getFacingDirection());
+		}
+	}
 
 	private void getToTheNorthWall() throws IOException, InterruptedException {
 		boolean hasHitTheNorthWall = false, hasMoved = false;
@@ -575,7 +701,8 @@ public class Rv_curr {
 		calibrateFacingDir();
 	}
 
-	private void getToTheWall(String dir) throws IOException, InterruptedException {
+	private void getToTheWall(String dir) throws IOException,
+			InterruptedException {
 		boolean hasHitTheNorthWall = false, hasMoved = false;
 		int northBlockedCounter = 0;
 
@@ -603,31 +730,30 @@ public class Rv_curr {
 		hasHitTheNorthWall = false;
 		northBlockedCounter = 0;
 
-//		while (!hasHitTheNorthWall) {
-//
-//			hasMoved = false;
-//			hasMoved = move("W");
-//			Thread.sleep(800);
-//
-//			if (hasMoved) {
-//
-//				System.out.println("moved n, increment the counter to ["
-//						+ northBlockedCounter + "]");
-//			} else {
-//				northBlockedCounter++;
-//			}
-//
-//			if (northBlockedCounter > 4) {
-//				System.out
-//						.println("now the counter is > 4, turn on the \'hasHitThe...\'switch");
-//				hasHitTheNorthWall = true;
-//			}
-//		}
+		// while (!hasHitTheNorthWall) {
+		//
+		// hasMoved = false;
+		// hasMoved = move("W");
+		// Thread.sleep(800);
+		//
+		// if (hasMoved) {
+		//
+		// System.out.println("moved n, increment the counter to ["
+		// + northBlockedCounter + "]");
+		// } else {
+		// northBlockedCounter++;
+		// }
+		//
+		// if (northBlockedCounter > 4) {
+		// System.out
+		// .println("now the counter is > 4, turn on the \'hasHitThe...\'switch");
+		// hasHitTheNorthWall = true;
+		// }
+		// }
 
 		calibrateFacingDir();
 	}
 
-	
 	private void outOfMaze() throws Exception, IOException {
 
 		while (true) {
@@ -640,13 +766,6 @@ public class Rv_curr {
 			}
 			setCurrentLoc();
 
-			// count how many times the rover visited this tile
-			if (visitCounts.get(currentLoc) != null) {
-				visitCounts.put(currentLoc, (visitCounts.get(currentLoc) + 1));
-			} else {
-				visitCounts.put(currentLoc, 1);
-			}
-
 			Thread.sleep(sleepTime);
 		}
 	}
@@ -656,7 +775,6 @@ public class Rv_curr {
 		return x >= 0 && y >= 0 && x < lengthX && y < lengthY;
 	}
 
-	
 	public void sinusoidal(int waveLength, int waveHeight)
 			throws InterruptedException, IOException {
 
@@ -798,7 +916,7 @@ public class Rv_curr {
 			}
 		}
 		// debug
-		debugPrintMapTileArrayWithCurrPos(mapTileLog, loc);
+		// debugPrintMapTileArrayWithCurrPos(mapTileLog, loc);
 		System.out.println("loc:" + loc + "\tcounter:" + counter);
 		// try {
 		// Thread.sleep(5000);
@@ -846,7 +964,7 @@ public class Rv_curr {
 				} else {
 					loadScanMapFromSwarmServer();
 				}
-				Thread.sleep(sleepTime + 300);
+				Thread.sleep(sleepTime);
 			}
 		}
 	}
@@ -941,6 +1059,31 @@ public class Rv_curr {
 		if (isObsatacle(new Coord(currX + 1, currY - 1))) {
 			return true;
 		}
+		return false;
+	}
+
+	public boolean isAWallInThe4Adj() throws Exception {
+		int currX = currentLoc.xpos, currY = currentLoc.ypos;
+		// east
+		if (isObsatacle(new Coord(currX + 1, currY))) {
+			return true;
+		}
+
+		// south
+		if (isObsatacle(new Coord(currX, currY + 1))) {
+			return true;
+		}
+
+		// west
+		if (isObsatacle(new Coord(currX - 1, currY))) {
+			return true;
+		}
+
+		// north
+		if (isObsatacle(new Coord(currX, currY - 1))) {
+			return true;
+		}
+
 		return false;
 	}
 
@@ -2198,24 +2341,6 @@ public class Rv_curr {
 		}
 		return false;
 	}
-
-	// ****** under construction
-	// public Coord getNextTargetCoord() {
-	//
-	// boolean isTargetLocReached = !mapTileLog.containsKey(targetLocation);
-	// int searchSize = 30, nullCounter = 0;
-	// // Coord nextTarget= new Coord(randomNum(min, max));
-	//
-	// if (!visited(targetLocation)) {
-	// return targetLocation;
-	// }
-	//
-	// // while()
-	// if (visitCounts.size() < 1) {
-	//
-	// }
-	// return null;
-	// }
 
 	boolean[] randomPickMotion(boolean[] cardinals, int centerIndex,
 			MapTile[][] scanMapTiles) {
