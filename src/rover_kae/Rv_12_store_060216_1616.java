@@ -541,7 +541,7 @@ public class Rv_12_store_060216_1616 {
 				// outOfMaze();
 				// }
 
-				// com.postScanMapTiles(currentLoc, scanMapTiles);
+				// 
 
 				// go along the perimeter
 				if (hasHitTheNorthWall) {

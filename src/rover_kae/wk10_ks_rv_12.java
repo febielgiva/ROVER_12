@@ -577,14 +577,16 @@ public class wk10_ks_rv_12 {
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 				// System.out.println("BEFORE: " + currentLoc + " | facing "
 				// + getFacingDirection());
-				loadScanMapFromSwarmServer();
+
 				// ***** do a SCAN ******
-				if (pedometer % 4 == 3) {
-					
-					getUndiscoveredArea(searchSize);
-				}
-				// post what's been scanned onto the corp's communication device
+				// if (pedometer % 4 == 3) {
+				loadScanMapFromSwarmServer();
+				getUndiscoveredArea(searchSize);
+//				  System.out.println("post message: " + com.postScanMapTiles(currentLoc, scanMapTiles));
+				// post what's been scanned onto the corp's communication
+				// device
 				com.postScanMapTiles(currentLoc, scanMapTiles);
+				// }
 
 				// --------- current -------------
 
@@ -689,7 +691,7 @@ public class wk10_ks_rv_12 {
 				// }
 				// ------------------------------------
 
-//				debugPrintMapTileArrayWithCurrPos(mapTileLog, currentLoc);
+				// debugPrintMapTileArrayWithCurrPos(mapTileLog, currentLoc);
 				if (pedometer % 10 == 0) {
 					System.out.println("ROVER_12 ------------ ends iteration[ "
 							+ pedometer + " ]--------------");
@@ -1759,7 +1761,15 @@ public class wk10_ks_rv_12 {
 		String jsonScanMapString = jsonScanMap.toString();
 
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
-
+// debug
+//		System.out.println("curr loc:"+ currentLoc);
+//		System.out.println(jsonScanMapString);
+//		try {
+//			Thread.sleep(10000);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		// myJSONStringBackupofMap = jsonScanMapString;
 		loadMapTilesOntoGlobalMapLog(scanMap.getScanMap(), scanLoc);
 	}
@@ -1778,10 +1788,11 @@ public class wk10_ks_rv_12 {
 			currentLoc = extractLocationFromString(line);
 
 		}
-		//System.out.println(rovername + " currentLoc at start: " + currentLoc);
+		// System.out.println(rovername + " currentLoc at start: " +
+		// currentLoc);
 
-//		out.println("START_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
-//		line = in.readLine();
+		// out.println("START_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
+		// line = in.readLine();
 
 		if (line == null || line == "") {
 			System.out.println("ROVER_12 check connection to server");
@@ -1812,7 +1823,8 @@ public class wk10_ks_rv_12 {
 			currentLoc = extractLocationFromString(line);
 
 		}
-		//System.out.println(rovername + " currentLoc at start: " + currentLoc);
+		// System.out.println(rovername + " currentLoc at start: " +
+		// currentLoc);
 
 		out.println("TARGET_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
 		line = in.readLine();
@@ -2188,11 +2200,11 @@ public class wk10_ks_rv_12 {
 					hasR = ptrScanMap[x][y].getHasRover();
 
 					// debug
-					if(sci == Science.CRYSTAL){
-						System.out.println(sci + "\t"+scanLoc);
-						
+					if (sci == Science.CRYSTAL) {
+						System.out.println(sci + "\t" + scanLoc);
+
 					}
-					
+
 					tempTile = new MapTile(ter, sci, elev, hasR);
 					mapTileLog.put(tempCoord, tempTile);
 				}
@@ -2220,10 +2232,10 @@ public class wk10_ks_rv_12 {
 		wr.close();
 
 		int responseCode = con.getResponseCode();
-//		System.out.println("\nSending 'POST' request to URL : " + url);
+		// System.out.println("\nSending 'POST' request to URL : " + url);
 		System.out.println("Post parameters : " + jsonObj.toString());
 		Thread.sleep(5000);
-//		System.out.println("Response Code : " + responseCode);
+		// System.out.println("Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(
 				con.getInputStream()));
@@ -2777,15 +2789,14 @@ public class wk10_ks_rv_12 {
 		// take in first input argument as a SERVER_ADDRESS value
 		String serverAddress = "", url = "", corps_secret = "";
 		for (String s : args) {
-//			serverAddress = s;
-		//	System.out.println(s);
+			// serverAddress = s;
+			// System.out.println(s);
 		}
-		
-		
+
 		if (args.length >= 1 && args[0] != null) {
 			serverAddress = args[0];
 		}
-		
+
 		if (args.length >= 2 && args[1] != null) {
 			url = args[1];
 		}
