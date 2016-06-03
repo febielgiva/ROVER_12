@@ -33,7 +33,7 @@ public class Test__curr {
 	@Test
 	public void testRunDiffMaps() throws Exception {
 		TestSwarmServer ss = new TestSwarmServer();
-		Rv_curr rv = new Rv_curr();
+		wk10_ks_rv_12 rv = new wk10_ks_rv_12();
 
 		 ss.runServer("test_MapDefault.txt");
 		 //ss.runServer("rv12_test.txt");

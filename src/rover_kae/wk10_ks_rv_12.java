@@ -51,7 +51,7 @@ import supportTools.RoverMotionUtil;
  * publishing their code examples
  */
 
-public class Rv_curr {
+public class wk10_ks_rv_12 {
 
 	BufferedReader in;
 	PrintWriter out;
@@ -67,19 +67,9 @@ public class Rv_curr {
 	static String myJSONStringBackupofMap;
 	Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
-
 	Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
 	Map<Coord, Boolean> visitedOnAParimeterWalk = new HashMap<Coord, Boolean>();
-
-	HashMap<Coord, Integer> visitCounts = new HashMap<Coord, Integer>();//
-	// manage
-	// this
-	// only
-	// after targetLoc has
-	// been
-	// visited
-	// Map<Coord, Path> pathMap = new HashMap<Coord, Path>();
-	// Deque<Coord> pathStack = new ArrayDeque<Coord>();
+	HashMap<Coord, Integer> visitCounts = new HashMap<Coord, Integer>();
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 
 	Random rd = new Random();
@@ -87,7 +77,11 @@ public class Rv_curr {
 	boolean isTargetLocReached = false;
 	Coord nextTarget;
 
-	public Rv_curr() {
+	// Green Corp variables
+	String url = "http://23.251.155.186:3000/api";
+	String corp_secret = "0FSj7Pn23t";
+
+	public wk10_ks_rv_12() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
@@ -98,13 +92,23 @@ public class Rv_curr {
 							// will cut connection if it is too small
 	}
 
-	public Rv_curr(String serverAddress) {
+	public wk10_ks_rv_12(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
 		SERVER_ADDRESS = serverAddress;
 		sleepTime = 600; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
+	}
+
+	public wk10_ks_rv_12(String serverAddress, String url, String corp_secretIn) {
+		// constructor
+		System.out.println("ROVER_12 rover object constructed");
+		rovername = "ROVER_12";
+		SERVER_ADDRESS = serverAddress;
+		sleepTime = 600;
+		this.url = url;
+		corp_secret = corp_secretIn;
 	}
 
 	void roverMotionLogic(boolean[] cardinals, MapTile[][] scanMapTiles,
@@ -276,6 +280,7 @@ public class Rv_curr {
 		}
 	}
 
+	// left hand side wall-follower
 	void followLhsWall() throws IOException {
 
 		String[] directions = { "N", "E", "S", "W" };
@@ -315,6 +320,7 @@ public class Rv_curr {
 		}
 	}
 
+	// right hand side wall-follower
 	void followRhsWall() throws IOException {
 
 		String[] directions = { "S", "E", "N", "W" };
@@ -354,7 +360,9 @@ public class Rv_curr {
 		}
 	}
 
-	void followFebiLogic() throws IOException {
+	void roverMotionLogicShort() throws IOException {
+		// same basic structure of logic as the original roverMotionLogic
+		// removed the parts that are not necessary at the moment
 
 		String[] directions = { "N", "E", "S", "W" };
 		switch (getFacingDirection()) {
@@ -500,25 +508,36 @@ public class Rv_curr {
 						"W")
 				&& isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 						"N");
-
 	}
 
 	void run() throws IOException, InterruptedException {
 
-		String url = "http://23.251.155.186:3000/api";
-		String corp_secret = "0FSj7Pn23t";
+		// prep corp's communication process
+		if (url == null || url.equals("")) {
+			url = "http://23.251.155.186:3000/api";
+		}
+		if (corp_secret == null || corp_secret.equals("")) {
+			corp_secret = "0FSj7Pn23t";
+		}
 		Communication com = new Communication(url, rovername, corp_secret);
 
+		// initialize local variables
 		new ArrayList<String>();
 		Socket socket = null;
 		boolean astarGo = false, hasHitTheNorthWall = false, isDonePerimeterWalk = false, isNoWallsAround = true;
 		int pedometer = 0;
+		Coord startLocPerimeterFollowing;
 
 		try {
 
+			// debug
+			System.out.println("corp url: " + url);
+			System.out.println("corp secret: " + corp_secret);
+			System.out.println("swermserver addr: " + SERVER_ADDRESS);
+			// Thread.sleep(10000);
+
 			// ***** connect to server ******
 			socket = connectToSwarmServer();
-
 			getEquipment();
 
 			// ***** initialize critical locations ******
@@ -526,19 +545,24 @@ public class Rv_curr {
 			targetLocation = requestTargetLoc(socket);
 			nextTarget = targetLocation.clone();
 
+			System.out.println("ROVER_12 Global Start Position: "
+					+ rovergroupStartPosition);
+			System.out.println("ROVER_12 Global Target Position: "
+					+ targetLocation);
+
+			// *****
 			loadScanMapFromSwarmServer();
 			MapTile[][] scanMapTiles = scanMap.getScanMap();
 			int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize = 10, waveLength = 3, waveHeight = 2;
-			Coord startLocPerimeterFollowing;
 
 			currentLoc.clone();
 			cardinals[1] = true;
 
 			// getToTheNorthWall();
-			getToTheWall("S");
-			hasHitTheNorthWall = true;
+			// getToTheWall("S");
+			// hasHitTheNorthWall = true;
 
-			// record where it started the perimeter-walk
+			// record the start of a perimeter-walk
 			setCurrentLoc();
 			startLocPerimeterFollowing = currentLoc.clone();
 			// debug
@@ -551,23 +575,23 @@ public class Rv_curr {
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
-				System.out.println("BEFORE: " + currentLoc + " | facing "
-						+ getFacingDirection());
-
+				// System.out.println("BEFORE: " + currentLoc + " | facing "
+				// + getFacingDirection());
+				loadScanMapFromSwarmServer();
 				// ***** do a SCAN ******
 				if (pedometer % 4 == 3) {
-					loadScanMapFromSwarmServer();
+					
 					getUndiscoveredArea(searchSize);
 				}
-
-				// com.postScanMapTiles(currentLoc, scanMapTiles);
+				// post what's been scanned onto the corp's communication device
+				com.postScanMapTiles(currentLoc, scanMapTiles);
 
 				// --------- current -------------
 
 				if (!isDonePerimeterWalk) {
 
 					// debug
-					System.out.println("(wf)");
+					// System.out.println("(wf)");
 
 					doTheWallIslandPerimeterWalk();
 					visitedOnAParimeterWalk.put(new Coord(currentLoc.xpos,
@@ -575,8 +599,8 @@ public class Rv_curr {
 
 					if (currentLoc.equals(startLocPerimeterFollowing)) {
 						// debug
-						System.out
-								.println("(wf)we are done with the perimeter walk for now");
+						// System.out
+						// .println("(wf)we are done with the perimeter walk for now");
 						// for (Map.Entry<Coord, Boolean> tile :
 						// visitedOnAParimeterWalk.entrySet()) {
 						// System.out.println("pw visited:"+tile.getKey());
@@ -589,7 +613,7 @@ public class Rv_curr {
 					}
 				} else {
 
-					followFebiLogic();
+					roverMotionLogicShort();
 
 					if (isEastObsatacle(currentLoc)
 							&& isNorthObsatacle(currentLoc)
@@ -615,18 +639,18 @@ public class Rv_curr {
 							setCurrentLoc();
 						}
 					}
-					System.out
-							.println("(fl)wall present?" + isAWallInThe4Adj());
-
-					System.out
-							.println("(fl)has not visited?"
-									+ (visitedOnAParimeterWalk.get(currentLoc) == null));
+					// System.out
+					// .println("(fl)wall present?" + isAWallInThe4Adj());
+					//
+					// System.out
+					// .println("(fl)has not visited?"
+					// + (visitedOnAParimeterWalk.get(currentLoc) == null));
 					// Thread.sleep(2000);
 					if (isAWallInThe4Adj()
 							&& visitedOnAParimeterWalk.get(currentLoc) == null) {
-						System.out
-								.println("(fl)switch from rml to w-follower (curr loc: "
-										+ currentLoc + ")");
+						// System.out
+						// .println("(fl)switch from rml to w-follower (curr loc: "
+						// + currentLoc + ")");
 
 						isDonePerimeterWalk = false;
 						startLocPerimeterFollowing = currentLoc.clone();
@@ -637,12 +661,12 @@ public class Rv_curr {
 				pedometer++;
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 
-				if (visitCounts.get(currentLoc) != null) {
-					visitCounts
-							.put(currentLoc, visitCounts.get(currentLoc) + 1);
-				} else {
-					visitCounts.put(currentLoc, 1);
-				}
+				// if (visitCounts.get(currentLoc) != null) {
+				// visitCounts
+				// .put(currentLoc, visitCounts.get(currentLoc) + 1);
+				// } else {
+				// visitCounts.put(currentLoc, 1);
+				// }
 
 				// ------------------------------------
 
@@ -665,9 +689,11 @@ public class Rv_curr {
 				// }
 				// ------------------------------------
 
-				System.out
-						.println("ROVER_12 ------------ bottom process control pedometer@[ "
-								+ pedometer + " ]--------------");
+//				debugPrintMapTileArrayWithCurrPos(mapTileLog, currentLoc);
+				if (pedometer % 10 == 0) {
+					System.out.println("ROVER_12 ------------ ends iteration[ "
+							+ pedometer + " ]--------------");
+				}
 				Thread.sleep(sleepTime);
 
 			}// end while loop
@@ -947,8 +973,9 @@ public class Rv_curr {
 				tempPos = new Coord(i, j);
 				if ((numReturned = countUndiscoveredTiles(tempPos, searchSize)) >= threshold) {
 					// debug
-					System.out.println("numReturned @(" + i + ", " + j + "): "
-							+ numReturned);
+					// System.out.println("numReturned @(" + i + ", " + j +
+					// "): "
+					// + numReturned);
 					// try {
 					// Thread.sleep(10000);
 					// } catch (InterruptedException e) {
@@ -978,7 +1005,7 @@ public class Rv_curr {
 		}
 		// debug
 		// debugPrintMapTileArrayWithCurrPos(mapTileLog, loc);
-		System.out.println("loc:" + loc + "\tcounter:" + counter);
+		// System.out.println("loc:" + loc + "\tcounter:" + counter);
 		// try {
 		// Thread.sleep(5000);
 		// } catch (InterruptedException e) {
@@ -1740,7 +1767,7 @@ public class Rv_curr {
 	Coord requestStartLoc(Socket soc) throws IOException {
 
 		// **** Request Rover Location from SwarmServer ****
-		out.println("LOC");
+		out.println("START_LOC");
 		line = in.readLine();
 		if (line == null) {
 			System.out.println(rovername + " check connection to server");
@@ -1751,10 +1778,10 @@ public class Rv_curr {
 			currentLoc = extractLocationFromString(line);
 
 		}
-		System.out.println(rovername + " currentLoc at start: " + currentLoc);
+		//System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
-		out.println("START_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
-		line = in.readLine();
+//		out.println("START_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
+//		line = in.readLine();
 
 		if (line == null || line == "") {
 			System.out.println("ROVER_12 check connection to server");
@@ -1765,6 +1792,8 @@ public class Rv_curr {
 		System.out.println();
 		if (line.startsWith("START")) {
 			rovergroupStartPosition = extractStartLOC(line);
+			// debug
+			System.out.println(rovergroupStartPosition);
 		}
 		return rovergroupStartPosition;
 	}
@@ -1783,7 +1812,7 @@ public class Rv_curr {
 			currentLoc = extractLocationFromString(line);
 
 		}
-		System.out.println(rovername + " currentLoc at start: " + currentLoc);
+		//System.out.println(rovername + " currentLoc at start: " + currentLoc);
 
 		out.println("TARGET_LOC " + currentLoc.xpos + " " + currentLoc.ypos);
 		line = in.readLine();
@@ -1867,10 +1896,10 @@ public class Rv_curr {
 		sStr = sStr.substring(11);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
-			System.out.println("extracted xStr " + xStr);
+			// System.out.println("extracted xStr " + xStr);
 
 			String yStr = sStr.substring(sStr.lastIndexOf(" ") + 1);
-			System.out.println("extracted yStr " + yStr);
+			// System.out.println("extracted yStr " + yStr);
 			return new Coord(Integer.parseInt(xStr), Integer.parseInt(yStr));
 		}
 		return null;
@@ -2158,6 +2187,12 @@ public class Rv_curr {
 					elev = ptrScanMap[x][y].getElevation();
 					hasR = ptrScanMap[x][y].getHasRover();
 
+					// debug
+					if(sci == Science.CRYSTAL){
+						System.out.println(sci + "\t"+scanLoc);
+						
+					}
+					
 					tempTile = new MapTile(ter, sci, elev, hasR);
 					mapTileLog.put(tempCoord, tempTile);
 				}
@@ -2185,9 +2220,10 @@ public class Rv_curr {
 		wr.close();
 
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
+//		System.out.println("\nSending 'POST' request to URL : " + url);
 		System.out.println("Post parameters : " + jsonObj.toString());
-		System.out.println("Response Code : " + responseCode);
+		Thread.sleep(5000);
+//		System.out.println("Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(
 				con.getInputStream()));
@@ -2211,11 +2247,11 @@ public class Rv_curr {
 		int currX = currentLoc.xpos, currY = currentLoc.ypos;
 		Coord prevLoc = currentLoc.clone();
 
-		System.out.print("direction taken in the argument: " + dir + "\t");
+		// System.out.print("direction taken in the argument: " + dir + "\t");
 		switch (dir) {
 		case "E":
 			if (!isObsatacle(new Coord(currX + 1, currY))) {
-				System.out.println("(1)in move(), go east");
+				// System.out.println("(1)in move(), go east");
 				moveEast();
 				setCurrentLoc();
 				if (prevLoc.equals(currentLoc)) {
@@ -2227,7 +2263,7 @@ public class Rv_curr {
 			break;
 		case "W":
 			if (!isObsatacle(new Coord(currX - 1, currY))) {
-				System.out.println("(2)in move(), go west");
+				// System.out.println("(2)in move(), go west");
 				moveWest();
 				setCurrentLoc();
 				if (prevLoc.equals(currentLoc)) {
@@ -2239,7 +2275,7 @@ public class Rv_curr {
 			break;
 		case "N":
 			if (!isObsatacle(new Coord(currX, currY - 1))) {
-				System.out.println("(3)in move(), go north");
+				// System.out.println("(3)in move(), go north");
 				moveNorth();
 				setCurrentLoc();
 				if (prevLoc.equals(currentLoc)) {
@@ -2251,7 +2287,7 @@ public class Rv_curr {
 			break;
 		case "S":
 			if (!isObsatacle(new Coord(currX, currY + 1))) {
-				System.out.println("(4)in move(), go south");
+				// System.out.println("(4)in move(), go south");
 				moveSouth();
 				setCurrentLoc();
 				if (prevLoc.equals(currentLoc)) {
@@ -2269,7 +2305,7 @@ public class Rv_curr {
 
 	void moveWest() {
 		out.println("MOVE W");
-		System.out.println("ROVER_12 request move W");
+		// System.out.println("ROVER_12 request move W");
 		cardinals[0] = false; // S
 		cardinals[1] = false; // E
 		cardinals[2] = false; // N
@@ -2278,7 +2314,7 @@ public class Rv_curr {
 
 	void moveNorth() {
 		out.println("MOVE N");
-		System.out.println("ROVER_12 request move N");
+		// System.out.println("ROVER_12 request move N");
 		cardinals[0] = false; // S
 		cardinals[1] = false; // E
 		cardinals[2] = true; // N
@@ -2287,7 +2323,7 @@ public class Rv_curr {
 
 	void moveSouth() {
 		out.println("MOVE S");
-		System.out.println("ROVER_12 request move S");
+		// System.out.println("ROVER_12 request move S");
 		cardinals[0] = true; // S
 		cardinals[1] = false; // E
 		cardinals[2] = false; // N
@@ -2296,7 +2332,7 @@ public class Rv_curr {
 
 	void moveEast() {
 		out.println("MOVE E");
-		System.out.println("ROVER_12 request move E");
+		// System.out.println("ROVER_12 request move E");
 		cardinals[0] = false; // S
 		cardinals[1] = true; // E
 		cardinals[2] = false; // N
@@ -2309,7 +2345,6 @@ public class Rv_curr {
 	}
 
 	void sendJSONToServer(JSONObject obj, String URL) {
-		// TODO need testing
 		try {
 			HttpClient client = HttpClientBuilder.create().build();
 			HttpPost post = new HttpPost(URL);
@@ -2336,6 +2371,7 @@ public class Rv_curr {
 		return rd.nextInt(max + 1) + min;
 	}
 
+	// retreives the current direction the rover is facing in string
 	public String getFacingDirection() {
 		if (cardinals[0] == true) {
 			return "S";
@@ -2347,7 +2383,6 @@ public class Rv_curr {
 			return "N";
 		}
 		return "W";
-
 	}
 
 	void shuffuleArray(String[] directions) {
@@ -2532,6 +2567,8 @@ public class Rv_curr {
 		return false;
 	}
 
+	// wave like motion path, the pattern will be adjusted to the present
+	// contour (Right -> Left)
 	private void sinusoidalLeft(int waveLength, int waveHeight)
 			throws InterruptedException, IOException {
 		int steps, sleeptime = 900;
@@ -2561,6 +2598,8 @@ public class Rv_curr {
 		}
 	}
 
+	// wave like motion path, the pattern will be adjusted to the present
+	// contour (Left -> Right)
 	private void sinusoidalRight(int waveLength, int waveHeight)
 			throws InterruptedException, IOException {
 		int steps, sleeptime = 900;
@@ -2591,6 +2630,8 @@ public class Rv_curr {
 		}
 	}
 
+	// wave like motion path, the pattern will be adjusted to the present
+	// contour (North -> South)
 	private void sinusoidalDown(int waveLength, int waveHeight)
 			throws InterruptedException, IOException {
 		int steps, sleeptime = 900;
@@ -2620,6 +2661,8 @@ public class Rv_curr {
 		}
 	}
 
+	// wave like motion path, the pattern will be adjusted to the present
+	// contour (South -> North)
 	private void sinusoidalUp(int waveLength, int waveHeight)
 			throws InterruptedException, IOException {
 		int steps, sleeptime = 900;
@@ -2649,7 +2692,7 @@ public class Rv_curr {
 		}
 	}
 
-	// return the nearest wall coord
+	// search the nearest wall(Rock, Sand, or Null tile) spiral-ward
 	public Coord outwardSpiralSearch(Coord curr) throws Exception {
 
 		int searchSize = 10;
@@ -2732,12 +2775,27 @@ public class Rv_curr {
 	public static void main(String[] args) throws Exception {
 
 		// take in first input argument as a SERVER_ADDRESS value
-		String serverAddress = "";
+		String serverAddress = "", url = "", corps_secret = "";
 		for (String s : args) {
-			serverAddress = s;
+//			serverAddress = s;
+		//	System.out.println(s);
+		}
+		
+		
+		if (args.length >= 1 && args[0] != null) {
+			serverAddress = args[0];
+		}
+		
+		if (args.length >= 2 && args[1] != null) {
+			url = args[1];
+		}
+		if (args.length >= 3 && args[2] != null) {
+			corps_secret = args[2];
+			System.out.println("corp secret in main():" + corps_secret);
 		}
 
-		Rv_curr client = new Rv_curr(serverAddress);
+		wk10_ks_rv_12 client = new wk10_ks_rv_12(serverAddress, url,
+				corps_secret);
 		client.run();
 	}
 }
