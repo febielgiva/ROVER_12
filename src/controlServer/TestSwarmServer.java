@@ -573,11 +573,11 @@ public class TestSwarmServer {
 
 			//Thread.sleep(500);
 			// debug status out
-			System.out
-					.println("******* System.currentTimeMillis() - thisRover.getRoverLastMoveTime() = "
-							+ (System.currentTimeMillis() - thisRover
-									.getRoverLastMoveTime()));
-			// ********* WHEELS **********
+//			System.out
+//					.println("******* System.currentTimeMillis() - thisRover.getRoverLastMoveTime() = "
+//							+ (System.currentTimeMillis() - thisRover
+//									.getRoverLastMoveTime()));
+//			// ********* WHEELS **********
 			// Respond based on the rover drive type AND
 			// Check that is has been at a minimum of "time limeit per second"
 			// seconds (WHEEL velocity) since the rover last moved
