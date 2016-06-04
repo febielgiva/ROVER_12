@@ -34,7 +34,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import common.Communication;
+import common.Communication_trash;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
