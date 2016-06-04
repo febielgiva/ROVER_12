@@ -356,34 +356,38 @@ public class Rv_curr {
 	}
 
 	void roverMotionLogicShort() throws IOException {
-	// same basic structure of logic as the original roverMotionLogic
-	// removed the parts that are not necessary at the moment
-		
-		String[] directions = { "N", "E", "S", "W" };
+		// same basic structure of logic as the original roverMotionLogic
+		// removed the parts that are not necessary at the moment
+
+		String[] directions = { "N", "E", "W", "N", "S" };
 		switch (getFacingDirection()) {
 		case "E":
 			directions[0] = "E";
 			directions[1] = "N";
 			directions[2] = "S";
 			directions[3] = "E";
+			directions[4] = "W";
 			break;
 		case "S":
 			directions[0] = "S";
 			directions[1] = "E";
 			directions[2] = "W";
 			directions[3] = "S";
+			directions[4] = "N";
 			break;
 		case "W":
 			directions[0] = "W";
 			directions[1] = "N";
 			directions[2] = "S";
 			directions[3] = "W";
+			directions[4] = "E";
 			break;
 		case "N":
 			directions[0] = "N";
 			directions[1] = "E";
 			directions[2] = "W";
 			directions[3] = "N";
+			directions[4] = "S";
 			break;
 		default:
 			break;
