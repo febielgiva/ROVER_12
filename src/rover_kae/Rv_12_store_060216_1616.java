@@ -34,7 +34,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import common.Communication;
+import common.Communication_trash;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
@@ -465,7 +465,7 @@ public class Rv_12_store_060216_1616 {
 
 		String url = "http://23.251.155.186:3000/api";
 		String corp_secret = "0FSj7Pn23t";
-		Communication com = new Communication(url, rovername, corp_secret);
+		Communication_trash com = new Communication_trash(url, rovername, corp_secret);
 
 		new ArrayList<String>();
 		Socket socket = null;

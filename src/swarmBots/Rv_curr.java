@@ -533,8 +533,8 @@ public class Rv_curr {
 
 			// ***** 
 			loadScanMapFromSwarmServer();
-			MapTile[][] scanMapTiles = scanMap.getScanMap();
-			int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize = 10, waveLength = 3, waveHeight = 2;
+			//MapTile[][] scanMapTiles = scanMap.getScanMap();
+			//int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize = 10, waveLength = 3, waveHeight = 2;
 			
 
 			currentLoc.clone();
@@ -563,10 +563,10 @@ public class Rv_curr {
 				// ***** do a SCAN ******
 				if (pedometer % 4 == 3) {
 					loadScanMapFromSwarmServer();
-					getUndiscoveredArea(searchSize);
+					//getUndiscoveredArea(searchSize);
 				}
 				// post what's been scanned onto the corp's communication device
-				com.postScanMapTiles(currentLoc, scanMapTiles);
+				com.postScanMapTiles(currentLoc, scanMap.getScanMap());
 
 				// --------- current -------------
 

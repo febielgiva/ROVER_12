@@ -68,7 +68,7 @@ public class wk10_ks_rv_12 {
 	Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
 	Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	Map<Coord, Boolean> visitedOnAParimeterWalk = new HashMap<Coord, Boolean>();
+	Map<Coord, Boolean> visitedOnAPerimeterWalk = new HashMap<Coord, Boolean>();
 	HashMap<Coord, Integer> visitCounts = new HashMap<Coord, Integer>();
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 
@@ -409,7 +409,7 @@ public class wk10_ks_rv_12 {
 		for (int i = 0; i < directions.length; i++) {
 			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 					directions[i])) {
-				System.out.println("(wall follower) move " + directions[i]);
+				//System.out.println("(wall follower) move " + directions[i]);
 				hasMoved = move(directions[i]);
 				System.out.println("(WF) has moved? " + hasMoved);
 				if (hasMoved) {
@@ -519,7 +519,8 @@ public class wk10_ks_rv_12 {
 		if (corp_secret == null || corp_secret.equals("")) {
 			corp_secret = "0FSj7Pn23t";
 		}
-		Communication com = new Communication(url, rovername, corp_secret);
+		Communication com = new Communication(url, rovername,
+				corp_secret);
 
 		// initialize local variables
 		new ArrayList<String>();
@@ -552,9 +553,7 @@ public class wk10_ks_rv_12 {
 
 			// *****
 			loadScanMapFromSwarmServer();
-			MapTile[][] scanMapTiles = scanMap.getScanMap();
-			int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize = 10, waveLength = 3, waveHeight = 2;
-
+			
 			currentLoc.clone();
 			cardinals[1] = true;
 
@@ -563,7 +562,7 @@ public class wk10_ks_rv_12 {
 			// hasHitTheNorthWall = true;
 
 			// record the start of a perimeter-walk
-			setCurrentLoc();
+//			setCurrentLoc();
 			startLocPerimeterFollowing = currentLoc.clone();
 			// debug
 			System.out.println("sarting pos recorded: "
@@ -573,19 +572,23 @@ public class wk10_ks_rv_12 {
 			isNoWallsAround = true;
 			while (true) {
 
-				setCurrentLoc(); // BEFORE the move() in this iteration
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 				// System.out.println("BEFORE: " + currentLoc + " | facing "
 				// + getFacingDirection());
 
 				// ***** do a SCAN ******
 				// if (pedometer % 4 == 3) {
-				loadScanMapFromSwarmServer();
-				getUndiscoveredArea(searchSize);
-//				  System.out.println("post message: " + com.postScanMapTiles(currentLoc, scanMapTiles));
+				loadScanMapFromSwarmServer();// internally sets the current
+												// location
+				//getUndiscoveredArea(searchSize);
+				//debugPrintMapTileArrayText(scanMap.getScanMap(), 11);
+				// System.out.println("post message: " +
+				
+				
+				com.postScanMapTiles(currentLoc, scanMap.getScanMap());
 				// post what's been scanned onto the corp's communication
 				// device
-				com.postScanMapTiles(currentLoc, scanMapTiles);
+				// com.postScanMapTiles(currentLoc, scanMapTiles);
 				// }
 
 				// --------- current -------------
@@ -596,18 +599,10 @@ public class wk10_ks_rv_12 {
 					// System.out.println("(wf)");
 
 					doTheWallIslandPerimeterWalk();
-					visitedOnAParimeterWalk.put(new Coord(currentLoc.xpos,
+					visitedOnAPerimeterWalk.put(new Coord(currentLoc.xpos,
 							currentLoc.ypos), true);
 
 					if (currentLoc.equals(startLocPerimeterFollowing)) {
-						// debug
-						// System.out
-						// .println("(wf)we are done with the perimeter walk for now");
-						// for (Map.Entry<Coord, Boolean> tile :
-						// visitedOnAParimeterWalk.entrySet()) {
-						// System.out.println("pw visited:"+tile.getKey());
-						// }
-						// Thread.sleep(5000);
 						isDonePerimeterWalk = true;
 					}
 					if (!isAWallAround()) {
@@ -616,45 +611,10 @@ public class wk10_ks_rv_12 {
 				} else {
 
 					roverMotionLogicShort();
-
-					if (isEastObsatacle(currentLoc)
-							&& isNorthObsatacle(currentLoc)
-							&& isSouthObsatacle(currentLoc)) {
-						// doTheWallFollowingHack(5);
-						move("W");
-						setCurrentLoc();
-						Thread.sleep(900);
-						if (!move("S")) {
-							Thread.sleep(900);
-							move("N");
-							setCurrentLoc();
-							move("N");
-							setCurrentLoc();
-							move("N");
-							setCurrentLoc();
-						} else {
-							move("S");
-							setCurrentLoc();
-							move("S");
-							setCurrentLoc();
-							move("S");
-							setCurrentLoc();
-						}
-					}
-					// System.out
-					// .println("(fl)wall present?" + isAWallInThe4Adj());
-					//
-					// System.out
-					// .println("(fl)has not visited?"
-					// + (visitedOnAParimeterWalk.get(currentLoc) == null));
-					// Thread.sleep(2000);
+					
 					if (isAWallInThe4Adj()
-							&& visitedOnAParimeterWalk.get(currentLoc) == null) {
-						// System.out
-						// .println("(fl)switch from rml to w-follower (curr loc: "
-						// + currentLoc + ")");
-
-						isDonePerimeterWalk = false;
+							&& visitedOnAPerimeterWalk.get(currentLoc) == null) {
+												isDonePerimeterWalk = false;
 						startLocPerimeterFollowing = currentLoc.clone();
 						calibrateFacingDir();
 					}
@@ -663,35 +623,11 @@ public class wk10_ks_rv_12 {
 				pedometer++;
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 
-				// if (visitCounts.get(currentLoc) != null) {
-				// visitCounts
-				// .put(currentLoc, visitCounts.get(currentLoc) + 1);
-				// } else {
-				// visitCounts.put(currentLoc, 1);
-				// }
+				
 
-				// ------------------------------------
-
-				// --------- final version draft -------------
-				// if (!isDonePerimeterWalk) {
-				// doPerimeterWalk(hasHitTheNorthWall);
-				// }else if(isNoWallsAround){
-				// roverMotionLogic(cardinals, scanMapTiles, centerIndex,
-				// currentLoc.xpos, currentLoc.ypos);
-				// if(isAWallAround()){
-				// calibrateFacingDir();
-				// startLocPerimeterFollowing = currentLoc.clone();
-				// }
-				// }else{
-				//
-				// followRhsWall();
-				// if(currentLoc.equals(startLocPerimeterFollowing)){
-				// isNoWallsAround = true;
-				// }
-				// }
-				// ------------------------------------
-
-				// debugPrintMapTileArrayWithCurrPos(mapTileLog, currentLoc);
+				
+				//debugPrintMapTileArrayWithCurrPos(mapTileLog, currentLoc);
+				//debugPrintMapTileArrayText(mapTileLog, 100);
 				if (pedometer % 10 == 0) {
 					System.out.println("ROVER_12 ------------ ends iteration[ "
 							+ pedometer + " ]--------------");
@@ -712,6 +648,26 @@ public class wk10_ks_rv_12 {
 		}
 	}// END of run()
 
+	
+	private boolean isSurroundedBy3Obstacles() throws IOException{
+		int counter = 0;
+		
+		if(isSouthObsatacle(currentLoc)){
+			counter++;
+		}
+		if(isNorthObsatacle(currentLoc)){
+			counter++;
+		}
+		if(isEastObsatacle(currentLoc)){
+			counter++;
+		}
+		if(isWestObsatacle(currentLoc)){
+			counter++;
+		}
+		
+		return (counter>=3);
+	}
+	
 	private void doTheWallFollowingHack(int numSteps) throws IOException,
 			Exception {
 
@@ -724,7 +680,7 @@ public class wk10_ks_rv_12 {
 			}
 			setCurrentLoc();
 
-			visitedOnAParimeterWalk.put(new Coord(currentLoc.xpos,
+			visitedOnAPerimeterWalk.put(new Coord(currentLoc.xpos,
 					currentLoc.ypos), true);
 			pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 
@@ -1730,7 +1686,7 @@ public class wk10_ks_rv_12 {
 	public void loadScanMapFromSwarmServer() throws IOException {
 
 		setCurrentLoc();
-		Coord scanLoc = new Coord(currentLoc.xpos, currentLoc.ypos);
+		//Coord scanLoc = new Coord(currentLoc.xpos, currentLoc.ypos);
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
 		out.println("SCAN");
@@ -1761,17 +1717,17 @@ public class wk10_ks_rv_12 {
 		String jsonScanMapString = jsonScanMap.toString();
 
 		scanMap = gson.fromJson(jsonScanMapString, ScanMap.class);
-// debug
-//		System.out.println("curr loc:"+ currentLoc);
-//		System.out.println(jsonScanMapString);
-//		try {
-//			Thread.sleep(10000);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		// debug
+		// System.out.println("curr loc:"+ currentLoc);
+		// System.out.println(jsonScanMapString);
+		// try {
+		// Thread.sleep(10000);
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 		// myJSONStringBackupofMap = jsonScanMapString;
-		loadMapTilesOntoGlobalMapLog(scanMap.getScanMap(), scanLoc);
+		loadMapTilesOntoGlobalMapLog(scanMap.getScanMap(), currentLoc);
 	}
 
 	Coord requestStartLoc(Socket soc) throws IOException {
@@ -2019,6 +1975,18 @@ public class wk10_ks_rv_12 {
 			}
 		}
 	}
+	
+	public void debugPrintMapTileArrayText( MapTile[][] globalMapCopy,
+			int mapSize) {
+		MapTile tile;
+
+		for (int y = 0; y < mapSize; y++) {
+			for (int x = 0; x < mapSize; x++) {
+				tile = globalMapCopy[x][y];
+				System.out.print("x,y=" + x + "," + y + "\t" + tile + "\t/t");
+			}
+		}
+	}
 
 	public void debugPrintMapTileArray(Map<Coord, MapTile> globalMapCopy) {
 
@@ -2200,10 +2168,10 @@ public class wk10_ks_rv_12 {
 					hasR = ptrScanMap[x][y].getHasRover();
 
 					// debug
-					if (sci == Science.CRYSTAL) {
-						System.out.println(sci + "\t" + scanLoc);
-
-					}
+//					if (sci == Science.CRYSTAL) {
+//						System.out.println(sci + "\t" + scanLoc);
+//
+//					}
 
 					tempTile = new MapTile(ter, sci, elev, hasR);
 					mapTileLog.put(tempCoord, tempTile);
@@ -2233,8 +2201,8 @@ public class wk10_ks_rv_12 {
 
 		int responseCode = con.getResponseCode();
 		// System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Post parameters : " + jsonObj.toString());
-		Thread.sleep(5000);
+		//System.out.println("Post parameters : " + jsonObj.toString());
+		//Thread.sleep(5000);
 		// System.out.println("Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -2448,7 +2416,7 @@ public class wk10_ks_rv_12 {
 
 		boolean hasMoved = false;
 
-		System.out.println("thePath length: " + thePath.length);
+		//System.out.println("thePath length: " + thePath.length);
 		for (int j = 0; j < thePath.length; j++) {
 
 			loadScanMapFromSwarmServer();
@@ -2802,7 +2770,7 @@ public class wk10_ks_rv_12 {
 		}
 		if (args.length >= 3 && args[2] != null) {
 			corps_secret = args[2];
-			System.out.println("corp secret in main():" + corps_secret);
+			//System.out.println("corp secret in main():" + corps_secret);
 		}
 
 		wk10_ks_rv_12 client = new wk10_ks_rv_12(serverAddress, url,

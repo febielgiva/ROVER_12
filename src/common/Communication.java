@@ -19,161 +19,157 @@ import java.net.URL;
  */
 public class Communication {
 
-	private String url;
-	JSONParser parser;
-	private String rovername;
-	private String corp_secret;
+    private String url;
+    JSONParser parser;
+    private String rovername;
+    private String corp_secret;
+    
+    //Communication Setup
+    public Communication(String url, String rovername, String corp_secret) {
+        this.url = url;
+        this.parser = new JSONParser();
+        this.rovername = rovername;
+        this.corp_secret = corp_secret;
 
-	public Communication(String url, String rovername, String corp_secret) {
-		this.url = url;
-		this.parser = new JSONParser();
-		this.rovername = rovername;
-		this.corp_secret = corp_secret;
+    }
 
-	}
+    public String postScanMapTiles(Coord currentLoc, MapTile[][] scanMapTiles) {
+        JSONArray data = convertScanMapTiles(currentLoc, scanMapTiles);
+        
+        String charset = "UTF-8";
+        URL obj = null;
+        try {
+            obj = new URL(url + "/global");
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-	public String postScanMapTiles(Coord currentLoc, MapTile[][] scanMapTiles) {
-		JSONArray data = convertScanMapTiles(currentLoc, scanMapTiles);
+            //add reuqest header
+            con.setDoOutput(true);
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Rover-Name", rovername);
+            con.setRequestProperty("Corp-Secret", corp_secret);
+            con.setRequestProperty("Content-Type", "application/json");
 
-		String charset = "UTF-8";
-		URL obj = null;
-		try {
-			obj = new URL(url + "/global");
-			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            byte[] jsonBytes = data.toString().getBytes("UTF-8");
 
-			// add reuqest header
-			con.setDoOutput(true);
-			con.setRequestMethod("POST");
-			con.setRequestProperty("Rover-Name", rovername);
-			con.setRequestProperty("Corp-Secret", corp_secret);
-			con.setRequestProperty("Content-Type", "application/json");
+            DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+            wr.write(jsonBytes);
+            wr.flush();
+            wr.close();
 
-			byte[] jsonBytes = data.toString().getBytes("UTF-8");
+            int responseCode = con.getResponseCode();
+//            System.out.println("\nSending 'POST' request to URL : " + url);
+//            System.out.println("Response Code : " + responseCode);
 
-			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-			wr.write(jsonBytes);
-			wr.flush();
-			wr.close();
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
 
-			int responseCode = con.getResponseCode();
-			// System.out.println("\nSending 'POST' request to URL : " + url);
-			// System.out.println("Response Code : " + responseCode);
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
 
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					con.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
+            return response.toString();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
-			}
-			in.close();
+        return "";
+    }
 
-			return response.toString();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (ProtocolException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    private JSONArray convertScanMapTiles(Coord currentLoc, MapTile[][] scanMapTiles) {
+        int edgeSize = scanMapTiles.length;
+        int centerIndex = (edgeSize - 1) / 2;
 
-		return "";
-	}
+        JSONArray tiles = new JSONArray();
+        for (int row = 0; row < scanMapTiles.length; row++) {
+            for (int col = 0; col < scanMapTiles[row].length; col++) {
 
-	private JSONArray convertScanMapTiles(Coord currentLoc,
-			MapTile[][] scanMapTiles) {
-		int edgeSize = scanMapTiles.length;
-		int centerIndex = (edgeSize - 1) / 2;
+                MapTile mapTile = scanMapTiles[col][row];
 
-		JSONArray tiles = new JSONArray();
-		for (int col = 0; col < scanMapTiles.length; col++) {
-			for (int row = 0; row < scanMapTiles[col].length; row++) {
+                int xp = currentLoc.xpos - centerIndex + col;
+                int yp = currentLoc.ypos - centerIndex + row;
+                Coord coord = new Coord(xp, yp);
+                JSONObject tile = new JSONObject();
+                tile.put("x", xp);
+                tile.put("y", yp);
+                tile.put("terrain", mapTile.getTerrain().toString());
+                tile.put("science", mapTile.getScience().toString());
+                tiles.add(tile);
+                
+//                System.out.println("Pos : " + xp + ", " + yp);
+//                System.out.println("Terrain: " + mapTile.getTerrain().toString());
+//                System.out.println("Science: " + mapTile.getScience().toString());
+            
+            }
+        }
+        return tiles;
+    }
 
-				// attempt ks
-				if (isWithinTheGrid(row, col, scanMapTiles.length)) {
-					MapTile mapTile = scanMapTiles[col][row];
+    // Method for requesting global map
+    public JSONArray getGlobalMap() {
 
-					int xp = currentLoc.xpos - centerIndex + col;
-					int yp = currentLoc.ypos - centerIndex + row;
-					Coord coord = new Coord(xp, yp);
-					JSONObject tile = new JSONObject();
-					tile.put("x", xp);
-					tile.put("y", yp);
-					tile.put("terrain", mapTile.getTerrain().toString());
-					tile.put("science", mapTile.getScience().toString());
-					tiles.add(tile);
-				}
-			}
-		}
+        URL obj = null;
+        String responseStr = "";
+        try {
+            obj = new URL(url + "/global");
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-		//System.out.println("this tile:\n" + tiles.toString());
-		// try {
-		// Thread.sleep(5000);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		return tiles;
-	}
+            con.setRequestProperty("Rover-Name", rovername);
+            con.setRequestProperty("Corp-Secret", corp_secret);
+            con.setRequestMethod("GET");
 
-	// a check function to prevent IndexOutOfBounds exception
-	public boolean isWithinTheGrid(int i, int j, int arrayLength) {
-		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
-	}
+            int responseCode = con.getResponseCode();
+//            System.out.println("\nSending 'GET' request to URL : " + url);
+//            System.out.println("Response Code : " + responseCode);
 
-	// for requesting global map
-	public JSONArray getGlobalMap() {
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
 
-		URL obj = null;
-		String responseStr = "";
-		try {
-			obj = new URL(url + "/global");
-			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
 
-			con.setRequestProperty("Rover-Name", rovername);
-			con.setRequestProperty("Corp-Secret", corp_secret);
-			con.setRequestMethod("GET");
+            responseStr = response.toString();
 
-			int responseCode = con.getResponseCode();
-			System.out.println("\nSending 'GET' request to URL : " + url);
-			System.out.println("Response Code : " + responseCode);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					con.getInputStream()));
-			String inputLine;
-			StringBuffer response = new StringBuffer();
+        return parseResponseStr(responseStr);
+    }
+    
+     /*public String getResponse(){
+     * 
+     * 	
+     * }
+     */
 
-			while ((inputLine = in.readLine()) != null) {
-				response.append(inputLine);
-			}
-			in.close();
+    public JSONArray parseResponseStr(String response) {
+        JSONArray data = null;
+        try {
+            data = (JSONArray) parser.parse(response);
 
-			responseStr = response.toString();
+            for (Object obj : data) {
+                JSONObject json = (JSONObject) obj;
+            }
 
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
 
-		return parseResponseStr(responseStr);
-	}
+        return data;
+    }
 
-	public JSONArray parseResponseStr(String response) {
-		JSONArray data = null;
-		try {
-			data = (JSONArray) parser.parse(response);
-
-			for (Object obj : data) {
-				JSONObject json = (JSONObject) obj;
-			}
-
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-
-		return data;
-	}
 
 }
