@@ -355,39 +355,66 @@ public class Rv_curr {
 		}
 	}
 
+	private boolean isSurroundedBy3Obstacles() throws IOException {
+		int counter = 0;
+
+		if (isSouthObsatacle(currentLoc)) {
+			counter++;
+		}
+		if (isNorthObsatacle(currentLoc)) {
+			counter++;
+		}
+		if (isEastObsatacle(currentLoc)) {
+			counter++;
+		}
+		if (isWestObsatacle(currentLoc)) {
+			counter++;
+		}
+
+		return (counter >= 3);
+	}
+
 	void roverMotionLogicShort() throws IOException {
 		// same basic structure of logic as the original roverMotionLogic
 		// removed the parts that are not necessary at the moment
 
-		String[] directions = { "N", "E", "W", "N", "S" };
+		String[] directions = { "N", "E", "W", "N","N"};
 		switch (getFacingDirection()) {
 		case "E":
 			directions[0] = "E";
 			directions[1] = "N";
 			directions[2] = "S";
 			directions[3] = "E";
-			directions[4] = "W";
+			if (isSouthObsatacle(currentLoc)) {
+				directions[4] = "W";
+			}
 			break;
 		case "S":
 			directions[0] = "S";
 			directions[1] = "E";
 			directions[2] = "W";
 			directions[3] = "S";
-			directions[4] = "N";
+			if (isSouthObsatacle(currentLoc)) {
+				directions[4] = "N";
+			}
 			break;
 		case "W":
 			directions[0] = "W";
 			directions[1] = "N";
 			directions[2] = "S";
 			directions[3] = "W";
-			directions[4] = "E";
+			if (isSouthObsatacle(currentLoc)) {
+				directions[4] = "E";
+			}
 			break;
 		case "N":
 			directions[0] = "N";
 			directions[1] = "E";
 			directions[2] = "W";
 			directions[3] = "N";
-			directions[4] = "S";
+			if (isSouthObsatacle(currentLoc)) {
+				directions[4] = "S";
+			}
 			break;
 		default:
 			break;
@@ -523,7 +550,7 @@ public class Rv_curr {
 		boolean astarGo = false, hasHitTheNorthWall = false, isDonePerimeterWalk = false, isNoWallsAround = true;
 		int pedometer = 0;
 		Coord startLocPerimeterFollowing;
-		
+
 		try {
 
 			// ***** connect to server ******
@@ -535,18 +562,18 @@ public class Rv_curr {
 			targetLocation = requestTargetLoc(socket);
 			nextTarget = targetLocation.clone();
 
-			// ***** 
+			// *****
 			loadScanMapFromSwarmServer();
-			//MapTile[][] scanMapTiles = scanMap.getScanMap();
-			//int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize = 10, waveLength = 3, waveHeight = 2;
-			
+			// MapTile[][] scanMapTiles = scanMap.getScanMap();
+			// int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize =
+			// 10, waveLength = 3, waveHeight = 2;
 
 			currentLoc.clone();
 			cardinals[1] = true;
 
 			// getToTheNorthWall();
-//			getToTheWall("S");
-//			hasHitTheNorthWall = true;
+			// getToTheWall("S");
+			// hasHitTheNorthWall = true;
 
 			// record the start of a perimeter-walk
 			setCurrentLoc();
@@ -561,13 +588,13 @@ public class Rv_curr {
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
-//				System.out.println("BEFORE: " + currentLoc + " | facing "
-//						+ getFacingDirection());
+				// System.out.println("BEFORE: " + currentLoc + " | facing "
+				// + getFacingDirection());
 
 				// ***** do a SCAN ******
 				if (pedometer % 4 == 3) {
 					loadScanMapFromSwarmServer();
-					//getUndiscoveredArea(searchSize);
+					// getUndiscoveredArea(searchSize);
 				}
 				// post what's been scanned onto the corp's communication device
 				com.postScanMapTiles(currentLoc, scanMap.getScanMap());
@@ -577,7 +604,7 @@ public class Rv_curr {
 				if (!isDonePerimeterWalk) {
 
 					// debug
-					//System.out.println("(wf)");
+					// System.out.println("(wf)");
 
 					doTheWallIslandPerimeterWalk();
 					visitedOnAParimeterWalk.put(new Coord(currentLoc.xpos,
@@ -585,8 +612,8 @@ public class Rv_curr {
 
 					if (currentLoc.equals(startLocPerimeterFollowing)) {
 						// debug
-//						System.out
-//								.println("(wf)we are done with the perimeter walk for now");
+						// System.out
+						// .println("(wf)we are done with the perimeter walk for now");
 						// for (Map.Entry<Coord, Boolean> tile :
 						// visitedOnAParimeterWalk.entrySet()) {
 						// System.out.println("pw visited:"+tile.getKey());
@@ -625,34 +652,41 @@ public class Rv_curr {
 							setCurrentLoc();
 						}
 					}
-//					System.out
-//							.println("(fl)wall present?" + isAWallInThe4Adj());
-//
-//					System.out
-//							.println("(fl)has not visited?"
-//									+ (visitedOnAParimeterWalk.get(currentLoc) == null));
+					// System.out
+					// .println("(fl)wall present?" + isAWallInThe4Adj());
+					//
+					// System.out
+					// .println("(fl)has not visited?"
+					// + (visitedOnAParimeterWalk.get(currentLoc) == null));
 					// Thread.sleep(2000);
+					setCurrentLoc();
+					if(currentLoc.xpos<=0 ||currentLoc.ypos<=0){
+						isDonePerimeterWalk = false;
+						startLocPerimeterFollowing = currentLoc.clone();
+						calibrateFacingDir();
+					}
 					if (isAWallInThe4Adj()
 							&& visitedOnAParimeterWalk.get(currentLoc) == null) {
-//						System.out
-//								.println("(fl)switch from rml to w-follower (curr loc: "
-//										+ currentLoc + ")");
+						// System.out
+						// .println("(fl)switch from rml to w-follower (curr loc: "
+						// + currentLoc + ")");
 
 						isDonePerimeterWalk = false;
 						startLocPerimeterFollowing = currentLoc.clone();
 						calibrateFacingDir();
 					}
+					
 				}
 				setCurrentLoc();
 				pedometer++;
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 
-//				if (visitCounts.get(currentLoc) != null) {
-//					visitCounts
-//							.put(currentLoc, visitCounts.get(currentLoc) + 1);
-//				} else {
-//					visitCounts.put(currentLoc, 1);
-//				}
+				// if (visitCounts.get(currentLoc) != null) {
+				// visitCounts
+				// .put(currentLoc, visitCounts.get(currentLoc) + 1);
+				// } else {
+				// visitCounts.put(currentLoc, 1);
+				// }
 
 				// ------------------------------------
 
@@ -1482,7 +1516,8 @@ public class Rv_curr {
 			loadScanMapFromSwarmServer();
 			tile = mapTileLog.get(focus);
 		}
-		if (focus.xpos == 0 || focus.ypos == 0) {
+		if (focus.xpos <= 0 || focus.ypos <= 0) {
+			
 			return true;
 		}
 		if (tile.getTerrain() == Terrain.ROCK

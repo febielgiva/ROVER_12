@@ -561,8 +561,8 @@ public class wk10_ks_rv_12 {
 			currentLoc.clone();
 			cardinals[1] = true;
 
-						startLocPerimeterFollowing = currentLoc.clone();
-			
+			startLocPerimeterFollowing = currentLoc.clone();
+
 			// debug --- remove it
 			isNoWallsAround = true;
 			while (true) {
@@ -1557,9 +1557,9 @@ public class wk10_ks_rv_12 {
 			loadScanMapFromSwarmServer();
 			tile = mapTileLog.get(focus);
 		}
-		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+		if (tile.getTerrain() == Terrain.ROCK
 				|| tile.getTerrain() == Terrain.NONE
-				|| tile.getTerrain() == Terrain.FLUID
+
 				|| tile.getTerrain() == Terrain.SAND) {
 			return true;
 		} else {
@@ -1575,9 +1575,8 @@ public class wk10_ks_rv_12 {
 			loadScanMapFromSwarmServer();
 			tile = mapTileLog.get(focus);
 		}
-		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+		if (tile.getTerrain() == Terrain.ROCK
 				|| tile.getTerrain() == Terrain.NONE
-				|| tile.getTerrain() == Terrain.FLUID
 				|| tile.getTerrain() == Terrain.SAND) {
 			return true;
 		} else {
@@ -1586,10 +1585,8 @@ public class wk10_ks_rv_12 {
 	}
 
 	boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if (scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
-				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
+		if (scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
 				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.FLUID
 				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.SAND) {
 			return true;
 		} else {
@@ -1598,10 +1595,8 @@ public class wk10_ks_rv_12 {
 	}
 
 	boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if (scanMapTiles[centerIndex][centerIndex - 1].getHasRover()
-				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
+		if (scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
 				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.FLUID
 				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.SAND) {
 			return true;
 		}
@@ -1609,10 +1604,8 @@ public class wk10_ks_rv_12 {
 	}
 
 	boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
-		if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
-				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
+		if (scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
 				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
-				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.FLUID
 				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.SAND) {
 			return true;
 		}
