@@ -566,31 +566,31 @@ public class wk10_ks_rv_12 {
 			// debug --- remove it
 			isNoWallsAround = true;
 			while (true) {
-
+				setCurrentLoc();
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 				// System.out.println("BEFORE: " + currentLoc + " | facing "
 				// + getFacingDirection());
 
 				// ***** do a SCAN ******
-				// if (pedometer % 4 == 3) {
-				loadScanMapFromSwarmServer();// internally sets the current
-												// location
-				// getUndiscoveredArea(searchSize);
-				// debugPrintMapTileArrayText(scanMap.getScanMap(), 11);
-				// System.out.println("post message: " +
+				if (pedometer % 4 == 3) {
+					loadScanMapFromSwarmServer();// internally sets the current
+													// location
+					// getUndiscoveredArea(searchSize);
+					// debugPrintMapTileArrayText(scanMap.getScanMap(), 11);
+					// System.out.println("post message: " +
 
-				com.postScanMapTiles(currentLoc, scanMap.getScanMap());
-				// post what's been scanned onto the corp's communication
-				// device
-				// com.postScanMapTiles(currentLoc, scanMapTiles);
-				// }
+					com.postScanMapTiles(currentLoc, scanMap.getScanMap());
+				}// post what's been scanned onto the corp's communication
+					// device
+					// com.postScanMapTiles(currentLoc, scanMapTiles);
+					// }
 
 				// --------- current -------------
 
 				if (!isDonePerimeterWalk) {
 
 					// debug
-					// System.out.println("(wf)");
+					 System.out.println("(wf)");
 
 					doTheWallIslandPerimeterWalk();
 
@@ -599,65 +599,70 @@ public class wk10_ks_rv_12 {
 
 					if (currentLoc.equals(startLocPerimeterFollowing)) {
 						// debug
-						// System.out
-						// .println("(wf)we are done with the perimeter walk for now");
-						// for (Map.Entry<Coord, Boolean> tile :
-						// visitedOnAParimeterWalk.entrySet()) {
-						// System.out.println("pw visited:"+tile.getKey());
-						// }
+						System.out
+								.println("(wf)we are done with the perimeter walk for now");
+						
 						// Thread.sleep(5000);
 						isDonePerimeterWalk = true;
+						calibrateFacingDir();
 					}
 					if (!isAWallAround()) {
 						isDonePerimeterWalk = true;
+						calibrateFacingDir();
 					}
 				} else {
 
-					roverMotionLogicShort();
-
-					if (isEastObsatacle(currentLoc)
-							&& isNorthObsatacle(currentLoc)
-							&& isSouthObsatacle(currentLoc)) {
-						// doTheWallFollowingHack(5);
-						move("W");
-						setCurrentLoc();
-						Thread.sleep(900);
-						if (!move("S")) {
-							Thread.sleep(900);
-							move("N");
-							setCurrentLoc();
-							move("N");
-							setCurrentLoc();
-							move("N");
-							setCurrentLoc();
-						} else {
-							move("S");
-							setCurrentLoc();
-							move("S");
-							setCurrentLoc();
-							move("S");
-							setCurrentLoc();
-						}
-					}
-					// System.out
-					// .println("(fl)wall present?" + isAWallInThe4Adj());
-					//
-					// System.out
-					// .println("(fl)has not visited?"
-					// + (visitedOnAParimeterWalk.get(currentLoc) == null));
-					// Thread.sleep(2000);
-					if (isAWallInThe4Adj()
-							&& visitedOnAParimeterWalk.get(currentLoc) == null) {
-						// System.out
-						// .println("(fl)switch from rml to w-follower (curr loc: "
-						// + currentLoc + ")");
-
+					if (currentLoc.xpos <= 0 || currentLoc.ypos <= 0) {
+						System.out.println("curr pos x = 0 or y = 0");
 						isDonePerimeterWalk = false;
 						startLocPerimeterFollowing = currentLoc.clone();
 						calibrateFacingDir();
+					} else {
+						roverMotionLogicShort();
+						
+						if (isEastObsatacle(currentLoc)
+								&& isNorthObsatacle(currentLoc)
+								&& isSouthObsatacle(currentLoc)) {
+							// doTheWallFollowingHack(5);
+							move("W");
+							setCurrentLoc();
+							Thread.sleep(900);
+							if (!move("S")) {
+								Thread.sleep(900);
+								move("N");
+								setCurrentLoc();
+								move("N");
+								setCurrentLoc();
+								move("N");
+								setCurrentLoc();
+							} else {
+								move("S");
+								setCurrentLoc();
+								move("S");
+								setCurrentLoc();
+								move("S");
+								setCurrentLoc();
+							}
+						}
+						// System.out
+						// .println("(fl)wall present?" + isAWallInThe4Adj());
+						//
+						// System.out
+						// .println("(fl)has not visited?"
+						// + (visitedOnAParimeterWalk.get(currentLoc) == null));
+						// Thread.sleep(2000);
+						if (isAWallInThe4Adj()
+								&& visitedOnAParimeterWalk.get(currentLoc) == null) {
+							// System.out
+							// .println("(fl)switch from rml to w-follower (curr loc: "
+							// + currentLoc + ")");
+
+							isDonePerimeterWalk = false;
+							startLocPerimeterFollowing = currentLoc.clone();
+							calibrateFacingDir();
+						}
 					}
 				}
-
 				setCurrentLoc();
 				pedometer++;
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
@@ -1792,8 +1797,6 @@ public class wk10_ks_rv_12 {
 			line = "";
 		}
 
-		//
-		System.out.println();
 		if (line.startsWith("START")) {
 			rovergroupStartPosition = extractStartLOC(line);
 			// debug
