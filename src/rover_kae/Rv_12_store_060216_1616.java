@@ -38,6 +38,7 @@ import common.Communication_trash;
 import common.Coord;
 import common.MapTile;
 import common.ScanMap;
+import enums.RoverToolType;
 import enums.Science;
 import enums.Terrain;
 import supportTools.CommunicationUtil;
@@ -50,62 +51,62 @@ import supportTools.RoverMotionUtil;
  * publishing their code examples
  */
 
-public class wk9_ks_ROVER_12 {
+public class Rv_12_store_060216_1616 {
 
-	private BufferedReader in;
-	private PrintWriter out;
-	private String rovername;
-	private ScanMap scanMap;
-	private int sleepTime;
-	// private String SERVER_ADDRESS = "localhost", line;
-	private String SERVER_ADDRESS = "192.168.1.106", line;
+	BufferedReader in;
+	PrintWriter out;
+	String rovername;
+	ScanMap scanMap;
+	int sleepTime;
+	String SERVER_ADDRESS = "localhost", line;
+	// String SERVER_ADDRESS = "192.168.1.106", line;
 	static final int PORT_ADDRESS = 9537;
 
 	// Group 12 variables
 	int numLogics = 3;
 	static String myJSONStringBackupofMap;
-	private Coord currentLoc, previousLoc, rovergroupStartPosition = null,
+	Coord currentLoc, previousLoc, rovergroupStartPosition = null,
 			targetLocation = null;
 
-	private Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
-	private HashMap<Coord, Path> visitCounts = new HashMap<Coord, Path>();// manage
-																			// this
-																			// only
+	Map<Coord, MapTile> mapTileLog = new HashMap<Coord, MapTile>();
+	HashMap<Coord, Integer> visitCounts = new HashMap<Coord, Integer>();// manage
+	// this
+	// only
 	// after targetLoc has
 	// been
 	// visited
-	// private Map<Coord, Path> pathMap = new HashMap<Coord, Path>();
-	// private Deque<Coord> pathStack = new ArrayDeque<Coord>();
+	// Map<Coord, Path> pathMap = new HashMap<Coord, Path>();
+	// Deque<Coord> pathStack = new ArrayDeque<Coord>();
 	public ArrayList<Coord> pathMap = new ArrayList<Coord>();
 
-	private Random rd = new Random();
-	private boolean[] cardinals = new boolean[4];
-	private boolean isTargetLocReached = false;
-	private Coord nextTarget;
+	Random rd = new Random();
+	boolean[] cardinals = new boolean[4];
+	boolean isTargetLocReached = false;
+	Coord nextTarget;
 
-	public wk9_ks_ROVER_12() {
+	public Rv_12_store_060216_1616() {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
 		// SERVER_ADDRESS = "192.168.1.106";
 		SERVER_ADDRESS = "localhost";
 		// this should be a safe but slow timer value
-		sleepTime = 500; // in milliseconds - smaller is faster, but the server
+		sleepTime = 600; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
 
-	public wk9_ks_ROVER_12(String serverAddress) {
+	public Rv_12_store_060216_1616(String serverAddress) {
 		// constructor
 		System.out.println("ROVER_12 rover object constructed");
 		rovername = "ROVER_12";
 		SERVER_ADDRESS = serverAddress;
-		sleepTime = 500; // in milliseconds - smaller is faster, but the server
+		sleepTime = 600; // in milliseconds - smaller is faster, but the server
 							// will cut connection if it is too small
 	}
 
-	private void roverMotionLogic(boolean[] cardinals,
-			MapTile[][] scanMapTiles, int centerIndex, int currentXPos,
-			int currentYPos) throws InterruptedException, IOException {
+	void roverMotionLogic(boolean[] cardinals, MapTile[][] scanMapTiles,
+			int centerIndex, int currentXPos, int currentYPos)
+			throws InterruptedException, IOException {
 		// ************* Febi's rover motion logic **********
 		// int tempRowArray;
 		// int tempColumnArray;
@@ -147,10 +148,9 @@ public class wk9_ks_ROVER_12 {
 									centerIndex)) {
 								move("E");
 							} else {
+								randomStep();
 								cardinals = randomPickMotion(cardinals,
 										centerIndex, scanMapTiles);
-								// cardinals = moveUsingPastPath(cardinals,
-								// currentXPos, currentYPos);
 							}
 
 						} else {
@@ -184,6 +184,7 @@ public class wk9_ks_ROVER_12 {
 						} else {
 							cardinals = randomPickMotion(cardinals,
 									centerIndex, scanMapTiles);
+							randomStep();
 
 							// cardinals = moveUsingPastPath(cardinals,
 							// currentXPos, currentYPos);
@@ -218,11 +219,10 @@ public class wk9_ks_ROVER_12 {
 						if (isTowardsNorthIsObsatacle(scanMapTiles, centerIndex)) {
 							move("S");
 						} else {
-							cardinals = randomPickMotion(cardinals,
-									centerIndex, scanMapTiles);
+							// cardinals = randomPickMotion(cardinals,
+							// centerIndex, scanMapTiles);
+							randomStep();
 
-							// cardinals = moveUsingPastPath(cardinals,
-							// currentXPos, currentYPos);
 						}
 					} else {
 						move("E");
@@ -254,11 +254,9 @@ public class wk9_ks_ROVER_12 {
 						if (isTowardsSouthIsObsatacle(scanMapTiles, centerIndex)) {
 							move("N");
 						} else {
-							cardinals = randomPickMotion(cardinals,
-									centerIndex, scanMapTiles);
-
-							// cardinals = moveUsingPastPath(cardinals,
-							// currentXPos, currentYPos);
+							// cardinals = randomPickMotion(cardinals,
+							// centerIndex, scanMapTiles);
+							randomStep();
 						}
 					} else {
 						move("E");
@@ -275,146 +273,15 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-	private void followRhsWall(MapTile[][] scanMapTiles, int centerIndex)
-			throws IOException {
-
-		String[] directions = { "S", "E", "N", "W" };
-		switch (getFacingDirection()) {
-		case "E":
-			break;
-		case "S":
-			directions[0] = "W";
-			directions[1] = "S";
-			directions[2] = "E";
-			directions[3] = "N";
-			break;
-		case "W":
-			directions[0] = "N";
-			directions[1] = "W";
-			directions[2] = "S";
-			directions[3] = "E";
-			break;
-		case "N":
-			directions[0] = "E";
-			directions[1] = "N";
-			directions[2] = "W";
-			directions[3] = "S";
-			break;
-		default:
-			break;
-		}
-
-		boolean hasMoved = false;
-		for (int i = 0; i < directions.length; i++) {
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					directions[i])) {
-				System.out.println("(wall follower) move " + directions[i]);
-				hasMoved = move(directions[i]);
-				System.out.println("(WF) has moved? " + hasMoved);
-				if (hasMoved) {
-
-					return;
-				} else {
-					System.out.println("chose another direction.");
-				}
-			}
-		}
-	}
-
-	private void headEast(MapTile[][] scanMapTiles, int centerIndex)
-			throws IOException {
-
-		String[] directions = { "E", "S", "N" };
-
-		boolean hasMoved = false;
-		for (int i = 0; i < directions.length; i++) {
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					directions[i])) {
-				System.out.println("(wall follower) move " + directions[i]);
-				hasMoved = move(directions[i]);
-				System.out.println("(WF) has moved? " + hasMoved);
-				if (hasMoved) {
-
-					return;
-				} else {
-					System.out.println("chose another direction.");
-				}
-			}
-		}
-	}
-
-	private void headWest(MapTile[][] scanMapTiles, int centerIndex)
-			throws IOException {
-
-		String[] directions = { "W", "S", "N" };
-
-		boolean hasMoved = false;
-		for (int i = 0; i < directions.length; i++) {
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					directions[i])) {
-				System.out.println("(wall follower) move " + directions[i]);
-				hasMoved = move(directions[i]);
-				System.out.println("(WF) has moved? " + hasMoved);
-				if (hasMoved) {
-
-					return;
-				} else {
-					System.out.println("chose another direction.");
-				}
-			}
-		}
-	}
-
-	private void headSouth(MapTile[][] scanMapTiles, int centerIndex)
-			throws IOException {
-
-		String[] directions = { "S", "W", "E" };
-
-		boolean hasMoved = false;
-		for (int i = 0; i < directions.length; i++) {
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					directions[i])) {
-				System.out.println("(wall follower) move " + directions[i]);
-				hasMoved = move(directions[i]);
-				System.out.println("(WF) has moved? " + hasMoved);
-				if (hasMoved) {
-
-					return;
-				} else {
-					System.out.println("chose another direction.");
-				}
-			}
-		}
-	}
-
-	private void headNorth(MapTile[][] scanMapTiles, int centerIndex)
-			throws IOException {
-
-		String[] directions = { "N", "E", "W" };
-
-		boolean hasMoved = false;
-		for (int i = 0; i < directions.length; i++) {
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					directions[i])) {
-				System.out.println("(wall follower) move " + directions[i]);
-				hasMoved = move(directions[i]);
-				System.out.println("(WF) has moved? " + hasMoved);
-				if (hasMoved) {
-
-					return;
-				} else {
-					System.out.println("chose another direction.");
-				}
-			}
-		}
-	}
-
-	private void followLhsWall(MapTile[][] scanMapTiles, int centerIndex)
-			throws IOException {
+	void followLhsWall() throws IOException {
 
 		String[] directions = { "N", "E", "S", "W" };
 		switch (getFacingDirection()) {
 		case "E":
+			directions[0] = "N";
+			directions[1] = "E";
+			directions[2] = "S";
+			directions[3] = "W";
 			break;
 		case "S":
 			directions[0] = "E";
@@ -438,6 +305,56 @@ public class wk9_ks_ROVER_12 {
 			break;
 		}
 
+		for (int i = 0; i < directions.length; i++) {
+			if (move(directions[i])) {
+				return;
+			}
+		}
+	}
+
+	void followRhsWall() throws IOException {
+
+		String[] directions = { "S", "E", "N", "W" };
+		switch (getFacingDirection()) {
+		case "E":
+			directions[0] = "S";
+			directions[1] = "E";
+			directions[2] = "N";
+			directions[3] = "W";
+			break;
+		case "S":
+			directions[0] = "W";
+			directions[1] = "S";
+			directions[2] = "E";
+			directions[3] = "N";
+			break;
+		case "W":
+			directions[0] = "N";
+			directions[1] = "W";
+			directions[2] = "S";
+			directions[3] = "E";
+			break;
+		case "N":
+			directions[0] = "E";
+			directions[1] = "N";
+			directions[2] = "W";
+			directions[3] = "S";
+			break;
+		default:
+			break;
+		}
+
+		for (int i = 0; i < directions.length; i++) {
+			if (move(directions[i])) {
+				return;
+			}
+		}
+	}
+
+	void headEast(MapTile[][] scanMapTiles, int centerIndex) throws IOException {
+
+		String[] directions = { "E", "S", "N" };
+
 		boolean hasMoved = false;
 		for (int i = 0; i < directions.length; i++) {
 			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
@@ -446,6 +363,7 @@ public class wk9_ks_ROVER_12 {
 				hasMoved = move(directions[i]);
 				System.out.println("(WF) has moved? " + hasMoved);
 				if (hasMoved) {
+
 					return;
 				} else {
 					System.out.println("chose another direction.");
@@ -454,7 +372,72 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-	private boolean isAllDirOpen(MapTile[][] scanMapTiles, int centerIndex) {
+	void headWest(MapTile[][] scanMapTiles, int centerIndex) throws IOException {
+
+		String[] directions = { "W", "S", "N" };
+
+		boolean hasMoved = false;
+		for (int i = 0; i < directions.length; i++) {
+			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
+					directions[i])) {
+				System.out.println("(wall follower) move " + directions[i]);
+				hasMoved = move(directions[i]);
+				System.out.println("(WF) has moved? " + hasMoved);
+				if (hasMoved) {
+
+					return;
+				} else {
+					System.out.println("chose another direction.");
+				}
+			}
+		}
+	}
+
+	void headSouth(MapTile[][] scanMapTiles, int centerIndex)
+			throws IOException {
+
+		String[] directions = { "S", "W", "E" };
+
+		boolean hasMoved = false;
+		for (int i = 0; i < directions.length; i++) {
+			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
+					directions[i])) {
+				System.out.println("(wall follower) move " + directions[i]);
+				hasMoved = move(directions[i]);
+				System.out.println("(WF) has moved? " + hasMoved);
+				if (hasMoved) {
+
+					return;
+				} else {
+					System.out.println("chose another direction.");
+				}
+			}
+		}
+	}
+
+	void headNorth(MapTile[][] scanMapTiles, int centerIndex)
+			throws IOException {
+
+		String[] directions = { "N", "E", "W" };
+
+		boolean hasMoved = false;
+		for (int i = 0; i < directions.length; i++) {
+			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
+					directions[i])) {
+				System.out.println("(wall follower) move " + directions[i]);
+				hasMoved = move(directions[i]);
+				System.out.println("(WF) has moved? " + hasMoved);
+				if (hasMoved) {
+
+					return;
+				} else {
+					System.out.println("chose another direction.");
+				}
+			}
+		}
+	}
+
+	boolean isAllDirOpen(MapTile[][] scanMapTiles, int centerIndex) {
 		System.out.println("is east blocked? "
 				+ isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 						"E"));
@@ -467,13 +450,7 @@ public class wk9_ks_ROVER_12 {
 		System.out.println("is north blocked? "
 				+ isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 						"N"));
-		// debu
-		// try {
-		// Thread.sleep(4000);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
+
 		return isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex, "E")
 				&& isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
 						"S")
@@ -484,85 +461,112 @@ public class wk9_ks_ROVER_12 {
 
 	}
 
-	private void run() throws IOException, InterruptedException {
+	void run() throws IOException, InterruptedException {
 
-		// String url = "http://23.251.155.186:3000/api";
-		// String url = "http://192.168.1.104:3000/api";
-		// String corp_secret = "0FSj7Pn23t";
-		// Communication com = new Communication(url, rovername, corp_secret);
+		String url = "http://23.251.155.186:3000/api";
+		String corp_secret = "0FSj7Pn23t";
+		Communication_trash com = new Communication_trash(url, rovername, corp_secret);
 
-		// if(targetReached)
-
-		ArrayList<String> equipment = new ArrayList<String>();
-		boolean beenToTargetLoc = false;
+		new ArrayList<String>();
 		Socket socket = null;
+		boolean astarGo = false, hasHitTheNorthWall = false;
+		int pedometer = 0;
 
 		try {
 
 			// ***** connect to server ******
 			socket = connectToSwarmServer();
 
-			// ***** get equipments ******
-			equipment = getEquipment();
+			getEquipment();
 
 			// ***** initialize critical locations ******
 			rovergroupStartPosition = requestStartLoc(socket);
 			targetLocation = requestTargetLoc(socket);
 			nextTarget = targetLocation.clone();
 
-			/**
-			 * #### Rover controller process loop ####
-			 */
-			boolean firstItr = true;
-			Coord prevLoc = currentLoc.clone();
-			cardinals[1] = true;
-			int roverLogicSwitch = 0;
-			int numLogic = 3;
+			loadScanMapFromSwarmServer();
+			MapTile[][] scanMapTiles = scanMap.getScanMap();
+			int centerIndex = (scanMap.getEdgeSize() - 1) / 2, searchSize = 10, waveLength = 3, waveHeight = 2;
 
+			currentLoc.clone();
+			cardinals[1] = true;
+			
+			
+			// debug
+			move("N");
+			Thread.sleep(900);
+			move("N");
+			Thread.sleep(900);
+			move("N");
+			Thread.sleep(900);
+			move("N");
+			Thread.sleep(900);
+			
+			int stuckCount=0;
+			
 			while (true) {
 
 				setCurrentLoc(); // BEFORE the move() in this iteration
+				previousLoc = currentLoc.clone();
 				pathMap.add(new Coord(currentLoc.xpos, currentLoc.ypos));
 				System.out.println("BEFORE: " + currentLoc + " | facing "
 						+ getFacingDirection());
-				int numSteps = pathMap.size();
 
 				// ***** do a SCAN ******
-				loadScanMapFromSwarmServer();
+				if (pedometer % 4 == 3) {
+					loadScanMapFromSwarmServer();
+					getUndiscoveredArea(searchSize);
+				}
 
-				MapTile[][] scanMapTiles = scanMap.getScanMap();
-				int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-				// com.postScanMapTiles(currentLoc, scanMapTiles);
+				// every 10 steps, take a random step if no obstacles around
+//				if (pedometer % 10 == 0 && !isAWallAround()) {
+//					randomlyStepOut();
+//				}
 
-				// ***** under construction ******
-				// if(roverLogicSwitch % numLogics == 0){
-
-				// }else if(roverLogicSwitch % numLogics == 1){
-				// followLhsWall(scanMapTiles, centerIndex);
-				// }else if(roverLogicSwitch % numLogics == 2){
+				// ---- working logic 01 ------------
+				// this logic works well, covers a relatively wide area without
+				// encountering exceptions
+				// if (isAWallAround()) {
 				// followRhsWall(scanMapTiles, centerIndex);
+				// } else {
+				// move(getFacingDirection());
 				// }
-				// if (countUnvisited(currentLoc, 11) < 1) {
-				// System.out.println("number of unvisited: "
-				// + countUnvisited(currentLoc, 11));
-				// roverLogicSwitch++;
-				// System.out.println("logic switch flipped ("
-				// + roverLogicSwitch + ")");
-				// //Thread.sleep(3000);
+				// --------------------------------
+
+				// mediocre
+				// if (visitCounts.get(currentLoc) != null
+				// && visitCounts.get(currentLoc) > 5) {
+				// outOfMaze();
+				// } else if (!move("E")) {
+				// outOfMaze();
 				// }
 
-				previousLoc = currentLoc;
-				roverMotionLogic(cardinals, scanMapTiles, centerIndex,
-						currentLoc.xpos, currentLoc.ypos);
-				// followLhsWall(scanMapTiles, centerIndex);
-				// headEast(scanMapTiles, centerIndex);
-				// headWest(scanMapTiles, centerIndex);
+				// 
 
-				setCurrentLoc(); // AFTER this iteration
-				System.out.println("AFTER: " + currentLoc);
+				// go along the perimeter
+				if (hasHitTheNorthWall) {
+					if (isAWallAround()) {
+						followRhsWall();
+					} else {
+						move(getFacingDirection());
+					}
+				}
+				setCurrentLoc();
+
+				// // count how many times the rover visited this tile
+				// if (visitCounts.get(currentLoc) != null) {
+				// visitCounts.put(currentLoc,
+				// (visitCounts.get(currentLoc) + 1));
+				// }else{
+				// visitCounts.put(currentLoc,1);
+				// }
+
+				pedometer++;
+				previousLoc = currentLoc.clone();
 
 				System.out
-						.println("ROVER_12 ------------ bottom process control --------------");
+						.println("ROVER_12 ------------ bottom process control pedometer@[ "
+								+ pedometer + " ]--------------");
 				Thread.sleep(sleepTime);
 
 			}
@@ -579,8 +583,499 @@ public class wk9_ks_ROVER_12 {
 		}
 	}// END of run()
 
-	private void debugSandAvoidanceMotion(MapTile[][] scanMapTiles,
-			int centerIndex) throws IOException, InterruptedException {
+	private void outOfMaze() throws Exception, IOException {
+
+		while (true) {
+
+			if (isAWallAround()) {
+				followRhsWall();
+			} else {
+				move(getFacingDirection());
+				// sinusoidalRandom(waveLength, waveHeight);
+			}
+			setCurrentLoc();
+
+			// count how many times the rover visited this tile
+			if (visitCounts.get(currentLoc) != null) {
+				visitCounts.put(currentLoc, (visitCounts.get(currentLoc) + 1));
+			} else {
+				visitCounts.put(currentLoc, 1);
+			}
+
+			Thread.sleep(sleepTime);
+		}
+	}
+
+	// a check function to prevent IndexOutOfBounds exception
+	public boolean withinTheGrid(int x, int y, int lengthX, int lengthY) {
+		return x >= 0 && y >= 0 && x < lengthX && y < lengthY;
+	}
+
+	public void sinusoidal(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+
+		switch (getFacingDirection()) {
+		case "E":
+			sinusoidalRight(waveLength, waveHeight);
+			break;
+		case "S":
+			sinusoidalDown(waveLength, waveHeight);
+			break;
+		case "W":
+			sinusoidalLeft(waveLength, waveHeight);
+			break;
+		case "N":
+			sinusoidalUp(waveLength, waveHeight);
+			break;
+		default:
+			break;
+		}
+	}
+
+	public void sinusoidalRandom(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+
+		int rand = randomNum(0, 3);
+		switch (rand) {
+		case 0:
+			sinusoidalRight(waveLength, waveHeight);
+			break;
+		case 1:
+			sinusoidalDown(waveLength, waveHeight);
+			break;
+		case 2:
+			sinusoidalLeft(waveLength, waveHeight);
+			break;
+		case 3:
+			sinusoidalUp(waveLength, waveHeight);
+			break;
+		default:
+			break;
+		}
+	}
+
+	private Coord getUndiscoveredArea(int searchSize) {
+
+		int threshold = (searchSize * searchSize) / 2, halfSize = searchSize / 2;
+		Coord tempPos;
+		// debug -- comment back in when done debugging
+		// if (mapTileLog.get(targetLocation) == null) {
+		// return targetLocation;
+		// }
+		int numReturned = 0;
+		for (int j = targetLocation.ypos - halfSize; j > halfSize; j -= searchSize) {
+			for (int i = targetLocation.xpos - halfSize; i > halfSize; i -= searchSize) {
+				tempPos = new Coord(i, j);
+				if ((numReturned = countUndiscoveredTiles(tempPos, searchSize)) >= threshold) {
+					// debug
+					System.out.println("numReturned @(" + i + ", " + j + "): "
+							+ numReturned);
+					// try {
+					// Thread.sleep(10000);
+					// } catch (InterruptedException e) {
+					// // TODO Auto-generated catch block
+					// e.printStackTrace();
+					// }
+					return tempPos;
+				}
+			}
+		}
+
+		return new Coord(targetLocation.xpos, 0);
+	}
+
+	private int countUndiscoveredTiles(Coord loc, int searchSize) {
+
+		int halfSize = searchSize / 2, counter = 0;
+
+		for (int j = loc.ypos - halfSize; j < loc.ypos + halfSize; j++) {
+			for (int i = loc.xpos - halfSize; i < loc.xpos + halfSize; i++) {
+				if (withinTheGrid(i, j, targetLocation.xpos,
+						targetLocation.ypos)
+						&& mapTileLog.get(new Coord(i, j)) == null) {
+					counter++;
+				}
+			}
+		}
+		// debug
+		debugPrintMapTileArrayWithCurrPos(mapTileLog, loc);
+		System.out.println("loc:" + loc + "\tcounter:" + counter);
+		// try {
+		// Thread.sleep(5000);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
+		return counter;
+
+	}
+
+	private void astar() throws Exception {
+
+		for (int i = 0; i < 3; i++) {
+
+			loadScanMapFromSwarmServer();
+			// debugPrintMapTileArray(mapTileLog);
+			int idx = 0;
+			Coord goal = setAstarGoal();
+			InABeeLine8Dir b = new InABeeLine8Dir();
+			// System.out.println("this goal: " + goal);
+
+			String[] thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+
+			// if(thePath[0].equals("no solution")){
+			// goal = new Coord(currentLoc.xpos,currentLoc.ypos+5);
+			// thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			// }
+			//
+			// if(thePath[0].equals("no solution")){
+			// goal = new Coord(currentLoc.xpos-5,currentLoc.ypos+5);
+			// thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			// }
+
+			// astarGo = true;
+
+			boolean hasMoved = false;
+
+			System.out.println("thePath length: " + thePath.length);
+			for (int j = 0; j < thePath.length; j++) {
+
+				loadScanMapFromSwarmServer();
+				hasMoved = move(thePath[idx]);
+				if (hasMoved) {
+					idx++;
+				} else {
+					loadScanMapFromSwarmServer();
+				}
+				Thread.sleep(sleepTime + 300);
+			}
+		}
+	}
+
+	// if wall is on rv's north, west, north east, north west (lhs wall
+	// follower)
+	public boolean isWallOnNorthWest() throws Exception {
+		int currX = currentLoc.xpos, currY = currentLoc.ypos;
+		// west
+		if (isObsatacle(new Coord(currX - 1, currY))) {
+			// System.out.println("wall detected on my e");
+			// Thread.sleep(3000);
+			return true;
+		}
+		// north
+		if (isObsatacle(new Coord(currX, currY - 1))) {
+			// System.out.println("wall detected on my s");
+			// Thread.sleep(3000);
+			return true;
+		}
+		// north east
+		if (isObsatacle(new Coord(currX + 1, currY - 1))) {
+			return true;
+		}
+		// north west
+		if (isObsatacle(new Coord(currX - 1, currY - 1))) {
+			return true;
+		}
+		return false;
+	}
+
+	// if wall is on rv's south, south east, south west, or east (rhs wall
+	// follower)
+	public boolean isWallOnSouthOrEast() throws Exception {
+		int currX = currentLoc.xpos, currY = currentLoc.ypos;
+		// east
+		if (isObsatacle(new Coord(currX + 1, currY))) {
+			// System.out.println("wall detected on my e");
+			// Thread.sleep(3000);
+			return true;
+		}
+		// south
+		if (isObsatacle(new Coord(currX, currY + 1))) {
+			// System.out.println("wall detected on my s");
+			// Thread.sleep(3000);
+			return true;
+		}
+		// south east
+		if (isObsatacle(new Coord(currX + 1, currY + 1))) {
+			return true;
+		}
+		// south west
+		if (isObsatacle(new Coord(currX - 1, currY + 1))) {
+			return true;
+		}
+
+		return false;
+	}
+
+	// debug - remove debug p out
+	public boolean isAWallAround() throws Exception {
+		int currX = currentLoc.xpos, currY = currentLoc.ypos;
+		// 1 east
+		if (isObsatacle(new Coord(currX + 1, currY))) {
+			return true;
+		}
+		// 2 southeast
+		if (isObsatacle(new Coord(currX + 1, currY + 1))) {
+			return true;
+		}
+		// 3 south
+		if (isObsatacle(new Coord(currX, currY + 1))) {
+			return true;
+		}
+		// 4 southwest
+		if (isObsatacle(new Coord(currX - 1, currY + 1))) {
+			return true;
+		}
+		// 5 west
+		if (isObsatacle(new Coord(currX - 1, currY))) {
+			return true;
+		}
+		// 6 northwest
+		if (isObsatacle(new Coord(currX - 1, currY - 1))) {
+			return true;
+		}
+		// 7 north
+		if (isObsatacle(new Coord(currX, currY - 1))) {
+			return true;
+		}
+		// 8 northeast
+		if (isObsatacle(new Coord(currX + 1, currY - 1))) {
+			return true;
+		}
+		return false;
+	}
+
+	void test() throws IOException, InterruptedException {
+		new ArrayList<String>();
+		Socket socket = null;
+		InABeeLine8Dir b = new InABeeLine8Dir();
+		boolean astar = true;
+		System.out.println(requestTimeRemaining(socket));
+
+		try {
+
+			// ***** connect to server ******
+			socket = connectToSwarmServer();
+
+			getEquipment();
+
+			// ***** initialize critical locations ******
+			rovergroupStartPosition = requestStartLoc(socket);
+			targetLocation = requestTargetLoc(socket);
+			nextTarget = targetLocation.clone();
+
+			currentLoc.clone();
+			cardinals[1] = true;
+			/**
+			 * #### Rover controller process loop ####
+			 */
+			// // ------ itr 1 --------
+			loadScanMapFromSwarmServer();
+			int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
+			// debugPrintMapTileArray(mapTileLog);
+			boolean astarGo = false;
+			String[] thePath = { "end" };
+			int idx = 0;
+
+			loadScanMapFromSwarmServer();
+			// debugPrintMapTileArray(mapTileLog);
+			idx = 0;
+			Coord goal = setAstarGoal();
+			System.out.println("this goal: " + goal);
+
+			thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+
+			if (thePath[0].equals("no solution")) {
+				goal = new Coord(currentLoc.xpos, currentLoc.ypos + 5);
+				thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			}
+
+			if (thePath[0].equals("no solution")) {
+				goal = new Coord(currentLoc.xpos - 5, currentLoc.ypos + 5);
+				thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+			}
+
+			astarGo = true;
+			boolean hasMoved = false;
+			while (!thePath[idx].equals("end")) {
+
+				loadScanMapFromSwarmServer();
+				hasMoved = move(thePath[idx]);
+				if (hasMoved) {
+					idx++;
+				} else {
+					loadScanMapFromSwarmServer();
+				}
+				Thread.sleep(sleepTime + 300);
+			}
+
+			System.out
+					.println("ROVER_12 ------------ bottom process control --------------");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (IOException e) {
+					System.out.println("ROVER_12 problem closing socket");
+				}
+			}
+		}
+	}// END of test()
+
+	private Coord setAstarGoal() {
+
+		switch (getTargetDirStr(targetLocation)) {
+		case "E":
+			return new Coord(currentLoc.xpos + 5, currentLoc.ypos);
+
+		case "S":
+			return new Coord(currentLoc.xpos, currentLoc.ypos + 5);
+
+		case "W":
+			return new Coord(currentLoc.xpos - 5, currentLoc.ypos);
+
+		case "N":
+			return new Coord(currentLoc.xpos, currentLoc.ypos - 5);
+
+		case "NE":
+			return new Coord(currentLoc.xpos + 5, currentLoc.ypos - 5);
+
+		case "SE":
+			return new Coord(currentLoc.xpos + 5, currentLoc.ypos + 5);
+
+		case "NW":
+			return new Coord(currentLoc.xpos - 5, currentLoc.ypos - 5);
+
+		case "SW":
+			return new Coord(currentLoc.xpos - 5, currentLoc.ypos + 5);
+
+		default:
+			return targetLocation;
+		}
+	}
+
+	private String getTargetDirStr(Coord target) {
+
+		int dx = target.xpos - currentLoc.xpos;
+		int dy = currentLoc.ypos - currentLoc.ypos;
+
+		// n
+		if (dx == 0 && dy < 0) {
+			return "N";
+		}
+
+		// s
+		if (dx == 0 && dy > 0) {
+			return "S";
+		}
+
+		// e
+		if (dx > 0 && dy == 0) {
+			return "E";
+		}
+
+		// w
+		if (dx < 0 && dy == 0) {
+			return "W";
+		}
+
+		// ne
+		if (dx > 0 && dy < 0) {
+			return "NE";
+		}
+
+		// nw
+		if (dx < 0 && dy < 0) {
+			return "NW";
+		}
+
+		// se
+		if (dx > 0 && dy > 0) {
+			return "SE";
+		}
+
+		// sw
+		if (dx < 0 && dy > 0) {
+			return "SW";
+		}
+
+		return "E";
+	}
+
+	private boolean wallFollwerGoingInCircle() {
+
+		if (pathMap.size() < 5) {
+			return false;
+		}
+		if (pathMap.get(pathMap.size() - 1).equals(
+				pathMap.get(pathMap.size() - 5))) {
+			return true;
+		}
+		return false;
+	}
+
+	private void stayToTheWall(InABeeLine8Dir b, int centerIndex,
+			String[] thePath, int idx) throws Exception, IOException,
+			InterruptedException {
+
+		boolean hasMoved;
+		if (!isAllDirOpen(scanMap.getScanMap(), centerIndex)) {
+
+			// find a nearest wall, and set as the goal
+			Coord aWall = outwardSpiralSearch(currentLoc);
+			String wallDir = b.coordToDir(currentLoc, aWall, mapTileLog);
+
+			while (!thePath[idx].equals("end")) {
+
+				loadScanMapFromSwarmServer();
+				hasMoved = move(thePath[idx]);
+				if (hasMoved) {
+					idx++;
+				} else {
+					loadScanMapFromSwarmServer();
+				}
+			}
+		}
+	}
+
+	void test2() throws IOException, InterruptedException {
+		new ArrayList<String>();
+		Socket socket = null;
+		InABeeLine8Dir b = new InABeeLine8Dir();
+
+		try {
+
+			// ***** connect to server ******
+			socket = connectToSwarmServer();
+
+			getEquipment();
+
+			// ***** initialize critical locations ******
+			rovergroupStartPosition = requestStartLoc(socket);
+			targetLocation = requestTargetLoc(socket);
+			nextTarget = targetLocation.clone();
+
+			loadScanMapFromSwarmServer();
+			System.out.println("nearest obstacle: "
+					+ outwardSpiralSearch(currentLoc));
+			System.out.println(outwardSpiralSearch(currentLoc));
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (socket != null) {
+				try {
+					socket.close();
+				} catch (IOException e) {
+					System.out.println("ROVER_12 problem closing socket");
+				}
+			}
+		}
+	}// END of test2()
+
+	void debugSandAvoidanceMotion(MapTile[][] scanMapTiles, int centerIndex)
+			throws IOException, InterruptedException {
 
 		if (currentLoc.xpos == 10 && currentLoc.ypos < 15) {
 			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
@@ -594,7 +1089,7 @@ public class wk9_ks_ROVER_12 {
 				|| currentLoc.xpos >= 14 && currentLoc.xpos <= 15) {
 
 			System.out.println("move random");
-			randomStep(scanMapTiles, centerIndex);
+			randomStep();
 
 		} else if (!isTowardsThisDirectionIsObsatacle(scanMapTiles,
 				centerIndex, "E")) {
@@ -614,8 +1109,7 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-	private Socket connectToSwarmServer() throws UnknownHostException,
-			IOException {
+	Socket connectToSwarmServer() throws UnknownHostException, IOException {
 		Socket socket;
 		socket = new Socket(SERVER_ADDRESS, PORT_ADDRESS);
 
@@ -638,20 +1132,7 @@ public class wk9_ks_ROVER_12 {
 		return socket;
 	}
 
-	private boolean isObsatacle(Coord focus) {
-		MapTile tile = mapTileLog.get(focus);
-		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
-				|| tile.getTerrain() == Terrain.NONE
-				|| tile.getTerrain() == Terrain.FLUID
-				|| tile.getTerrain() == Terrain.SAND) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	private boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex) {
+	boolean isTowardsWestIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
 		if (scanMapTiles[centerIndex - 1][centerIndex].getHasRover()
 				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.ROCK
 				|| scanMapTiles[centerIndex - 1][centerIndex].getTerrain() == Terrain.NONE
@@ -663,8 +1144,96 @@ public class wk9_ks_ROVER_12 {
 		return false;
 	}
 
-	private boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex) {
+	public boolean isObsatacle(Coord focus) throws IOException {
+
+		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
+		}
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean isEastObsatacle(Coord focusIn) throws IOException {
+
+		Coord focus = new Coord(focusIn.xpos + 1, focusIn.ypos);
+		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
+		}
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean isWestObsatacle(Coord focusIn) throws IOException {
+
+		Coord focus = new Coord(focusIn.xpos - 1, focusIn.ypos);
+		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
+		}
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean isNorthObsatacle(Coord focusIn) throws IOException {
+
+		Coord focus = new Coord(focusIn.xpos, focusIn.ypos - 1);
+		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
+		}
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean isSouthObsatacle(Coord focusIn) throws IOException {
+
+		Coord focus = new Coord(focusIn.xpos, focusIn.ypos + 1);
+		MapTile tile = mapTileLog.get(focus);
+		if (tile == null) {
+			loadScanMapFromSwarmServer();
+			tile = mapTileLog.get(focus);
+		}
+		if (tile.getHasRover() || tile.getTerrain() == Terrain.ROCK
+				|| tile.getTerrain() == Terrain.NONE
+				|| tile.getTerrain() == Terrain.FLUID
+				|| tile.getTerrain() == Terrain.SAND) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	boolean isTowardsEastIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
 		if (scanMapTiles[centerIndex + 1][centerIndex].getHasRover()
 				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.ROCK
 				|| scanMapTiles[centerIndex + 1][centerIndex].getTerrain() == Terrain.NONE
@@ -676,8 +1245,7 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-	private boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex) {
+	boolean isTowardsNorthIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
 		if (scanMapTiles[centerIndex][centerIndex - 1].getHasRover()
 				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.ROCK
 				|| scanMapTiles[centerIndex][centerIndex - 1].getTerrain() == Terrain.NONE
@@ -688,8 +1256,7 @@ public class wk9_ks_ROVER_12 {
 		return false;
 	}
 
-	private boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles,
-			int centerIndex) {
+	boolean isTowardsSouthIsObsatacle(MapTile[][] scanMapTiles, int centerIndex) {
 		if (scanMapTiles[centerIndex][centerIndex + 1].getHasRover()
 				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.ROCK
 				|| scanMapTiles[centerIndex][centerIndex + 1].getTerrain() == Terrain.NONE
@@ -700,7 +1267,7 @@ public class wk9_ks_ROVER_12 {
 		return false;
 	}
 
-	private boolean isTowardsThisDirectionIsObsatacle(MapTile[][] scanMapTiles,
+	boolean isTowardsThisDirectionIsObsatacle(MapTile[][] scanMapTiles,
 			int centerIndex, String dir) {
 		switch (dir) {
 		case "E":
@@ -719,7 +1286,7 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-	private void setCurrentLoc() throws IOException {
+	void setCurrentLoc() throws IOException {
 
 		String line;
 		// **** Request Rover Location from SwarmServer ****
@@ -736,7 +1303,7 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-	private Coord requestCurrentLoc() throws IOException {
+	Coord requestCurrentLoc() throws IOException {
 
 		String line;
 		Coord clone = new Coord(-1, -1);
@@ -756,7 +1323,7 @@ public class wk9_ks_ROVER_12 {
 
 	// ####################### Support Methods #############################
 
-	private void clearReadLineBuffer() throws IOException {
+	void clearReadLineBuffer() throws IOException {
 		while (in.ready()) {
 			// System.out.println("ROVER_12 clearing readLine()");
 			in.readLine();
@@ -764,7 +1331,7 @@ public class wk9_ks_ROVER_12 {
 	}
 
 	// method to retrieve a list of the rover's EQUIPMENT from the server
-	private ArrayList<String> getEquipment() throws IOException {
+	ArrayList<String> getEquipment() throws IOException {
 		// System.out.println("ROVER_12 method getEquipment()");
 		Gson gson = new GsonBuilder().setPrettyPrinting()
 				.enableComplexMapKeySerialization().create();
@@ -807,9 +1374,9 @@ public class wk9_ks_ROVER_12 {
 	}
 
 	// sends a SCAN request to the server and puts the result in the scanMap
-	// array group12 - this raw JsonData should be used for our maptileLog?
+	// sets current location each time this function is called
 	public void loadScanMapFromSwarmServer() throws IOException {
-		// System.out.println("ROVER_12 method doScan()");
+
 		setCurrentLoc();
 		Coord scanLoc = new Coord(currentLoc.xpos, currentLoc.ypos);
 		Gson gson = new GsonBuilder().setPrettyPrinting()
@@ -847,7 +1414,7 @@ public class wk9_ks_ROVER_12 {
 		loadMapTilesOntoGlobalMapLog(scanMap.getScanMap(), scanLoc);
 	}
 
-	private Coord requestStartLoc(Socket soc) throws IOException {
+	Coord requestStartLoc(Socket soc) throws IOException {
 
 		// **** Request Rover Location from SwarmServer ****
 		out.println("LOC");
@@ -879,7 +1446,7 @@ public class wk9_ks_ROVER_12 {
 		return rovergroupStartPosition;
 	}
 
-	private Coord requestTargetLoc(Socket soc) throws IOException {
+	Coord requestTargetLoc(Socket soc) throws IOException {
 
 		// **** Request Rover Location from SwarmServer ****
 		out.println("LOC");
@@ -909,7 +1476,7 @@ public class wk9_ks_ROVER_12 {
 		return targetLocation;
 	}
 
-	private int requestTimeRemaining(Socket soc) throws IOException {
+	int requestTimeRemaining(Socket soc) throws IOException {
 
 		// **** Request Remaining Time from SwarmServer ****
 		out.println("TIMER");
@@ -926,7 +1493,7 @@ public class wk9_ks_ROVER_12 {
 		return timeRemaining;
 	}
 
-	private static Coord extractCurrLOC(String sStr) {
+	static Coord extractCurrLOC(String sStr) {
 		sStr = sStr.substring(4);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -940,7 +1507,7 @@ public class wk9_ks_ROVER_12 {
 	}
 
 	// Our hats off to brilliant ROVER_11 / Group 11! Many thanks!
-	private void updateFromGreenCorpGlobalMap(JSONArray data) {
+	void updateFromGreenCorpGlobalMap(JSONArray data) {
 
 		for (Object o : data) {
 
@@ -958,7 +1525,7 @@ public class wk9_ks_ROVER_12 {
 		}
 	}
 
-	private static Coord extractStartLOC(String sStr) {
+	static Coord extractStartLOC(String sStr) {
 
 		sStr = sStr.substring(10);
 
@@ -973,7 +1540,7 @@ public class wk9_ks_ROVER_12 {
 		return null;
 	}
 
-	private static Coord extractTargetLOC(String sStr) {
+	static Coord extractTargetLOC(String sStr) {
 		sStr = sStr.substring(11);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String xStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -986,7 +1553,7 @@ public class wk9_ks_ROVER_12 {
 		return null;
 	}
 
-	private static int extractTimeRemaining(String sStr) {
+	static int extractTimeRemaining(String sStr) {
 		sStr = sStr.substring(6);
 		if (sStr.lastIndexOf(" ") != -1) {
 			String timeStr = sStr.substring(0, sStr.lastIndexOf(" "));
@@ -997,7 +1564,7 @@ public class wk9_ks_ROVER_12 {
 
 	// this takes the server response string, parses out the x and x values and
 	// returns a Coord object
-	private static Coord extractLocationFromString(String sStr) {
+	static Coord extractLocationFromString(String sStr) {
 		int indexOf;
 		indexOf = sStr.indexOf(" ");
 		sStr = sStr.substring(indexOf + 1);
@@ -1092,7 +1659,7 @@ public class wk9_ks_ROVER_12 {
 	public void debugPrintMapTileArray(Map<Coord, MapTile> globalMapCopy) {
 
 		// FIXME
-		int edgeSize = 100;
+		int edgeSize = 20;
 		System.out.println("edge size: " + edgeSize);
 		for (int k = 0; k < edgeSize + 2; k++) {
 			System.out.print("--");
@@ -1157,12 +1724,96 @@ public class wk9_ks_ROVER_12 {
 		System.out.print("\n");
 	}
 
-	private void recordPath() {
+	public void takeAStepTowradsCurrGoal(Coord currTarget) throws IOException {
+		int dx = currTarget.xpos - currentLoc.xpos;
+		int dy = currTarget.ypos - currentLoc.ypos;
 
+		// prioritize horizontal dir
+		if (dx > 0 && !isEastObsatacle(currentLoc)) {
+			move("E");
+		} else if (dx < 0 && !isWestObsatacle(currentLoc)) {
+			move("W");
+		} else if (dy > 0 && !isSouthObsatacle(currentLoc)) {
+			move("S");
+		} else if (dy < 0 && !isNorthObsatacle(currentLoc)) {
+			move("N");
+		}
 	}
 
-	private void loadMapTilesOntoGlobalMapLog(MapTile[][] ptrScanMap,
-			Coord scanLoc) {
+	public void debugPrintMapTileArrayWithCurrPos(
+			Map<Coord, MapTile> globalMapCopy, Coord loc) {
+
+		// FIXME
+		int edgeSizeX = 100, edgeSizeY = 60;
+
+		System.out.println("edge size: " + edgeSizeY);
+		for (int k = 0; k < edgeSizeY + 2; k++) {
+			System.out.print("--");
+		}
+
+		System.out.print("\n");
+
+		for (int j = 0; j < edgeSizeY; j++) {
+
+			// System.out.print("j=" + j + "\t");
+
+			System.out.print("| ");
+			for (int i = 0; i < edgeSizeX; i++) {
+				if (mapTileLog.get(new Coord(i, j)) == null) {
+					System.out.print("nn");
+				}// if this tile is the focus
+				else if (new Coord(i, j).equals(loc)) {
+					System.out.print("oo");
+				}
+				// check and print edge of map has first priority
+				else if (mapTileLog.get(new Coord(i, j)).getTerrain()
+						.toString().equals("NONE")) {
+					System.out.print("XX");
+
+					// next most important - print terrain and/or science
+					// locations
+					// terrain and science
+				} else if (!(mapTileLog.get(new Coord(i, j)).getTerrain()
+						.toString().equals("SOIL"))
+						&& !(mapTileLog.get(new Coord(i, j)).getScience()
+								.toString().equals("NONE"))) {
+					// both terrain and science
+
+					System.out.print(mapTileLog.get(new Coord(i, j))
+							.getTerrain().toString().substring(0, 1)
+							+ mapTileLog.get(new Coord(i, j)).getScience()
+									.getSciString());
+					// just terrain
+				} else if (!(mapTileLog.get(new Coord(i, j)).getTerrain()
+						.toString().equals("SOIL"))) {
+					System.out.print(mapTileLog.get(new Coord(i, j))
+							.getTerrain().toString().substring(0, 1)
+							+ " ");
+					// just science
+				} else if (!(mapTileLog.get(new Coord(i, j)).getScience()
+						.toString().equals("NONE"))) {
+					System.out.print(" "
+							+ mapTileLog.get(new Coord(i, j)).getScience()
+									.getSciString());
+
+					// if still empty check for rovers and print them
+				} else if (mapTileLog.get(new Coord(i, j)).getHasRover()) {
+					System.out.print("[]");
+
+					// nothing here so print nothing
+				} else {
+					System.out.print("  ");
+				}
+			}
+			System.out.print(" |\n");
+		}
+		for (int k = 0; k < edgeSizeY + 2; k++) {
+			System.out.print("--");
+		}
+		System.out.print("\n");
+	}
+
+	void loadMapTilesOntoGlobalMapLog(MapTile[][] ptrScanMap, Coord scanLoc) {
 
 		MapTile tempTile;
 		Coord tempCoord;
@@ -1195,8 +1846,6 @@ public class wk9_ks_ROVER_12 {
 	public void sendPost(JSONObject jsonObj) throws Exception {
 
 		String url = "http://23.251.155.186:3000/api";
-		String corp_secret = "0FSj7Pn23t";
-
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 		String USER_AGENT = "ROVER 12";
@@ -1232,41 +1881,61 @@ public class wk9_ks_ROVER_12 {
 
 	}
 
-	private boolean move(String dir) throws IOException {
+	boolean move(String dir) throws IOException {
+		//
+		// MapTile[][] scanMapTiles = scanMap.getScanMap();
+		// int centerIndex = (scanMap.getEdgeSize() - 1) / 2,
+		int currX = currentLoc.xpos, currY = currentLoc.ypos;
+		Coord prevLoc = currentLoc.clone();
 
-		MapTile[][] scanMapTiles = scanMap.getScanMap();
-		int centerIndex = (scanMap.getEdgeSize() - 1) / 2;
-
+		System.out.print("direction taken in the argument: " + dir + "\t");
 		switch (dir) {
 		case "E":
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					"E")) {
+			if (!isObsatacle(new Coord(currX + 1, currY))) {
+				System.out.println("(1)in move(), go east");
 				moveEast();
-				System.out.println("moved east, return true");
-				return true;
+				setCurrentLoc();
+				if (prevLoc.equals(currentLoc)) {
+					return false;
+				} else {
+					return true;
+				}
 			}
+			break;
 		case "W":
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					"W")) {
+			if (!isObsatacle(new Coord(currX - 1, currY))) {
+				System.out.println("(2)in move(), go west");
 				moveWest();
-				System.out.println("moved west, return true");
-				return true;
+				setCurrentLoc();
+				if (prevLoc.equals(currentLoc)) {
+					return false;
+				} else {
+					return true;
+				}
 			}
 			break;
 		case "N":
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					"N")) {
+			if (!isObsatacle(new Coord(currX, currY - 1))) {
+				System.out.println("(3)in move(), go north");
 				moveNorth();
-				System.out.println("moved north, return true");
-				return true;
+				setCurrentLoc();
+				if (prevLoc.equals(currentLoc)) {
+					return false;
+				} else {
+					return true;
+				}
 			}
 			break;
 		case "S":
-			if (!isTowardsThisDirectionIsObsatacle(scanMapTiles, centerIndex,
-					"S")) {
+			if (!isObsatacle(new Coord(currX, currY + 1))) {
+				System.out.println("(4)in move(), go south");
 				moveSouth();
-				System.out.println("moved south, return true");
-				return true;
+				setCurrentLoc();
+				if (prevLoc.equals(currentLoc)) {
+					return false;
+				} else {
+					return true;
+				}
 			}
 			break;
 		default:
@@ -1275,7 +1944,7 @@ public class wk9_ks_ROVER_12 {
 		return false;
 	}
 
-	private void moveWest() {
+	void moveWest() {
 		out.println("MOVE W");
 		System.out.println("ROVER_12 request move W");
 		cardinals[0] = false; // S
@@ -1284,7 +1953,7 @@ public class wk9_ks_ROVER_12 {
 		cardinals[3] = true; // W
 	}
 
-	private void moveNorth() {
+	void moveNorth() {
 		out.println("MOVE N");
 		System.out.println("ROVER_12 request move N");
 		cardinals[0] = false; // S
@@ -1293,7 +1962,7 @@ public class wk9_ks_ROVER_12 {
 		cardinals[3] = false; // W
 	}
 
-	private void moveSouth() {
+	void moveSouth() {
 		out.println("MOVE S");
 		System.out.println("ROVER_12 request move S");
 		cardinals[0] = true; // S
@@ -1302,7 +1971,7 @@ public class wk9_ks_ROVER_12 {
 		cardinals[3] = false; // W
 	}
 
-	private void moveEast() {
+	void moveEast() {
 		out.println("MOVE E");
 		System.out.println("ROVER_12 request move E");
 		cardinals[0] = false; // S
@@ -1312,11 +1981,11 @@ public class wk9_ks_ROVER_12 {
 	}
 
 	// a check function to prevent IndexOutOfBounds exception
-	public boolean withinTheGrid(int i, int j, int arrayLength) {
+	public boolean isWithinTheGrid(int i, int j, int arrayLength) {
 		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
 	}
 
-	private void sendJSONToServer(JSONObject obj, String URL) {
+	void sendJSONToServer(JSONObject obj, String URL) {
 		// TODO need testing
 		try {
 			HttpClient client = HttpClientBuilder.create().build();
@@ -1344,26 +2013,6 @@ public class wk9_ks_ROVER_12 {
 		return rd.nextInt(max + 1) + min;
 	}
 
-	public String pickADir(Coord from, Coord to) {
-
-		int dx = to.xpos - from.xpos;
-		int dy = to.ypos - from.ypos;
-
-		if (dx * dx > dy * dy) {
-			if (dx > 0) {
-				return "E";
-			} else {
-				return "W";
-			}
-		} else {
-			if (dy > 0) {
-				return "S";
-			} else {
-				return "N";
-			}
-		}
-	}
-
 	public String getFacingDirection() {
 		if (cardinals[0] == true) {
 			return "S";
@@ -1378,7 +2027,7 @@ public class wk9_ks_ROVER_12 {
 
 	}
 
-	private void shuffuleArray(String[] directions) {
+	void shuffuleArray(String[] directions) {
 		// Thanks, Fisher-Yates shuffle
 		int idx;
 		String temp;
@@ -1392,8 +2041,11 @@ public class wk9_ks_ROVER_12 {
 	}
 
 	// take a random step (just one step) to break the pattern
-	private void randomStep(MapTile[][] scanMapTiles, int centerIndex)
-			throws InterruptedException, IOException {
+	void randomStep() throws InterruptedException, IOException {
+
+		if (mapTileLog.get(currentLoc) == null) {
+			loadScanMapFromSwarmServer();
+		}
 
 		String currDir = getFacingDirection();
 		String[] directions = { "N", "E", "S", "W" };
@@ -1405,24 +2057,39 @@ public class wk9_ks_ROVER_12 {
 				move(thisDir);
 				return;
 			}
-
 		}
 	}
 
-	public int countUnvisited(Coord currLoc, int searchSize) {
-		// searchSize should be an even number
-		int numUnvisited = 0;
+	// take a random step (just one step) to break the pattern
+	void randomlyStepOut() throws Exception {
 
-		for (int j = currLoc.ypos - searchSize / 2; j < currLoc.ypos
-				+ searchSize / 2; j++) {
-			for (int i = currLoc.xpos - searchSize / 2; i < currLoc.ypos
-					+ searchSize / 2; i++) {
-				if (!mapTileLog.containsKey(new Coord(i, j))) {
-					numUnvisited++;
-				}
+		int idx = 0;
+		Coord goal = null;
+
+		// pick a random nearby cell
+		do {
+			goal = new Coord(
+					randomNum(currentLoc.xpos - 5, currentLoc.xpos + 5),
+					randomNum(currentLoc.ypos - 5, currentLoc.ypos + 5));
+		} while (mapTileLog.get(goal) == null || isObsatacle(goal));
+
+		InABeeLine8Dir b = new InABeeLine8Dir();
+		String[] thePath = b.getShortestPath(currentLoc, goal, mapTileLog);
+
+		boolean hasMoved = false;
+
+		System.out.println("thePath length: " + thePath.length);
+		for (int j = 0; j < thePath.length; j++) {
+
+			loadScanMapFromSwarmServer();
+			hasMoved = move(thePath[idx]);
+			if (hasMoved) {
+				idx++;
+			} else {
+				loadScanMapFromSwarmServer();
 			}
+			Thread.sleep(sleepTime + 300);
 		}
-		return numUnvisited;
 	}
 
 	public boolean visited(Coord pos) {
@@ -1450,11 +2117,15 @@ public class wk9_ks_ROVER_12 {
 	// return null;
 	// }
 
-	private boolean[] randomPickMotion(boolean[] cardinals, int centerIndex,
+	boolean[] randomPickMotion(boolean[] cardinals, int centerIndex,
 			MapTile[][] scanMapTiles) {
-		int randomNumber = randomNum(0, 3);
+
 		try {
-			if (cardinals[randomNumber] == true) {
+			int randomNumber = randomNum(0, 3);
+			if (cardinals[randomNumber] == true) {// this part causes stack
+													// overflow if surrounded by
+													// obstaccles in three
+													// directions
 				randomPickMotion(cardinals, centerIndex, scanMapTiles);
 			} else {
 				switch (randomNumber) {
@@ -1512,8 +2183,7 @@ public class wk9_ks_ROVER_12 {
 		return cardinals;
 	}
 
-	private boolean isAlreadyTraveledPathTowardsWest(int currentXPos,
-			int currentYPos) {
+	boolean isAlreadyTraveledPathTowardsWest(int currentXPos, int currentYPos) {
 		int nextXPosition = currentXPos - 1;
 		int nextYPosition = currentYPos;
 		for (Coord coord : pathMap) {
@@ -1524,8 +2194,7 @@ public class wk9_ks_ROVER_12 {
 		return false;
 	}
 
-	private boolean isAlreadyTraveledPathTowardsNorth(int currentXPos,
-			int currentYPos) {
+	boolean isAlreadyTraveledPathTowardsNorth(int currentXPos, int currentYPos) {
 		int nextXPosition = currentXPos;
 		int nextYPosition = currentYPos - 1;
 		for (Coord coord : pathMap) {
@@ -1536,8 +2205,7 @@ public class wk9_ks_ROVER_12 {
 		return false;
 	}
 
-	private boolean isAlreadyTraveledPathTowardsSouth(int currentXPos,
-			int currentYPos) {
+	boolean isAlreadyTraveledPathTowardsSouth(int currentXPos, int currentYPos) {
 		int nextXPosition = currentXPos;
 		int nextYPosition = currentYPos + 1;
 		for (Coord coord : pathMap) {
@@ -1548,8 +2216,7 @@ public class wk9_ks_ROVER_12 {
 		return false;
 	}
 
-	private boolean isAlreadyTraveledPathTowardsEast(int currentXPos,
-			int currentYPos) {
+	boolean isAlreadyTraveledPathTowardsEast(int currentXPos, int currentYPos) {
 		int nextXPosition = currentXPos + 1;
 		int nextYPosition = currentYPos;
 		for (Coord coord : pathMap) {
@@ -1560,11 +2227,127 @@ public class wk9_ks_ROVER_12 {
 		return false;
 	}
 
+	private void sinusoidalLeft(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+		int steps, sleeptime = 900;
+
+		steps = waveLength;
+		String currentDir;
+		String[] dir = { "W", "S", "W", "N" };
+
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < dir.length; i++) {
+
+			currentDir = dir[i];
+			if (currentDir.equals("W")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+
+				setCurrentLoc();
+				move(currentDir);
+
+				Thread.sleep(sleeptime);
+			}
+		}
+	}
+
+	private void sinusoidalRight(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+		int steps, sleeptime = 900;
+
+		steps = waveLength;
+		String goDir;
+		String[] dir = { "E", "S", "E", "N" };
+
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < dir.length; i++) {
+
+			goDir = dir[i];
+
+			if (goDir.equals("E")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+
+				setCurrentLoc();
+				move(goDir);
+
+				Thread.sleep(sleeptime);
+			}
+		}
+	}
+
+	private void sinusoidalDown(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+		int steps, sleeptime = 900;
+
+		steps = waveLength;
+		String currentDir;
+		String[] dir = { "W", "S", "E", "S" };
+
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < dir.length; i++) {
+
+			currentDir = dir[i];
+			if (currentDir.equals("S")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+
+				setCurrentLoc();
+				move(currentDir);
+
+				Thread.sleep(sleeptime);
+			}
+		}
+	}
+
+	private void sinusoidalUp(int waveLength, int waveHeight)
+			throws InterruptedException, IOException {
+		int steps, sleeptime = 900;
+
+		steps = waveLength;
+		String currentDir;
+		String[] dir = { "W", "N", "E", "N" };
+
+		previousLoc = currentLoc;
+
+		for (int i = 0; i < dir.length; i++) {
+
+			currentDir = dir[i];
+			if (currentDir.equals("N")) {
+				steps = waveLength;
+			} else {
+				steps = waveHeight;
+			}
+
+			for (int j = 0; j < steps; j++) {
+
+				setCurrentLoc();
+				move(currentDir);
+
+				Thread.sleep(sleeptime);
+			}
+		}
+	}
+
 	// return the nearest wall coord
 	public Coord outwardSpiralSearch(Coord curr) throws Exception {
 
 		int searchSize = 10;
-		String[] directions = { "E", "S", "W", "N" };
 		Coord topL, bottomR, temp;
 		int x, y, xx, yy;
 
@@ -1617,9 +2400,25 @@ public class wk9_ks_ROVER_12 {
 		return null;
 	}
 
-	// a check function to prevent IndexOutOfBounds exception
-	public boolean isWithinTheGrid(int i, int j, int arrayLength) {
-		return i >= 0 && j >= 0 && i < arrayLength && j < arrayLength;
+	// given two coordinates, pick a next move-direction
+	public String pickADir(Coord from, Coord to) {
+
+		int dx = to.xpos - from.xpos;
+		int dy = to.ypos - from.ypos;
+
+		if (dx * dx > dy * dy) {
+			if (dx > 0) {
+				return "E";
+			} else {
+				return "W";
+			}
+		} else {
+			if (dy > 0) {
+				return "S";
+			} else {
+				return "N";
+			}
+		}
 	}
 
 	/**
@@ -1627,13 +2426,13 @@ public class wk9_ks_ROVER_12 {
 	 */
 	public static void main(String[] args) throws Exception {
 
-		// take in first input argument as a SERVER_ADDRESS value 
-		String serverAddress="";
+		// take in first input argument as a SERVER_ADDRESS value
+		String serverAddress = "";
 		for (String s : args) {
 			serverAddress = s;
 		}
-		
-		wk9_ks_ROVER_12 client = new wk9_ks_ROVER_12(serverAddress);
+
+		Rv_12_store_060216_1616 client = new Rv_12_store_060216_1616(serverAddress);
 		client.run();
 	}
 }

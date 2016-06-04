@@ -23,7 +23,8 @@ public class Communication {
     JSONParser parser;
     private String rovername;
     private String corp_secret;
-
+    
+    //Communication Setup
     public Communication(String url, String rovername, String corp_secret) {
         this.url = url;
         this.parser = new JSONParser();
@@ -34,7 +35,7 @@ public class Communication {
 
     public String postScanMapTiles(Coord currentLoc, MapTile[][] scanMapTiles) {
         JSONArray data = convertScanMapTiles(currentLoc, scanMapTiles);
-
+        
         String charset = "UTF-8";
         URL obj = null;
         try {
@@ -56,8 +57,8 @@ public class Communication {
             wr.close();
 
             int responseCode = con.getResponseCode();
-            System.out.println("\nSending 'POST' request to URL : " + url);
-            System.out.println("Response Code : " + responseCode);
+//            System.out.println("\nSending 'POST' request to URL : " + url);
+//            System.out.println("Response Code : " + responseCode);
 
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()));
@@ -100,12 +101,17 @@ public class Communication {
                 tile.put("terrain", mapTile.getTerrain().toString());
                 tile.put("science", mapTile.getScience().toString());
                 tiles.add(tile);
+                
+//                System.out.println("Pos : " + xp + ", " + yp);
+//                System.out.println("Terrain: " + mapTile.getTerrain().toString());
+//                System.out.println("Science: " + mapTile.getScience().toString());
+            
             }
         }
         return tiles;
     }
 
-    // for requesting global map
+    // Method for requesting global map
     public JSONArray getGlobalMap() {
 
         URL obj = null;
@@ -119,8 +125,8 @@ public class Communication {
             con.setRequestMethod("GET");
 
             int responseCode = con.getResponseCode();
-            System.out.println("\nSending 'GET' request to URL : " + url);
-            System.out.println("Response Code : " + responseCode);
+//            System.out.println("\nSending 'GET' request to URL : " + url);
+//            System.out.println("Response Code : " + responseCode);
 
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()));
@@ -142,6 +148,12 @@ public class Communication {
 
         return parseResponseStr(responseStr);
     }
+    
+     /*public String getResponse(){
+     * 
+     * 	
+     * }
+     */
 
     public JSONArray parseResponseStr(String response) {
         JSONArray data = null;
